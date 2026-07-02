@@ -62,7 +62,7 @@ def train_model(args: dict):
             target_lengths = target_lengths.to(device)
             channel_positions = channel_positions.to(device)
             uids_tensor = uids_tensor.to(device)
-            subject_id = torch.zeros([0] * len(targets_padded)).long().to(device)
+            subject_id = torch.zeros([0] * len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
                 pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
 
@@ -96,7 +96,7 @@ def train_model(args: dict):
                     target_lengths = target_lengths.to(device)
                     channel_positions = channel_positions.to(device)
                     uids_tensor = uids_tensor.to(device)
-                    subject_id = torch.zeros([0] * len(targets_padded)).long().to(device)
+                    subject_id = torch.zeros([0] * len(neuro_chunks)).long().to(device)
                     pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
 
                     loss = criterion(
