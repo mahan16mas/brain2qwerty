@@ -264,3 +264,20 @@ def get_dataset_loaders_nlp_21(
         collate_fn=ctc_collate,
     )
     return train_loader, test_loader, None
+
+
+def get_dataset_loaders(
+        dataset_name,
+        batch_size,
+        gauss_in=True,
+        speech=True,
+        nlp_10=False,
+        is_nejm=False
+    ):
+    if speech:
+        if is_nejm: return get_dataset_loaders_speech_nejm(dataset_name, batch_size, gauss_in)
+        return get_dataset_loaders_speech(dataset_name, batch_size, gauss_in)
+    if not nlp_10:
+        return get_dataset_loaders_nlp_21(dataset_name, batch_size, gauss_in)
+    return get_dataset_loaders_nlp_10(dataset_name, batch_size, gauss_in)
+

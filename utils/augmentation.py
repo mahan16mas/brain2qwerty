@@ -69,9 +69,7 @@ class GaussianSmoothing(nn.Module):
         Returns:
             filtered (torch.Tensor): Filtered output.
         """
-        input = torch.permute(input, (0, 2, 1))
         input = self.conv(input, weight=self.weight, groups=self.groups, padding="same")
-        input = torch.permute(input, (0, 2, 1))
         return input
 
 
