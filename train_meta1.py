@@ -100,6 +100,7 @@ def train_model(args: dict):
                     targets_padded = targets_padded.to(device)
                     target_lengths = target_lengths.to(device)
                     channel_positions = channel_positions.to(device)
+                    channel_positions = channel_positions.to(device)
                     uids_tensor = uids_tensor.to(device)
                     subject_id = torch.zeros( len(neuro_chunks)).long().to(device)
                     pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
