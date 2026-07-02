@@ -46,7 +46,7 @@ class MetaModel(nn.Module):
             out_lengths[i] = len(g)
 
         out = self.transformer(x, mask=mask.bool())
-        return self.linear(out), out_lengths
+        return self.linear(out), out_lengths.long()
 
     def forward(self, neuro, subject_id, channel_positions, uids):
         # neuro = self.smoother.forward(neuro)
