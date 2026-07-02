@@ -13,7 +13,7 @@ parser.add_argument('--is_speech', action='store_true', help='training on speech
 parser.add_argument('--nlp_10', action='store_true', help='nlp 10 instead of 21')
 parser.add_argument('--is_nejm', action='store_true', help='nejm speech')
 # Integers
-parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--batch_size', type=int, default=16)
 parser.add_argument('--seed', type=int, default=0)
 
 parsed_args = parser.parse_args()
