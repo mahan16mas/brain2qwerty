@@ -63,7 +63,7 @@ def train_model(args: dict):
             targets_padded = targets_padded.to(device)
             target_lengths = target_lengths.to(device)
             channel_positions = channel_positions.to(device)
-            channel_positions = torch.randn_like(channel_positions)
+            # channel_positions = torch.randn_like(channel_positions)
             uids_tensor = uids_tensor.to(device)
             subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
@@ -76,7 +76,7 @@ def train_model(args: dict):
                     target_lengths,
                 )
                 ctc_loss = torch.sum(ctc_loss)
-            epoch_loss += ctc_loss.item() * len(targets_padded)
+            epoch_loss += ctc_loss.item()
             n_items += len(targets_padded)
             if not torch.isfinite(ctc_loss):
                 inf_losses += 1
@@ -99,7 +99,6 @@ def train_model(args: dict):
                     neuro_chunks = neuro_chunks.to(device)
                     targets_padded = targets_padded.to(device)
                     target_lengths = target_lengths.to(device)
-                    channel_positions = channel_positions.to(device)
                     channel_positions = channel_positions.to(device)
                     uids_tensor = uids_tensor.to(device)
                     subject_id = torch.zeros( len(neuro_chunks)).long().to(device)
