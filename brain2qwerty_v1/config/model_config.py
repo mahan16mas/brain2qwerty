@@ -21,7 +21,7 @@ ENCODER = {
     "gelu": True,
     "skip": True,
     "scale": 0.1,
-    "subject_layers_config": {},
+    # "subject_layers_config": {},
     # "merger_config": {
     #     "n_virtual_channels": 270,
     #     "fourier_emb_config": {"n_freqs": None, "total_dim": 2048, "n_dims": 2},
