@@ -30,6 +30,8 @@ ENCODER = {
     #     "per_subject": True,
     #     "embed_ref": False,
     # },
+    "merger_config": None,
+    "subject_layers_config": None,
 }
 
 # Sentence-level transformer over the per-keystroke embeddings.
