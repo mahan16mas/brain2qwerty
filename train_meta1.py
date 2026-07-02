@@ -130,7 +130,7 @@ def train_model(args: dict):
             cer = total_edit_distance / total_seq_length
 
             print(
-                f"batch {batch}, ctc loss: {avgDayLoss:>7f}, cer: {cer:>7f}, tr_ctc: {loss:>7f}, tr_cont: {loss_contrastive:>7f}"
+                f"batch {batch}, ctc loss: {avgDayLoss:>7f}, cer: {cer:>7f}, tr_ctc: {loss:>7f}"
             )
 
         if True:
