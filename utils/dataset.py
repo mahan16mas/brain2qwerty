@@ -18,7 +18,7 @@ class BrainToTextDataset(Dataset):
             for trial in trials:
                 if gauss:
                     smoother = GaussianSmoothing(512, 20, 2.0, dim=1)
-                    x = torch.tensor(trial["x"]).to(self.device).unsqueeze(0)
+                    x = torch.tensor(trial["x"]).unsqueeze(0)
                     with torch.no_grad():
                         trial["x"] = smoother(x.unsqueeze(0)).squeeze(0)
                         trial["x"] = trial["x"].squeeze(0).cpu().numpy()
