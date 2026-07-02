@@ -44,7 +44,7 @@ def train_model(args: dict):
 
     optimizer_assets = opt_config.build(
         model.parameters(),
-        total_steps=300 * len(train_loader),
+        total_steps=epochs * len(train_loader),
     )
     optimizer = optimizer_assets["optimizer"]
     scheduler = optimizer_assets["lr_scheduler"]["scheduler"]
@@ -54,6 +54,8 @@ def train_model(args: dict):
     for epoch in range(epochs):
         if epoch < so_far_batch: continue
         if inf_losses > 10: break
+        epoch_loss = 0
+        n_items = 0
         for batch in tqdm(train_loader):
             model.train()
             neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
@@ -73,6 +75,8 @@ def train_model(args: dict):
                     target_lengths,
                 )
                 ctc_loss = torch.sum(ctc_loss)
+            epoch_loss += ctc_loss.item() * len(targets_padded)
+            n_items += len(targets_padded)
             if not torch.isfinite(ctc_loss):
                 inf_losses += 1
                 if inf_losses > 10:
@@ -81,7 +85,7 @@ def train_model(args: dict):
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
             scheduler.step()
-
+        epoch_loss /= n_items
         with torch.no_grad():
             model.eval()
             allLoss = []
@@ -130,7 +134,7 @@ def train_model(args: dict):
             cer = total_edit_distance / total_seq_length
 
             print(
-                f"batch {batch}, ctc loss: {avgDayLoss:>7f}, cer: {cer:>7f}, tr_ctc: {loss:>7f}"
+                f"epoch {epoch}, ctc loss: {epoch_loss:>7f}, cer: {cer:>7f}"
             )
 
         if True:
