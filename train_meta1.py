@@ -77,7 +77,7 @@ def train_model(args: dict):
                 inf_losses += 1
                 if inf_losses > 10:
                     break
-            criterion.backward()
+            ctc_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
             scheduler.step()
