@@ -16,7 +16,7 @@ def train_model(args: dict):
     is_speech = args.get('is_speech', False)
     nlp_10 = args.get("nlp_10", False)
     is_nejm = args.get("is_nejm", False)
-    train_loader, test_loader = get_dataset_loaders(args['dataset_path'], args['batch_size'], False, is_speech, nlp_10, is_nejm, )
+    train_loader, test_loader, _ = get_dataset_loaders(args['dataset_path'], args['batch_size'], False, is_speech, nlp_10, is_nejm, )
     epochs = 300
     os.makedirs(args["out_dir"], exist_ok=True)
     torch.manual_seed(args["seed"])
