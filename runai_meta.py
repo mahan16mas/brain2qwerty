@@ -4,7 +4,7 @@ import time
 
 IMAGE = 'registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2'
 GPU = 1
-CPU = 4
+CPU = 2
 MEMORY = '64Gi'
 NODE_POOLS = 'h200'
 LARGE_SHM = '--large-shm'
