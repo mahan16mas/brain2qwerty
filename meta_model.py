@@ -25,7 +25,7 @@ class MetaModel(nn.Module):
         # self.smoother = GaussianSmoothing(num_neurons, 20, 2.0, 1)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
-        return self.model(neuro, subject_id, channel_positions)
+        return self.model(neuro, None, None)
 
     def _transformer_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
         uids = uids.detach().cpu().numpy()
