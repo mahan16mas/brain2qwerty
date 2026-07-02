@@ -63,6 +63,7 @@ def train_model(args: dict):
             targets_padded = targets_padded.to(device)
             target_lengths = target_lengths.to(device)
             channel_positions = channel_positions.to(device)
+            channel_positions = torch.randn_like(channel_positions)
             uids_tensor = uids_tensor.to(device)
             subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
