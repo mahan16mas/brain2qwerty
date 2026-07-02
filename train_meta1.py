@@ -58,6 +58,7 @@ def train_model(args: dict):
         epoch_loss = 0
         n_items = 0
         for batch in tqdm(train_loader):
+            optimizer.zero_grad()
             model.train()
             neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
             neuro_chunks = neuro_chunks.to(device)
@@ -69,7 +70,7 @@ def train_model(args: dict):
             subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
                 pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
-
+                print(pred.shape, targets_padded.shape)
                 ctc_loss = criterion(
                     torch.permute(pred.log_softmax(2), [1, 0, 2]),
                     targets_padded,
@@ -85,7 +86,6 @@ def train_model(args: dict):
                     break
             ctc_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
-            optimizer.zero_grad()
             optimizer.step()
             scheduler.step()
         # epoch_loss /= n_items
