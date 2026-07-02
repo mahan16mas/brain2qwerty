@@ -87,7 +87,7 @@ def train_model(args: dict):
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
             scheduler.step()
-        # epoch_loss /= n_items
+        epoch_loss /= n_items
         with torch.no_grad():
             model.eval()
             allLoss = []
