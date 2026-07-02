@@ -20,8 +20,9 @@ def get_models(n_in_channels):
 class MetaModel(nn.Module):
     def __init__(self, num_neurons, num_classes, hidden=2048):
         super().__init__()
-        print(self.model.merger)
+
         self.model, self.transformer = get_models(num_neurons)
+        print(self.model.merger)
         self.linear = nn.Linear(hidden, num_classes)
         # self.smoother = GaussianSmoothing(num_neurons, 20, 2.0, 1)
 
