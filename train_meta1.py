@@ -48,7 +48,8 @@ def train_model(args: dict):
     )
     optimizer = optimizer_assets["optimizer"]
     scheduler = optimizer_assets["lr_scheduler"]["scheduler"]
-    so_far_batch = load_checkpoint(checkpoint_address, model, optimizer, scheduler)
+    so_far_batch = 0
+    # so_far_batch = load_checkpoint(checkpoint_address, model, optimizer, scheduler)
     testCER, testLoss = [], []
 
     for epoch in range(epochs):
@@ -84,8 +85,8 @@ def train_model(args: dict):
                     break
             ctc_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
-            optimizer.step()
-            scheduler.step()
+            # optimizer.step()
+            # scheduler.step()
         epoch_loss /= n_items
         with torch.no_grad():
             model.eval()
