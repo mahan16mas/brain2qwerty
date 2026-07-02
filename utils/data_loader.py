@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from pathlib import Path
 import scipy.io as sio
-from utils.constants import NUM_TRAIN_DAYS
+NUM_TRAIN_DAYS = 11
 from utils.augmentation import GaussianSmoothing
 
 def _to_scalar(x):
