@@ -65,7 +65,7 @@ for dataset_num in datasets:
 
 num_sumbissions = 0
 for job_name, file_name in all_runs.items():
-    gpu_name = 'h100'
+    gpu_name = 'a100-40g'
     log_file = f"{job_name}.log"
     inner_cmd = f"{CMD_PREFIX} && {exports} && {PYTHON_PATH} {file_name} > {log_file} 2>&1"
     bash_command = f"bash -lc '{inner_cmd}'"
