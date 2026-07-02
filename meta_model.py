@@ -1,4 +1,4 @@
-from brain2qwerty_v1.config.xp_config import experiment_config
+from xp_config import experiment_config
 from neuraltrain.models import BaseModelConfig as ModelConfig
 from torch import nn
 import torch
