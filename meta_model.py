@@ -28,7 +28,7 @@ class MetaModel(nn.Module):
         return self.model(neuro, subject_id, channel_positions)
 
     def _transformer_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
-        uitds = uids.detach().cpu().numpy()
+        uids = uids.detach().cpu().numpy()
         unique_uids, first_idx = np.unique(uids, return_index=True)
         unique_uids = unique_uids[np.argsort(first_idx)]
 
