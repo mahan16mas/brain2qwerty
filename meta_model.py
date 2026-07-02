@@ -21,7 +21,7 @@ class MetaModel(nn.Module):
     def __init__(self, num_neurons, num_classes, hidden=2048):
         self.model, self.transformer_model = get_models(num_neurons)
         self.linear = nn.Linear(hidden, num_classes)
-        self.smoother = GaussianSmoothing(num_neurons, 20, 2.0, 1)
+        # self.smoother = GaussianSmoothing(num_neurons, 20, 2.0, 1)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
         return self.model(neuro, subject_id, channel_positions)
@@ -47,7 +47,7 @@ class MetaModel(nn.Module):
         return self.linear(out), out_lengths
 
     def forward(self, neuro, subject_id, channel_positions, uids):
-        neuro = self.smoother.forward(neuro)
+        # neuro = self.smoother.forward(neuro)
         y_pred = self._cnn_forward(neuro, subject_id, channel_positions)
         return self._transformer_forward(uids, y_pred)
 

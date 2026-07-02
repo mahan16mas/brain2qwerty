@@ -2,7 +2,6 @@ import torch
 from torch.utils.data import Dataset
 import random
 from typing import List, Tuple
-from utils.normalization import gaussSmooth
 from utils.augmentation import GaussianSmoothing
 import h5py
 from tqdm import tqdm, trange
@@ -10,18 +9,18 @@ from tqdm import tqdm, trange
 
 class BrainToTextDataset(Dataset):
 
-    def __init__(self, dataset, feature_subset=None, encoder=None, session_name=None, device=None):
+    def __init__(self, dataset, feature_subset=None, gauss=False):
         self.feature_subset = feature_subset
-        self.device = device
         self.samples = []
 
 
         for session_idx, trials in tqdm(enumerate(dataset)):
             for trial in trials:
-                if session_name is not None and encoder is not None:
+                if gauss:
+                    smoother = GaussianSmoothing(512, 20, 2.0, dim=1)
                     x = torch.tensor(trial["x"]).to(self.device).unsqueeze(0)
                     with torch.no_grad():
-                        trial["x"], _ = encoder.forward_encoder(x, torch.tensor([x.shape[1]]), session_name)
+                        trial["x"] = smoother(x.unsqueeze(0)).squeeze(0)
                         trial["x"] = trial["x"].squeeze(0).cpu().numpy()
                 self.samples.append((session_idx, trial))
 
@@ -41,8 +40,7 @@ class BrainToTextDataset(Dataset):
         return x, y, x_len, y_len, session
 
 class SpeechDataset(Dataset):
-    def __init__(self, data, transform=None, gauss=False, encoder=None, session_name=None, device=None):
-        self.device = device
+    def __init__(self, data, transform=None, gauss=False,):
         if gauss:
             smoother = GaussianSmoothing(256, 20, 2.0, dim=1)
         self.data = data
@@ -66,11 +64,7 @@ class SpeechDataset(Dataset):
                 if gauss:
                     with torch.no_grad():
                         neural = smoother(neural.unsqueeze(0)).squeeze(0)
-                if session_name is not None and encoder is not None:
-                    x = neural.to(self.device).unsqueeze(0)
-                    with torch.no_grad():
-                        neural, _ = encoder.forward_encoder(x, torch.tensor([x.shape[1]]), session_name)
-                        neural = neural.squeeze(0).cpu()
+
                 self.neural_feats.append(neural)
                 self.phone_seqs.append(torch.as_tensor(phones, dtype=torch.int32))
                 self.neural_time_bins.append(neural.shape[0])
@@ -134,20 +128,18 @@ class HandwritingDataset(Dataset):
     """
     items: List of (features, transcript, session_id)
     """
-    def __init__(self, items: List[Tuple[torch.FloatTensor, str, int]], encoder=None, session_name=None, device=None):
+    def __init__(self, items: List[Tuple[torch.FloatTensor, str, int]], gauss=False):
         super().__init__()
         self.items = items
-        self.device = device
-        self.charset = charset
-        if encoder is not None:
-            n = len(items)
-            for i in trange(n):
-                x, y, z = items[i]
-                x = x.to(self.device).unsqueeze(0)
-                with torch.no_grad():
-                    x, _ = encoder.forward_encoder(x, torch.tensor([x.shape[1]]), session_name)
-                    x = x.squeeze(0).cpu()
+        if gauss:
+            smoother = GaussianSmoothing(192, 20, 2.0, dim=1)
+            for i in range(len(items)):
+                x, y, z = self.items[i]
+                x = smoother(x.unsqueeze(0)).squeeze(0)
                 self.items[i] = (x, y, z)
+
+        self.charset = charset
+
 
     def __len__(self):
         return len(self.items)

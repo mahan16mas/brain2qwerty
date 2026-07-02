@@ -152,8 +152,8 @@ def get_dataset_loaders_speech_nejm(dataset_name, batch_size, gauss_in=False):
 
     train_file_set = dataset_pkl['train'][:23]
     val_file_paths = dataset_pkl['test']
-    train_ds = BrainToTextDataset(train_file_set, )
-    valid_ds = BrainToTextDataset(val_file_paths)
+    train_ds = BrainToTextDataset(train_file_set,  gauss=not gauss_in)
+    valid_ds = BrainToTextDataset(val_file_paths, gauss=not gauss_in)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
                               num_workers=4, pin_memory=True, collate_fn=ctc_collate_nejm,
                               persistent_workers=True)
