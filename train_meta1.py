@@ -22,6 +22,7 @@ def train_model(args: dict):
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
     inf_losses = 0
+    device = torch.device("cuda")
 
     model = MetaModel(
         num_neurons=192 if not is_speech else (512 if is_nejm else 256),
@@ -37,7 +38,7 @@ def train_model(args: dict):
         },
         "interval": "step",
     }
-    device = torch.device("cuda")
+
 
     opt_config = LightningOptimizer.model_validate(optimizer_config_dict)
 
