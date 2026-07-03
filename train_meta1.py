@@ -15,7 +15,7 @@ def train_model(args: dict):
     with open(args["out_dir"] + "/args", "wb") as file:
         pickle.dump(args, file)
     return
-    checkpoint_address = f"{args["out_dir"]}/checkpoint.pt"
+    checkpoint_address = f"{args['out_dir']}/checkpoint.pt"
     is_speech = args.get('is_speech', False)
     nlp_10 = args.get("nlp_10", False)
     is_nejm = args.get("is_nejm", False)
