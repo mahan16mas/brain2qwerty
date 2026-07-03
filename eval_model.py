@@ -14,8 +14,6 @@ parser.add_argument('--is_nejm', action='store_true', help='nejm speech')
 parser.add_argument('--batch_size', type=int, default=16)
 run_args = parser.parse_args()
 
-with open(run_args.out_dir + "/args", "rb") as file:
-    args = pickle.load(file)
 
 device = torch.device("cuda")
 is_speech, is_nejm, nlp10 = run_args.is_speech, run_args.is_nejm, run_args.nlp_10
