@@ -204,9 +204,11 @@ def get_dataset_loaders_nlp_10(
     final_day = 5
     train_input = get_10_input(dataset_name, norm=True, train=True, days=range(final_day), gauss=not gauss_in,
                                gauss_sigma=2.0)
+    test_input_0 = get_10_input(dataset_name, norm=True, train=False, days=range(final_day), gauss=not gauss_in,
+                              gauss_sigma=2.0, valid=True)
     test_input = get_10_input(dataset_name, norm=True, train=False, days=range(final_day, 10), gauss=not gauss_in,
                               gauss_sigma=2.0)
-
+    test_input = test_input_0 + test_input
     valid_set = HandwritingDataset(test_input)
     train_set = HandwritingDataset(train_input)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
