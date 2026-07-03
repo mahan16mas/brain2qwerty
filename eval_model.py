@@ -26,4 +26,5 @@ model = MetaModel(
 train_loader, test_loader, _ = get_dataset_loaders(run_args.dataset_path, run_args.batch_size, False, is_speech, nlp10,
                                                    is_nejm, )
 
-eval_model(model, test_loader, device)
+cer, _, _ = eval_model(model, test_loader, device)
+print(cer)
