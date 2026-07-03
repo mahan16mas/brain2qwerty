@@ -30,7 +30,7 @@ def eval_model(model, test_loader, device='cuda'):
                 subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
                 pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
 
-                ctc_criterion(
+                loss = ctc_criterion(
                     torch.permute(pred.log_softmax(2), [1, 0, 2]),
                     targets_padded,
                     lengths,
