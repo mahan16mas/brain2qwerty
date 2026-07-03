@@ -1,5 +1,6 @@
 from meta_model import MetaModel
 import pickle, os
+import torch
 import argparse
 from train_meta1 import get_dataset_loaders, eval_model
 
@@ -22,5 +23,7 @@ model = MetaModel(
         num_neurons=192 if not is_speech else (512 if is_nejm else 256),
         num_classes=(41 if is_speech else 32),
     ).to(device)
-train_loader, test_loader, _ = get_dataset_loaders(args['dataset_path'], args['batch_size'], False, is_speech, nlp_10,
+train_loader, test_loader, _ = get_dataset_loaders(run_args.dataset_path, run_args.batch_size, False, is_speech, nlp10,
                                                    is_nejm, )
+
+eval_model(model, test_loader, device)
