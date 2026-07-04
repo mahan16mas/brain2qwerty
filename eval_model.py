@@ -27,4 +27,5 @@ train_loader, test_loader, _ = get_dataset_loaders(run_args.dataset_path, run_ar
                                                    is_nejm, )
 
 cer, _, _ = eval_model(model, test_loader, device)
+
 print(cer)

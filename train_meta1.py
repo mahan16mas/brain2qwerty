@@ -63,6 +63,44 @@ def eval_model(model, test_loader, device='cuda'):
         return cer, avgDayLoss, error_and_lengths
 
 
+def fix_logits(logits):
+    logits = torch.roll(torch.Tensor(logits), shifts=-6, dims=-1)
+    logits[:, :, [26, 31]] = logits[:, :, [31, 26]]
+    logits[:, :, [26, 27, 28, 29, 30]] = logits[:, :, [27, 28, 26, 30, 29]]
+    return logits
+
+def model_logits(model, test_loader, device='cuda', nlp=False):
+    rnn_outputs = {"logits":[], "logitLengths":[], "trueSeqs":[]}
+    with torch.no_grad():
+        model.eval()
+
+        for neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor in tqdm(test_loader):
+
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
+                neuro_chunks = neuro_chunks.to(device)
+                targets_padded = targets_padded.to(device)
+                target_lengths = target_lengths.to(device)
+                channel_positions = channel_positions.to(device)
+                uids_tensor = uids_tensor.to(device)
+                subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
+                pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
+
+            pred = pred.float()
+            if nlp:
+                pred = fix_logits(pred)
+            for iterIdx in range(pred.shape[0]):
+                    trueSeq = np.array(targets_padded[iterIdx][0: target_lengths[iterIdx]].cpu().detach())
+
+                    rnn_outputs["logits"].append(pred[iterIdx].cpu().detach().numpy().tolist())
+                    rnn_outputs["logitLengths"].append(
+                        lengths[iterIdx].cpu().detach().item()
+                    )
+                    rnn_outputs["trueSeqs"].append(trueSeq.tolist())
+
+
+    return rnn_outputs
+
+
 
 def train_model(args: dict):
 
