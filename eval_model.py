@@ -33,7 +33,9 @@ train_loader, test_loader, _ = get_dataset_loaders(run_args.dataset_path, run_ar
                                                    is_nejm, )
 
 ds_name = dataset_name(is_speech, is_nejm, nlp10)
-cer, _, _ = eval_model(model, test_loader, device)
+cer, _, raw_outputs = eval_model(model, test_loader, device)
+with open(run_args.out_dir + "/evalStats", "wb") as f:
+    pickle.dump(cer, f)
 rnn_outputs = model_logits(model, test_loader, device, not is_speech)
 os.makedirs(f"/data/hossein/mm_project/speech_gru_cebra/meta_{ds_name}", exist_ok=True)
 with open(f"/data/hossein/mm_project/speech_gru_cebra/meta_{ds_name}/logits", "wb") as f:
