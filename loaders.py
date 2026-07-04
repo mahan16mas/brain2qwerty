@@ -225,6 +225,20 @@ def get_dataset_loaders_nlp_10(
     return train_loader, test_loader, None
 
 
+def merge_by_borders(data1, borders1, data2, borders2):
+    ends1 = borders1[1:] + [len(data1)]
+    ends2 = borders2[1:] + [len(data2)]
+
+    merged = []
+
+    for start1, end1, start2, end2 in zip(
+        borders1, ends1, borders2, ends2
+    ):
+        merged.extend(data1[start1:end1])
+        merged.extend(data2[start2:end2])
+
+    return merged
+
 def get_dataset_loaders_nlp_21(
         dataset_name,
         batch_size,
@@ -237,21 +251,33 @@ def get_dataset_loaders_nlp_21(
         train=True,
         gauss_sigma=2.0
     )
-    valid_input_1 = get_input(
+    valid_input_0 = get_input(
+        os.path.join(dataset_name, "seed_model_training_data/mat/"),
+        norm=True,
+        gauss=not gauss_in,
+        train=False,
+        valid=True,
+        gauss_sigma=2.0
+    )
+    valid_input_1, borders_1 = get_input(
         os.path.join(dataset_name, "online_evaluation_data/no_recalibration/mat/"),
         norm=True,
         gauss=not gauss_in,
         train=False,
-        gauss_sigma=2.0
+        gauss_sigma=2.0,
+        return_borders=True
     )
-    valid_input_2 = get_input(
+    valid_input_2, borders_2 = get_input(
         os.path.join(dataset_name, "online_evaluation_data/recalibration/mat/"),
         norm=True,
         gauss=not gauss_in,
         train=False,
-        gauss_sigma=2.0
+        gauss_sigma=2.0,
+        return_borders=True
     )
-    valid_input = valid_input_1 + valid_input_2
+    valid_input = merge_by_borders(valid_input_1, borders_1, valid_input_2, borders_2)
+    assert len(valid_input) == len(valid_input_1) + len(valid_input_2)
+    valid_input = valid_input_0 + valid_input
     valid_set = HandwritingDataset(valid_input)
     train_set = HandwritingDataset(train_input)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
@@ -266,6 +292,7 @@ def get_dataset_loaders_nlp_21(
         collate_fn=ctc_collate,
     )
     return train_loader, test_loader, None
+
 
 
 def get_dataset_loaders(

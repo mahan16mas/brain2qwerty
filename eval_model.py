@@ -2,7 +2,7 @@ from meta_model import MetaModel
 import pickle, os
 import torch
 import argparse
-from train_meta1 import get_dataset_loaders, eval_model
+from train_meta1 import get_dataset_loaders, eval_model, model_logits
 
 parser = argparse.ArgumentParser(description="Eval Neural Decoder")
 parser.add_argument('--out_dir', type=str, default='default',
@@ -27,5 +27,6 @@ train_loader, test_loader, _ = get_dataset_loaders(run_args.dataset_path, run_ar
                                                    is_nejm, )
 
 cer, _, _ = eval_model(model, test_loader, device)
+rnn_outputs = model_logits(model, test_loader, device, not is_speech)
 
 print(cer)
