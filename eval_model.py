@@ -37,6 +37,7 @@ cer, _, raw_outputs = eval_model(model, test_loader, device)
 with open(run_args.out_dir + "/evalStats", "wb") as f:
     pickle.dump(raw_outputs, f)
 rnn_outputs = model_logits(model, test_loader, device, not is_speech)
+print(ds_name)
 os.makedirs(f"/data/hossein/mm_project/speech_gru_cebra/meta_{ds_name}", exist_ok=True)
 with open(f"/data/hossein/mm_project/speech_gru_cebra/meta_{ds_name}/logits", "wb") as f:
     pickle.dump(rnn_outputs, f)
