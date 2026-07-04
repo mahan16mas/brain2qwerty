@@ -17,7 +17,7 @@ parser.add_argument('--dataset_path', type=str, default='/data/hossein/data/spee
 parser.add_argument('--is_speech', action='store_true', help='training on speech dataset')
 parser.add_argument('--nlp_10', action='store_true', help='nlp 10 instead of 21')
 parser.add_argument('--is_nejm', action='store_true', help='nejm speech')
-parser.add_argument('--batch_size', type=int, default=8)
+parser.add_argument('--batch_size', type=int, default=16)
 run_args = parser.parse_args()
 
 
