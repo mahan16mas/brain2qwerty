@@ -4,6 +4,12 @@ import torch
 import argparse
 from train_meta1 import get_dataset_loaders, eval_model, model_logits
 
+def dataset_name(is_speech, is_nejm, nlp10):
+    if is_speech:
+        return "speech" if not is_nejm else "nejm"
+    if nlp10: return "nlp10"
+    return "nlp21"
+
 parser = argparse.ArgumentParser(description="Eval Neural Decoder")
 parser.add_argument('--out_dir', type=str, default='default',
                     help="Defaults to modelName if not provided")
@@ -26,7 +32,11 @@ model.load_state_dict(torch.load(run_args.out_dir + "/modelWeights",weights_only
 train_loader, test_loader, _ = get_dataset_loaders(run_args.dataset_path, run_args.batch_size, False, is_speech, nlp10,
                                                    is_nejm, )
 
+ds_name = dataset_name(is_speech, is_nejm, nlp10)
 cer, _, _ = eval_model(model, test_loader, device)
 rnn_outputs = model_logits(model, test_loader, device, not is_speech)
+os.makedirs(f"/data/hossein/mm_project/speech_gru_cebra/meta_{ds_name}", exist_ok=True)
+with open(f"/data/hossein/mm_project/speech_gru_cebra/meta_{ds_name}/logits", "wb") as f:
+    pickle.dump(rnn_outputs, f)
 
 print(cer)
