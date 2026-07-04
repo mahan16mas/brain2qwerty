@@ -51,8 +51,9 @@ def get_input(path, norm=False, gauss=False, train=False, eps=0,
               gauss_sigma=2.0
               ):
     root = Path(path)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if gauss:
-        smoother = GaussianSmoothing(192, 20, gauss_sigma, dim=1)
+        smoother = GaussianSmoothing(192, 20, gauss_sigma, dim=1).to(device)
     files_recursive = sorted(root.rglob("*.mat"))
     print(f"Found {len(files_recursive)} .mat files")
 
@@ -119,7 +120,8 @@ def get_input(path, norm=False, gauss=False, train=False, eps=0,
                 x_t = torch.as_tensor(x, dtype=torch.float32)
                 if gauss:
                     with torch.no_grad():
-                        x_t = smoother(x_t.unsqueeze(0)).squeeze(0)
+                        x_t = x_t.to(device)
+                        x_t = smoother(x_t.unsqueeze(0)).squeeze(0).cpu()
 
                 
                 y = _safe_sentence(sentences[i])
