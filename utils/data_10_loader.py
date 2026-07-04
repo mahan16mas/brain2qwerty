@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import pickle
+from tqdm import tqdm
 from utils.augmentation import GaussianSmoothing
 
 def load_data_dict(path):
@@ -78,7 +79,7 @@ def get_input(file_path, norm=False, train=False, eps=0,
         smoother = GaussianSmoothing(192, 20, gauss_sigma, dim=1).to(device)
 
     out = []
-    for day_key in days:
+    for day_key in tqdm(days):
         day_list = data[day_key]
         for d in day_list:
             d['trial'] = slow_time_2x(d['trial'])
