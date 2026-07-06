@@ -9,6 +9,7 @@ for dataset in datasets:
         ts = pickle.load(file)
     cer = ts["testCER"]
     plt.plot(cer, label="cer")
+    plt.title(f"{dataset}")
     plt.legend()
     plt.savefig(f"{dataset}.png")
     plt.close()
