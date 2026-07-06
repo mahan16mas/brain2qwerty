@@ -9,7 +9,7 @@ from utils.data_loader import get_input
 from typing import Tuple, List
 import pickle
 import os
-CHUNK_SIZE = 3
+CHUNK_SIZE = 4
 
 def ctc_collate(batch: list[tuple[torch.Tensor, str, int]]):
     xs, ys, ds = zip(*batch)
