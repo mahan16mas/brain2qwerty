@@ -143,7 +143,6 @@ def train_model(args: dict):
     so_far_batch = 0
     # so_far_batch = load_checkpoint(checkpoint_address, model, optimizer, scheduler)
     testCER, testLoss = [], []
-    epochs = 50
 
     for epoch in range(epochs):
         if epoch < so_far_batch: continue
