@@ -8,7 +8,7 @@ for dataset in datasets:
     with open(f"{folder}/trainingStats", "rb") as file:
         ts = pickle.load(file)
     cer = ts["testCER"]
-    plt.plot(cer, label=dataset)
+    plt.plot(cer, label="cer")
     plt.legend()
     plt.savefig(f"{dataset}.png")
     plt.close()
