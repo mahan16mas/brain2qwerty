@@ -21,20 +21,10 @@ ENCODER = {
     "gelu": True,
     "skip": True,
     "scale": 0.1,
-    # "subject_layers_config": {},
-    # "merger_config": {
-    #     "n_virtual_channels": 270,
-    #     "fourier_emb_config": {"n_freqs": None, "total_dim": 2048, "n_dims": 2},
-    #     "dropout": 0.2,
-    #     "usage_penalty": 1.0,
-    #     "per_subject": True,
-    #     "embed_ref": False,
-    # },
     "merger_config": None,
     "subject_layers_config": None,
 }
 
-# Sentence-level transformer over the per-keystroke embeddings.
 TRANSFORMER = {
     "name": "TransformerEncoder",
     "alibi_pos_bias": True,
