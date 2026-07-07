@@ -32,10 +32,13 @@ exports = (
             "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/mirzaei/lm-cebra/.venv/lib/python3.10/site-packages/nvidia/cu13/lib && "
             "export TORCHINDUCTOR_CACHE_DIR=/data/hossein/mm_project/tmp/torch_cache"
         )
-
+from itertools import product
 datasets = [0, 1, 2, 3]
+dropouts = [(0.1, 0.1), (0.0, 0.0), (0.5, 0.2)]
+epochs = [40, 50, 300]
+all_hypers = product(datasets, dropouts, epochs)
 all_runs = {}
-for dataset_num in datasets:
+for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
     dataset_name = 'speech'
     dataset_dir = '/data/hossein/data/speech/speech_data_raw_all_in_test.pkl'
     batch_size = 16
@@ -56,10 +59,11 @@ for dataset_num in datasets:
         speech = True
         nejm = True
         dataset_name = 'nejm'
-    name = f"{dataset_name}-meta-401"
+    name = f"{dataset_name}-meta-{epoch}-{str(f"{conv_dropout}{input_dropout}").replace('.', '')}"
     args = (
         f"start_trainer.py {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
         f"--dataset_path {dataset_dir} {'--is_nejm' if nejm else ''} --out_dir {name}"
+        f"--epochs {epoch} --dropout_input {input_dropout} --conv_dropout {conv_dropout} "
     )
     all_runs[name] = args
 

@@ -15,6 +15,10 @@ parser.add_argument('--is_nejm', action='store_true', help='nejm speech')
 # Integers
 parser.add_argument('--batch_size', type=int, default=8)
 parser.add_argument('--seed', type=int, default=0)
+parser.add_argument('--epochs', type=int, default=300)
+
+parser.add_argument('--conv_dropout', type=float, default=0.5)
+parser.add_argument('--dropout_input', type=float, default=0.2)
 
 parsed_args = parser.parse_args()
 

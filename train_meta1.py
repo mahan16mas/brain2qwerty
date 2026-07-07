@@ -109,7 +109,9 @@ def train_model(args: dict):
     nlp_10 = args.get("nlp_10", False)
     is_nejm = args.get("is_nejm", False)
     train_loader, test_loader, _ = get_dataset_loaders(args['dataset_path'], args['batch_size'], False, is_speech, nlp_10, is_nejm, )
-    epochs = 300
+    epochs = args.get("epochs", 300)
+    conv_dropout = args.get("conv_dropout", 0.5)
+    dropout_input = args.get("dropout_input", 0.2)
     os.makedirs(args["out_dir"], exist_ok=True)
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
@@ -119,6 +121,8 @@ def train_model(args: dict):
     model = MetaModel(
         num_neurons=192 if not is_speech else (512 if is_nejm else 256),
         num_classes=(41 if is_speech else 32),
+        conv_dropout=conv_dropout,
+        dropout_input=dropout_input,
     ).to(device)
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     optimizer_config_dict = {
@@ -236,6 +240,8 @@ def train_model(args: dict):
             torch.save(model.state_dict(), args["out_dir"] + "/modelWeights")
 
             save_checkpoint(checkpoint_address, model, optimizer, scheduler, epoch)
+        if epoch % 10 == 0:
+            torch.save(model.state_dict(), args["out_dir"] + f"/modelWeights_{epoch}")
 
         testLoss.append(avgDayLoss)
         testCER.append(cer)

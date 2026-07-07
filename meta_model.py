@@ -5,8 +5,11 @@ import torch
 import numpy as np
 from utils.augmentation import GaussianSmoothing
 
-def get_models(n_in_channels):
+def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2):
     cfg = experiment_config()
+    cfg["brain_model_config"]["conv_dropout"] = conv_dropout
+    cfg["brain_model_config"]["dropout_input"] = dropout_input
+
 
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
@@ -18,13 +21,11 @@ def get_models(n_in_channels):
     return brain_model,transformer_model
 
 class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, hidden=2048):
+    def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2):
         super().__init__()
 
-        self.model, self.transformer = get_models(num_neurons)
-        print(self.model.merger)
+        self.model, self.transformer = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input)
         self.linear = nn.Linear(hidden, num_classes)
-        # self.smoother = GaussianSmoothing(num_neurons, 20, 2.0, 1)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
         return self.model(neuro, None, None)
