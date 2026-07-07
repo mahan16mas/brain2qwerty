@@ -33,10 +33,12 @@ exports = (
             "export TORCHINDUCTOR_CACHE_DIR=/data/hossein/mm_project/tmp/torch_cache"
         )
 from itertools import product
+from collections import defaultdict
 datasets = [0, 1, 2, 3]
-dropouts = [(0.1, 0.1), (0.0, 0.0), (0.5, 0.2)][1:2]
+dropouts = [(0.1, 0.1), (0.0, 0.0), (0.5, 0.2)]
 epochs = [40, 50, 300]
 all_hypers = product(datasets, dropouts, epochs)
+out_dirs = defaultdict(list)
 all_runs = {}
 for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
     dataset_name = 'speech'
@@ -60,12 +62,15 @@ for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
         nejm = True
         dataset_name = 'nejm'
     name = f"{dataset_name}-meta-{epoch}-{str(f'{conv_dropout}{input_dropout}').replace('.', '')}"
+    out_dirs[dataset_num].append(name)
+    continue
     args = (
         f"eval_model.py {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
         f"--dataset_path {dataset_dir} {'--is_nejm' if nejm else ''} --out_dir {name} "
         # f"--epochs {epoch} --dropout_input {input_dropout} --conv_dropout {conv_dropout} "
     )
     all_runs[name] = args
+print(out_dirs)
 
 num_sumbissions = 0
 for job_name, file_name in all_runs.items():
