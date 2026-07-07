@@ -59,7 +59,7 @@ for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
         speech = True
         nejm = True
         dataset_name = 'nejm'
-    name = f"{dataset_name}-meta-{epoch}-{str(f"{conv_dropout}{input_dropout}").replace('.', '')}"
+    name = f"{dataset_name}-meta-{epoch}-{str(f'{conv_dropout}{input_dropout}').replace('.', '')}"
     args = (
         f"start_trainer.py {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
         f"--dataset_path {dataset_dir} {'--is_nejm' if nejm else ''} --out_dir {name}"
