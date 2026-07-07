@@ -62,7 +62,7 @@ for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
     name = f"{dataset_name}-meta-{epoch}-{str(f'{conv_dropout}{input_dropout}').replace('.', '')}"
     args = (
         f"start_trainer.py {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
-        f"--dataset_path {dataset_dir} {'--is_nejm' if nejm else ''} --out_dir {name}"
+        f"--dataset_path {dataset_dir} {'--is_nejm' if nejm else ''} --out_dir {name} "
         f"--epochs {epoch} --dropout_input {input_dropout} --conv_dropout {conv_dropout} "
     )
     all_runs[name] = args
