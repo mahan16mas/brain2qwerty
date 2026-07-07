@@ -34,7 +34,7 @@ exports = (
         )
 from itertools import product
 datasets = [0, 1, 2, 3]
-dropouts = [(0.1, 0.1), (0.0, 0.0), (0.5, 0.2)]
+dropouts = [(0.1, 0.1), (0.0, 0.0), (0.5, 0.2)][1:2]
 epochs = [40, 50, 300]
 all_hypers = product(datasets, dropouts, epochs)
 all_runs = {}
