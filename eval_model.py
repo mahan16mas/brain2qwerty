@@ -22,10 +22,12 @@ run_args = parser.parse_args()
 
 
 device = torch.device("cuda")
+p = 0.0 if "0000" in run_args.out_dir else 0.1
 is_speech, is_nejm, nlp10 = run_args.is_speech, run_args.is_nejm, run_args.nlp_10
 model = MetaModel(
         num_neurons=192 if not is_speech else (512 if is_nejm else 256),
         num_classes=(41 if is_speech else 32),
+        conv_dropout=p, dropout_input=p
     ).to(device)
 model.load_state_dict(torch.load(run_args.out_dir + "/modelWeights",weights_only=False), )
 
