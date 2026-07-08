@@ -11,9 +11,9 @@ ENCODER = {
     "time_agg_out": "att",
     "dropout_input": 0.2,
     "conv_dropout": 0.5,
-    "hidden": 2048,
+    "hidden": 1024,
     "batch_norm": True,
-    "depth": 2,
+    "depth": 8,
     "dilation_period": 3,
     "kernel_size": 3,
     "relu_leakiness": 0.01,
@@ -28,6 +28,6 @@ ENCODER = {
 TRANSFORMER = {
     "name": "TransformerEncoder",
     "alibi_pos_bias": True,
-    "depth": 4,
-    "heads": 2,
+    "depth": 2,
+    "heads": 1,
 }
