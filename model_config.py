@@ -19,8 +19,8 @@ ENCODER = {
     "relu_leakiness": 0.01,
     "initial_linear": 512,
     "gelu": True,
-    "skip": False,
-    "scale": 0.1,
+    "skip": True,
+    "scale": 1.0,
     "merger_config": None,
     "subject_layers_config": None,
 }
