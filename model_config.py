@@ -11,7 +11,7 @@ ENCODER = {
     "time_agg_out": "att",
     "dropout_input": 0.2,
     "conv_dropout": 0.5,
-    "hidden": 512,
+    "hidden": 1024,
     "batch_norm": True,
     "depth": 8,
     "dilation_period": 3,
