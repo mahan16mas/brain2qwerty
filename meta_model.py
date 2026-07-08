@@ -18,13 +18,13 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2):
 
     brain_model = brain_config.build(n_in_channels=n_in_channels, n_outputs=hidden_dim)
     transformer_model = transformer_config.build(dim=hidden_dim)
-    return brain_model,transformer_model
+    return brain_model,transformer_model, hidden_dim
 
 class MetaModel(nn.Module):
     def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2):
         super().__init__()
 
-        self.model, self.transformer = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input)
+        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input)
         self.linear = nn.Linear(hidden, num_classes)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
