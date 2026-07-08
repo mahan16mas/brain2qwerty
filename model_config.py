@@ -17,7 +17,7 @@ ENCODER = {
     "dilation_period": 3,
     "kernel_size": 3,
     "relu_leakiness": 0.01,
-    "initial_linear": 512,
+    "initial_linear": 128,
     "gelu": True,
     "skip": True,
     "scale": 0.1,
