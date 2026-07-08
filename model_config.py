@@ -20,7 +20,7 @@ ENCODER = {
     "initial_linear": 512,
     "gelu": True,
     "skip": True,
-    "scale": 0.4,
+    "scale": 0.8,
     "merger_config": None,
     "subject_layers_config": None,
 }
