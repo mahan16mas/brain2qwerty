@@ -9,8 +9,8 @@
 ENCODER = {
     "name": "SimpleConvTimeAgg",
     "time_agg_out": "att",
-    "dropout_input": 0.2,
-    "conv_dropout": 0.5,
+    "dropout_input": 0.0,
+    "conv_dropout": 0.0,
     "hidden": 1024,
     "batch_norm": True,
     "depth": 8,
