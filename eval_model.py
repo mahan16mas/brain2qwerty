@@ -17,6 +17,8 @@ parser.add_argument('--dataset_path', type=str, default='/data/hossein/data/spee
 parser.add_argument('--is_speech', action='store_true', help='training on speech dataset')
 parser.add_argument('--nlp_10', action='store_true', help='nlp 10 instead of 21')
 parser.add_argument('--is_nejm', action='store_true', help='nejm speech')
+parser.add_argument('--conv_zero', action='store_true', help='nejm speech')
+
 parser.add_argument('--batch_size', type=int, default=16)
 run_args = parser.parse_args()
 
@@ -27,7 +29,7 @@ is_speech, is_nejm, nlp10 = run_args.is_speech, run_args.is_nejm, run_args.nlp_1
 model = MetaModel(
         num_neurons=192 if not is_speech else (512 if is_nejm else 256),
         num_classes=(41 if is_speech else 32),
-        conv_dropout=p, dropout_input=p
+        conv_dropout=0.0 if run_args.conv_zero else 0.5, dropout_input=p
     ).to(device)
 model.load_state_dict(torch.load(run_args.out_dir + "/modelWeights",weights_only=False), )
 
