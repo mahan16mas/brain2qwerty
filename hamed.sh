@@ -12,4 +12,4 @@ python start_trainer.py --batch_size 2 --epochs 1
 
 # git switch your-name/my-changes
 
-# git pull hamedrq7/hamed
+# git pull -u origin hamedrq7/hamed
