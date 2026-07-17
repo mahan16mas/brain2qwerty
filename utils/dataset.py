@@ -153,3 +153,37 @@ class HandwritingDataset(Dataset):
 
         return x, y, d
 
+
+
+class DummyHandwritingDataset(Dataset):
+    """
+    items: List of (features, transcript, session_id)
+    """
+    def __init__(self, ):
+        super().__init__()
+        # items: List[Tuple[torch.FloatTensor, str, int]], 
+
+        # self.items = items
+        # if gauss:
+        #     smoother = GaussianSmoothing(192, 20, 2.0, dim=1)
+        #     for i in range(len(items)):
+        #         x, y, z = self.items[i]
+        #         x = smoother(x.unsqueeze(0)).squeeze(0)
+        #         self.items[i] = (x, y, z)
+
+        self.charset = charset
+
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        # x, y, d = self.items[idx]
+        x = torch.randn((192, 50*100))
+        y = "this>is>a>test."
+        d = 0
+        assert isinstance(x, torch.Tensor) and x.dtype == torch.float32 and x.dim() == 2
+        assert isinstance(y, str)
+        assert isinstance(d, int)
+
+        return x, y, d

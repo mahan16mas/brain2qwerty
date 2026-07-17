@@ -10,8 +10,8 @@ from collections import defaultdict
 import torch
 from torch.utils.data import Sampler
 
-# from neuralset.extractors.base import BaseStatic
-# from neuralset.extractors.neuro import ChannelPositions as _ChannelPositions
+from neuralset.extractors.base import BaseStatic
+from neuralset.extractors.neuro import ChannelPositions as _ChannelPositions
 
 BUTTON_MAPPING = {
     "s": 0,
