@@ -11,5 +11,6 @@ python start_trainer.py --batch_size 2 --epochs 1
 # cd <repo-folder>
 
 # git switch your-name/my-changes
-
-# git pull -u origin hamedrq7/hamed
+# git fetch origin
+# git branch --set-upstream-to=origin/hamedrq7/hamed
+# git pull
