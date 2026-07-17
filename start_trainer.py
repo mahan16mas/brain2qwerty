@@ -6,7 +6,11 @@ parser = argparse.ArgumentParser(description="Train Neural Decoder")
 # Strings
 parser.add_argument('--out_dir', type=str, default='default',
                     help="Defaults to modelName if not provided")
-parser.add_argument('--dataset_path', type=str, default='/data/hossein/data/speech/speech_data_raw.npz')
+parser.add_argument('--dataset_path', type=str, default=rf"/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release")
+# A5000
+# DATASET_DIR = "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release"
+# LOCAL
+# DATASET_DIR = rf'D:\Pose\NeuroNLP\data\CORP_data_release'
 
 # Booleans (Actions are inverse to their defaults)
 parser.add_argument('--is_speech', action='store_true', help='training on speech dataset')

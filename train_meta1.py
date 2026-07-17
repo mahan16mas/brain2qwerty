@@ -124,6 +124,8 @@ def train_model(args: dict):
         conv_dropout=conv_dropout,
         dropout_input=dropout_input,
     ).to(device)
+    print(model)
+    
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     optimizer_config_dict = {
         "name": "LightningOptimizer",
