@@ -116,7 +116,7 @@ def train_model(args: dict):
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
     inf_losses = 0
-    device = torch.device("cuda")
+    device = "cpu" # torch.device("cuda")
 
     model = MetaModel(
         num_neurons=192 if not is_speech else (512 if is_nejm else 256),

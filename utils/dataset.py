@@ -175,13 +175,15 @@ class DummyHandwritingDataset(Dataset):
 
 
     def __len__(self):
-        return len(self.items)
+        return 10000
 
     def __getitem__(self, idx):
         # x, y, d = self.items[idx]
-        x = torch.randn((192, 50*100))
-        y = "this>is>a>test."
-        d = 0
+        x = torch.randn((1229, 192))
+        y = "stop>smoking"
+        d = 1
+        # torch.Size([1229, 192]) stop>smoking 1
+
         assert isinstance(x, torch.Tensor) and x.dtype == torch.float32 and x.dim() == 2
         assert isinstance(y, str)
         assert isinstance(d, int)

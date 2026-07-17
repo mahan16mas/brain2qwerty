@@ -172,56 +172,56 @@ def get_dataset_loaders_nlp_21(
         train=True,
         gauss_sigma=2.0
     )
-    valid_input_0 = get_input(
-        os.path.join(dataset_name, "seed_model_training_data/mat/"),
-        norm=True,
-        gauss=not gauss_in,
-        train=False,
-        valid=True,
-        gauss_sigma=2.0
-    )
-    valid_input_1, borders_1 = get_input(
-        os.path.join(dataset_name, "online_evaluation_data/no_recalibration/mat/"),
-        norm=True,
-        gauss=not gauss_in,
-        train=False,
-        gauss_sigma=2.0,
-        return_borders=True
-    )
-    valid_input_2, borders_2 = get_input(
-        os.path.join(dataset_name, "online_evaluation_data/recalibration/mat/"),
-        norm=True,
-        gauss=not gauss_in,
-        train=False,
-        gauss_sigma=2.0,
-        return_borders=True
-    )
-    valid_input = merge_by_borders(valid_input_1, borders_1, valid_input_2, borders_2)
-    assert len(valid_input) == len(valid_input_1) + len(valid_input_2)
-    valid_input = valid_input_0 + valid_input
-    valid_set = HandwritingDataset(valid_input)
+    # valid_input_0 = get_input(
+    #     os.path.join(dataset_name, "seed_model_training_data/mat/"),
+    #     norm=True,
+    #     gauss=not gauss_in,
+    #     train=False,
+    #     valid=True,
+    #     gauss_sigma=2.0
+    # )
+    # valid_input_1, borders_1 = get_input(
+    #     os.path.join(dataset_name, "online_evaluation_data/no_recalibration/mat/"),
+    #     norm=True,
+    #     gauss=not gauss_in,
+    #     train=False,
+    #     gauss_sigma=2.0,
+    #     return_borders=True
+    # )
+    # valid_input_2, borders_2 = get_input(
+    #     os.path.join(dataset_name, "online_evaluation_data/recalibration/mat/"),
+    #     norm=True,
+    #     gauss=not gauss_in,
+    #     train=False,
+    #     gauss_sigma=2.0,
+    #     return_borders=True
+    # )
+    # valid_input = merge_by_borders(valid_input_1, borders_1, valid_input_2, borders_2)
+    # assert len(valid_input) == len(valid_input_1) + len(valid_input_2)
+    # valid_input = valid_input_0 + valid_input
+    # valid_set = HandwritingDataset(valid_input)
     train_set = HandwritingDataset(train_input)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
                               num_workers=4, pin_memory=True, collate_fn=ctc_collate,
                               persistent_workers=True)
-    test_loader = DataLoader(
-        valid_set,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=True,
-        collate_fn=ctc_collate,
-    )
-    return train_loader, test_loader, None
+    # test_loader = DataLoader(
+    #     valid_set,
+    #     batch_size=batch_size,
+    #     shuffle=False,
+    #     num_workers=0,
+    #     pin_memory=True,
+    #     collate_fn=ctc_collate,
+    # )
+    return train_loader, None, None
 
 
 
-if __name__=="__main__": 
+if __name__=="__main__":
     ds_name = rf'D:\Pose\NeuroNLP\data\CORP_data_release'
-    train_loader, test_loader, _ = get_dataset_loaders_nlp_21(
-        ds_name, batch_size=2, gauss_in=False, 
+    train_loader, _, _ = get_dataset_loaders_nlp_21(
+        ds_name, batch_size=2, gauss_in=False,
     )
     for batch in (train_loader):
         neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
         print(neuro_chunks.shape, targets_padded.shape, target_lengths.shape, channel_positions.shape, uids_tensor.shape)
-        break         
+        break
