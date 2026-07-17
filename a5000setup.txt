@@ -1,0 +1,67 @@
+cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed
+
+## Creatring the env 
+virtualenv .venv_meta
+
+## loading the env 
+source .venv_meta/bin/activate
+
+git -c credential.helper="store --file=/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/github_auth/github.creds" \
+clone https://github.com/mahan16mas/brain2qwerty.git
+
+cd to git folder 
+git config --local credential.helper "store --file=/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/github_auth/github.creds"
+
+then you can git push pull 
+
+
+##### installing libs 
+
+######### run this, might be helpful: python -m pip install --upgrade pip setuptools wheel
+
+# for torch shit, use 
+pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu118 filelock==3.9.0 fsspec==2023.4.0 sympy==1.12 typing-extensions==4.4.0 networkx==3.0
+
+# and then 
+pip install -r requirements.txt 
+# for torch_brain, a broken fix is this: 
+clone this in remote system: https://github.com/hamedrq7/POYO-PG.git
+and then install: pip install -e ".[dev]"
+
+and 
+
+pip install matplotlib 
+
+
+#### For wandb 
+cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed
+mkdir -p wandb_auth
+
+cat > wandb_env.sh <<'EOF'
+export WANDB_API_KEY="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"
+
+# Use your W&B username or team name
+export WANDB_ENTITY="Trust-Pose-NLP"
+
+# Default project name, unless your code sets it explicitly
+export WANDB_PROJECT="NeuroNLP"
+
+# Keep W&B files inside this project folder instead of relying on the system user/home
+export WANDB_DIR="/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/neuronlp/wandb_local/runs"
+export WANDB_CACHE_DIR="/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/neuronlp/wandb_local/cache"
+export WANDB_CONFIG_DIR="/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/neuronlp/wandb_local/config"
+
+# Force online logging
+export WANDB_MODE="online"
+EOF
+
+and each time do this 
+source /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/wandb_auth/wandb_env.sh
+
+
+
+##### RUNNING SHIT: 
+cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed;
+source .venv_nlp/bin/activate;
+source /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/wandb_auth/wandb_env.sh
+
