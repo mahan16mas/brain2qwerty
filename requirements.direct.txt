@@ -1,7 +1,7 @@
 
-neuralset
-neuraltrain
-neuralfetch
+# neuralset
+# neuraltrain
+# neuralfetch
 exca
 submitit
 
