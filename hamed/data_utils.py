@@ -1,15 +1,177 @@
 import torch
-from utils.dataset import charset
-from utils.dataset import DummyHandwritingDataset, HandwritingDataset, BrainToTextDataset, SpeechDataset
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from edit_distance import SequenceMatcher
-from utils.data_10_loader import get_input as get_10_input
-from utils.data_loader import get_input
+from data_10_loader import get_input as get_10_input
+from data_loader import get_input
 from typing import Tuple, List
 import pickle
 import os
 CHUNK_SIZE = 4
+
+import torch
+from torch.utils.data import Dataset
+from typing import List, Tuple
+# from utils.augmentation import GaussianSmoothing
+
+# class SpeechDataset(Dataset):
+#     def __init__(self, data, transform=None, gauss=False,):
+#         if gauss:
+#             smoother = GaussianSmoothing(256, 20, 2.0, dim=1)
+#         self.data = data
+#         self.transform = transform
+#         self.n_days = len(data)
+#         self.n_trials = sum(len(d["sentenceDat"]) for d in data)
+
+#         self.neural_feats = []
+#         self.phone_seqs = []
+#         self.neural_time_bins = []
+#         self.phone_seq_lens = []
+#         self.days = []
+
+#         for day in trange(self.n_days):
+#             day_data = data[day]
+#             n_trials = len(day_data["sentenceDat"])
+#             for trial in range(n_trials):
+#                 neural = day_data["sentenceDat"][trial]
+#                 neural = torch.as_tensor(neural, dtype=torch.float32)
+#                 phones = day_data["phonemes"][trial]
+#                 if gauss:
+#                     with torch.no_grad():
+#                         neural = smoother(neural.unsqueeze(0)).squeeze(0)
+
+#                 self.neural_feats.append(neural)
+#                 self.phone_seqs.append(torch.as_tensor(phones, dtype=torch.int32))
+#                 self.neural_time_bins.append(neural.shape[0])
+#                 self.phone_seq_lens.append(data[day]["phoneLens"][trial])
+#                 self.days.append(day)
+
+#     def __len__(self):
+#         return self.n_trials
+
+#     def __getitem__(self, idx):
+#         neural_feats = self.neural_feats[idx]
+#         phone_seq = self.phone_seqs[idx]
+#         neural_time_bin = self.neural_time_bins[idx]
+#         phone_seq_len = self.phone_seq_lens[idx]
+#         day = self.days[idx]
+
+#         if self.transform:
+#             neural_feats = self.transform(neural_feats)
+
+#         return (
+#             neural_feats,                               # already float32
+#             phone_seq,                                  # already int32
+#             torch.tensor(neural_time_bin, dtype=torch.int32),
+#             torch.tensor(phone_seq_len, dtype=torch.int32),
+#             torch.tensor(day, dtype=torch.int64),
+#         )
+
+
+CHARS = [
+    '>', ',', '?', '~', "'",
+    'a', 'b', 'c', 'd', 'e', 'f', 'g',
+    'h', 'i', 'j', 'k', 'l', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z',
+]
+BLANK_TOKEN = "<BLANK>"
+
+
+class Charset:
+    def __init__(self, symbols: List[str]):
+        # index 0 reserved for CTC blank
+        self.idx2sym = [BLANK_TOKEN] + symbols
+        self.sym2idx = {s: i + 1 for i, s in enumerate(symbols)}
+        self.sym2idx[BLANK_TOKEN] = 0
+
+    @property
+    def num_classes(self) -> int:
+        return len(self.idx2sym)
+
+    def text_to_int(self, text: str) -> List[int]:
+        return [self.sym2idx[ch] for ch in text if ch in self.sym2idx]
+
+    def int_to_text(self, ids: List[int]) -> str:
+        return "".join(self.idx2sym[i] for i in ids if i != 0)
+
+
+charset = Charset(CHARS)
+
+
+class HandwritingDataset(Dataset):
+    """
+    items: List of (features, transcript, session_id)
+    """
+    def __init__(self, items: List[Tuple[torch.FloatTensor, str, int]], gauss=False):
+        super().__init__()
+        self.items = items
+        if gauss:
+            smoother = GaussianSmoothing(192, 20, 2.0, dim=1)
+            for i in range(len(items)):
+                x, y, z = self.items[i]
+                x = smoother(x.unsqueeze(0)).squeeze(0)
+                self.items[i] = (x, y, z)
+
+        self.charset = charset
+
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        x, y, d = self.items[idx]
+
+        assert isinstance(x, torch.Tensor) and x.dtype == torch.float32 and x.dim() == 2
+        assert isinstance(y, str)
+        assert isinstance(d, int)
+
+        return x, y, d
+
+
+
+class DummyHandwritingDataset(Dataset):
+    """
+    items: List of (features, transcript, session_id)
+    """
+    def __init__(self, ):
+        super().__init__()
+        # items: List[Tuple[torch.FloatTensor, str, int]], 
+
+        # self.items = items
+        # if gauss:
+        #     smoother = GaussianSmoothing(192, 20, 2.0, dim=1)
+        #     for i in range(len(items)):
+        #         x, y, z = self.items[i]
+        #         x = smoother(x.unsqueeze(0)).squeeze(0)
+        #         self.items[i] = (x, y, z)
+
+        self.charset = charset
+
+
+    def __len__(self):
+        return 100
+
+    def __getitem__(self, idx):
+        # x, y, d = self.items[idx]
+        a = int(10*torch.randn(1))
+        if a % 2 == 0: 
+            x = torch.randn((1000, 192))
+            y = "stop>smoking"
+            d = 1
+            # torch.Size([1229, 192]) stop>smoking 1
+        else: 
+            x = torch.randn((2500, 192))
+            y = "keep>smoking>till>you>die"
+            d = 2
+            # torch.Size([1229, 192]) stop>smoking 1
+            
+        assert isinstance(x, torch.Tensor) and x.dtype == torch.float32 and x.dim() == 2
+        assert isinstance(y, str)
+        assert isinstance(d, int)
+
+        return x, y, d
+
 
 def ctc_collate(batch: list[tuple[torch.Tensor, str, int]]):
     xs, ys, ds = zip(*batch)
@@ -146,54 +308,54 @@ def _padding(batch):
 
 
 
-def get_dataset_loaders_speech_nejm(dataset_name, batch_size, gauss_in=False):
-    with open(dataset_name, 'rb') as f:
-        dataset_pkl = pickle.load(f)
+# def get_dataset_loaders_speech_nejm(dataset_name, batch_size, gauss_in=False):
+#     with open(dataset_name, 'rb') as f:
+#         dataset_pkl = pickle.load(f)
 
-    train_file_set = dataset_pkl['train'][:23]
-    val_file_paths = dataset_pkl['test']
-    train_ds = BrainToTextDataset(train_file_set,  gauss=not gauss_in)
-    valid_ds = BrainToTextDataset(val_file_paths, gauss=not gauss_in)
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
-                              num_workers=4, pin_memory=True, collate_fn=ctc_collate_nejm,
-                              persistent_workers=True)
+#     train_file_set = dataset_pkl['train'][:23]
+#     val_file_paths = dataset_pkl['test']
+#     train_ds = BrainToTextDataset(train_file_set,  gauss=not gauss_in)
+#     valid_ds = BrainToTextDataset(val_file_paths, gauss=not gauss_in)
+#     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
+#                               num_workers=4, pin_memory=True, collate_fn=ctc_collate_nejm,
+#                               persistent_workers=True)
 
-    test_loader = DataLoader(
-        valid_ds,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=True,
-        collate_fn=ctc_collate_nejm,
-    )
-    return train_loader, test_loader, None
+#     test_loader = DataLoader(
+#         valid_ds,
+#         batch_size=batch_size,
+#         shuffle=False,
+#         num_workers=0,
+#         pin_memory=True,
+#         collate_fn=ctc_collate_nejm,
+#     )
+#     return train_loader, test_loader, None
 
 
-def get_dataset_loaders_speech(
-        datasetName,
-        batchSize,
-        gauss_in=False
-):
-    with open(datasetName, "rb") as handle:
-        loadedData = pickle.load(handle)
+# def get_dataset_loaders_speech(
+#         datasetName,
+#         batchSize,
+#         gauss_in=False
+# ):
+#     with open(datasetName, "rb") as handle:
+#         loadedData = pickle.load(handle)
 
-    train_ds = SpeechDataset(loadedData["train"], transform=None, gauss=not gauss_in)
-    test_ds = SpeechDataset(loadedData["test"], gauss=not gauss_in)
+#     train_ds = SpeechDataset(loadedData["train"], transform=None, gauss=not gauss_in)
+#     test_ds = SpeechDataset(loadedData["test"], gauss=not gauss_in)
 
-    train_loader = DataLoader(train_ds, batch_size=batchSize, shuffle=True,
-                              num_workers=4, pin_memory=True, collate_fn=_padding,
-                              persistent_workers=True)
+#     train_loader = DataLoader(train_ds, batch_size=batchSize, shuffle=True,
+#                               num_workers=4, pin_memory=True, collate_fn=_padding,
+#                               persistent_workers=True)
 
-    test_loader = DataLoader(
-        test_ds,
-        batch_size=batchSize,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=True,
-        collate_fn=_padding,
-    )
+#     test_loader = DataLoader(
+#         test_ds,
+#         batch_size=batchSize,
+#         shuffle=False,
+#         num_workers=0,
+#         pin_memory=True,
+#         collate_fn=_padding,
+#     )
 
-    return train_loader, test_loader, loadedData
+#     return train_loader, test_loader, loadedData
 
 
 def get_dataset_loaders_nlp_10(
@@ -238,6 +400,21 @@ def merge_by_borders(data1, borders1, data2, borders2):
         merged.extend(data2[start2:end2])
 
     return merged
+
+def get_dummy_loaders(
+        dataset_name,
+        batch_size,
+        gauss_in=True
+):
+    train_set = DummyHandwritingDataset()
+
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
+                              pin_memory=False, collate_fn=ctc_collate,
+                              persistent_workers=False)
+    
+    return train_loader, train_loader, None
+
+
 
 def get_dataset_loaders_nlp_21(
         dataset_name,
@@ -299,20 +476,4 @@ def get_dataset_loaders_nlp_21(
     )
     return train_loader, test_loader, None
 
-
-
-def get_dataset_loaders(
-        dataset_name,
-        batch_size,
-        gauss_in=True,
-        speech=True,
-        nlp_10=False,
-        is_nejm=False
-    ):
-    if speech:
-        if is_nejm: return get_dataset_loaders_speech_nejm(dataset_name, batch_size, gauss_in)
-        return get_dataset_loaders_speech(dataset_name, batch_size, gauss_in)
-    if not nlp_10:
-        return get_dataset_loaders_nlp_21(dataset_name, batch_size, gauss_in)
-    return get_dataset_loaders_nlp_10(dataset_name, batch_size, gauss_in)
 

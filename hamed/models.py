@@ -9,7 +9,7 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2):
     cfg = experiment_config()
     cfg["brain_model_config"]["conv_dropout"] = conv_dropout
     cfg["brain_model_config"]["dropout_input"] = dropout_input
-    print(cfg)
+
 
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
@@ -28,17 +28,10 @@ class MetaModel(nn.Module):
         self.linear = nn.Linear(hidden, num_classes)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
-        print(
-            'in cnn forward', neuro.shape, 
-        )
         return self.model(neuro, None, None)
 
     def _transformer_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
         uids = uids.detach().cpu().numpy()
-        print('in transofrmers forward')
-        print('uids.shape', uids.shape)
-        print('y_pred.shape', y_pred.shape)
-
         unique_uids, first_idx = np.unique(uids, return_index=True)
         unique_uids = unique_uids[np.argsort(first_idx)]
 
@@ -54,17 +47,11 @@ class MetaModel(nn.Module):
             x[i, : len(g)] = g
             mask[i, : len(g)] = 1
             out_lengths[i] = len(g)
-        
-        print('x.shape', x.shape)
+
         out = self.transformer(x, mask=mask.bool())
-        print('out.shape', out.shape)
-        print('out out linear', self.linear(out).shape)
-        exit()
         return self.linear(out), out_lengths.long()
 
     def forward(self, neuro, subject_id, channel_positions, uids):
         # neuro = self.smoother.forward(neuro)
         y_pred = self._cnn_forward(neuro, subject_id, channel_positions)
         return self._transformer_forward(uids, y_pred)
-
-

@@ -1,5 +1,4 @@
-from meta_model import MetaModel
-from loaders import get_dataset_loaders
+from models import MetaModel
 from neuraltrain.optimizers import LightningOptimizer
 from torch import nn
 from tqdm import tqdm, trange
@@ -8,8 +7,8 @@ import os
 import numpy as np
 import pickle
 from edit_distance import SequenceMatcher
-from utils.load_model_states import save_checkpoint, load_checkpoint
-
+from general_utils import save_checkpoint, load_checkpoint
+from data_utils import get_dataset_loaders_nlp_21, get_dummy_loaders
 
 def eval_model(model, test_loader, device='cuda'):
     ctc_criterion = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
@@ -102,30 +101,35 @@ def model_logits(model, test_loader, device='cuda', nlp=False):
 
 
 
-def train_model(args: dict):
+def train_model():
+    out_dir='./debug'
+    DS_DIR = rf"/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release"
+    batch_size = 8 
+    epochs = 50 
+    conv_dropout=0.5
+    dropout_input=0.2
+    gauss_in=False 
+    seed = 42
+    checkpoint_address = f"{out_dir}/checkpoint.pt"
+    os.makedirs(out_dir, exist_ok=True)
 
-    checkpoint_address = f"{args['out_dir']}/checkpoint.pt"
-    is_speech = args.get('is_speech', False)
-    nlp_10 = args.get("nlp_10", False)
-    is_nejm = args.get("is_nejm", False)
-    train_loader, test_loader, _ = get_dataset_loaders(args['dataset_path'], args['batch_size'], False, is_speech, nlp_10, is_nejm, )
-    epochs = args.get("epochs", 300)
-    conv_dropout = args.get("conv_dropout", 0.5)
-    dropout_input = args.get("dropout_input", 0.2)
-    os.makedirs(args["out_dir"], exist_ok=True)
-    torch.manual_seed(args["seed"])
-    np.random.seed(args["seed"])
+    # train_loader, test_loader, _ = get_dataset_loaders_nlp_21(DS_DIR, batch_size, gauss_in)
+    train_loader, test_loader, _ = get_dummy_loaders(DS_DIR, batch_size, gauss_in)
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
     inf_losses = 0
-    device = torch.device("cuda") # "cpu" # 
+    device = "cpu" # torch.device("cuda")
 
     model = MetaModel(
-        num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-        num_classes=(41 if is_speech else 32),
+        num_neurons=192 ,
+        num_classes=32,
         conv_dropout=conv_dropout,
         dropout_input=dropout_input,
     ).to(device)
     print(model)
-    print(type(model))
+    exit()
+    
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     optimizer_config_dict = {
         "name": "LightningOptimizer",
@@ -149,7 +153,7 @@ def train_model(args: dict):
     so_far_batch = 0
     # so_far_batch = load_checkpoint(checkpoint_address, model, optimizer, scheduler)
     testCER, testLoss = [], []
-    epochs = min(epochs, 50)
+    # epochs = min(epochs, 50)
 
     for epoch in range(epochs):
         if epoch < so_far_batch: continue
@@ -166,9 +170,6 @@ def train_model(args: dict):
             channel_positions = channel_positions.to(device)
             channel_positions = torch.randn_like(channel_positions)
             uids_tensor = uids_tensor.to(device)
-            print('neuro_chunks', neuro_chunks.shape, 'targets_padded', targets_padded.shape, '\n',  
-                'target_lengths', target_lengths.shape, 'channel_positions', '\n', channel_positions.shape, 
-                    'uids_tensor', uids_tensor.shape)
             subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
                 pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
@@ -243,11 +244,11 @@ def train_model(args: dict):
 
         if True:
 
-            torch.save(model.state_dict(), args["out_dir"] + "/modelWeights")
+            torch.save(model.state_dict(), out_dir + "/modelWeights")
 
             save_checkpoint(checkpoint_address, model, optimizer, scheduler, epoch)
         if epoch % 10 == 0:
-            torch.save(model.state_dict(), args["out_dir"] + f"/modelWeights_{epoch}")
+            torch.save(model.state_dict(), out_dir + f"/modelWeights_{epoch}")
 
         testLoss.append(avgDayLoss)
         testCER.append(cer)
@@ -256,8 +257,9 @@ def train_model(args: dict):
         tStats["testLoss"] = np.array(testLoss)
         tStats["testCER"] = np.array(testCER)
 
-        with open(args["out_dir"] + "/trainingStats", "wb") as file:
+        with open(out_dir + "/trainingStats", "wb") as file:
             pickle.dump(tStats, file)
 
 
-
+if __name__=="__main__":
+    train_model()
