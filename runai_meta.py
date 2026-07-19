@@ -35,12 +35,13 @@ exports = (
 from itertools import product
 from collections import defaultdict
 datasets = [0, 1, 2, 3]
-dropouts = [(0.1, 0.1), (0.0, 0.0), (0.5, 0.2)]
-epochs = [40, 50, 300]
-all_hypers = product(datasets, dropouts, epochs)
+dropouts = [(0.0, 0.2)]
+seeds = [1, 2, 3, 4]
+epochs = [40, ]
+all_hypers = product(datasets, dropouts, epochs, seeds)
 out_dirs = defaultdict(list)
 all_runs = {}
-for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
+for dataset_num, (conv_dropout, input_dropout), epoch, seed in all_hypers:
     dataset_name = 'speech'
     dataset_dir = '/data/hossein/data/speech/speech_data_raw_all_in_test.pkl'
     batch_size = 16
@@ -61,11 +62,11 @@ for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
         speech = True
         nejm = True
         dataset_name = 'nejm'
-    name = f"{dataset_name}-meta-{epoch}-{str(f'{conv_dropout}{input_dropout}').replace('.', '')}"
+    name = f"{dataset_name}-smallx-{seed}"
     out_dirs[dataset_num].append(name)
     # continue
     args = (
-        f"eval_model.py {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
+        f"start_trainer.py {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
         f"--dataset_path {dataset_dir} {'--is_nejm' if nejm else ''} --out_dir {name} "
         f"--epochs {epoch} --dropout_input {input_dropout} --conv_dropout {conv_dropout} "
     )
