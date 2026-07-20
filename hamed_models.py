@@ -92,7 +92,8 @@ class TransformerPatchEncoder(nn.Module):
             for _ in range(n_layers)
         ])
 
-        self.time_agg_out = nn.LazyLinear(1)
+        # self.time_agg_out = nn.LazyLinear(1)
+        self.time_agg_out = nn.Linear(self.chunk_size, 1)
 
     def forward(self, x, chunk_id, session_id):
         """
@@ -126,11 +127,12 @@ class TransformerPatchEncoder(nn.Module):
 
         # x is (K, N, C)
         
+        print('before', x.shape)
         x = self.time_agg_out(x) # this reduces feature dim, not sequences 
         if x.ndim == 3:
             x = x.squeeze(2)  # Remove singleton dimension
-        # print(x.shape) # should be [K, N]
-        
+        print(x.shape) # should be [K, N]
+        exit()
         return x
 
 def get_transformer(chunk_size):
