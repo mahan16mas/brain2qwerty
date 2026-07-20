@@ -180,7 +180,7 @@ def train_model(args: dict):
                     lengths,
                     target_lengths,
                 )
-                print(ctc_loss)
+                # print(ctc_loss)
                 ctc_loss = torch.sum(ctc_loss)
             epoch_loss += ctc_loss.item()
             n_items += len(targets_padded)
