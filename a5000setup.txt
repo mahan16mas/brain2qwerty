@@ -10,7 +10,7 @@ git -c credential.helper="store --file=/mnt/data/hossein/Hossein_workspace/nips_
 clone https://github.com/mahan16mas/brain2qwerty.git
 
 cd to git folder 
-git config --local credential.helper "store --file=/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/github_auth/github.creds"
+git config --local credential.helper "store --file=/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/github_auth/githubls.creds"
 
 then you can git push pull 
 
@@ -65,3 +65,7 @@ cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed;
 source .venv_nlp/bin/activate;
 source /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/wandb_auth/wandb_env.sh
 
+cd /mnt/upmwmathis/scratch/hossein/transformer_bci
+python3 -m venv meta_venv
+source meta_venv/bin/activate
+python -m pip install --upgrade pip

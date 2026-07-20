@@ -1,4 +1,4 @@
-python start_trainer.py --batch_size 8 --epochs 10
+python start_trainer.py --batch_size 16 --epochs 300
 
 # git switch -c hamedrq7/hamed
 
@@ -10,7 +10,7 @@ python start_trainer.py --batch_size 8 --epochs 10
 # git clone <repo-url>
 # cd <repo-folder>
 
-# git switch your-name/my-changes
+# git switch hamedrq7/hamed
 # git fetch origin
 # git branch --set-upstream-to=origin/hamedrq7/hamed
 # git pull
