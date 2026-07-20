@@ -125,7 +125,7 @@ def train_model(args: dict):
     #     conv_dropout=conv_dropout,
     #     dropout_input=dropout_input,
     # ).to(device)
-    model = HamedMetaModel(192, 4, 32).to(device)
+    model = HamedMetaModel(192, 4, 64, 32).to(device)
     print(model)
     print(type(model))
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)

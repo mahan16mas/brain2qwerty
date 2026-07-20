@@ -65,16 +65,17 @@ class TransformerPatchEncoder(nn.Module):
 
         self.num_neurons = num_neurons
         self.chunk_size = chunk_size 
+        self.dim_hidden = dim_hidden
 
         # Create the position embeddings
         # Note that these are kept constant in this implementation, i.e. _not_ learnable
-        self.position_embeddings = nn.Parameter(
-            data=generate_sinusoidal_position_embs(self.num_neurons, self.chunk_size),
-            requires_grad=False, # can set to True here, but might overfit
-        )
+        # self.position_embeddings = nn.Parameter(
+        #     data=generate_sinusoidal_position_embs(self.num_neurons, self.chunk_size),
+        #     requires_grad=False, # can set to True here, but might overfit
+        # )
 
         self.unit_embeddings = nn.Parameter(
-            data=generate_unit_embs(self.num_neurons, dim=self.chunk_size),
+            data=generate_unit_embs(self.num_neurons, dim=self.dim_hidden),
             requires_grad=True,
         )
 
@@ -83,18 +84,20 @@ class TransformerPatchEncoder(nn.Module):
         self.transformer_layers = nn.ModuleList([
             nn.ModuleList([
                 nn.MultiheadAttention(
-                    embed_dim=self.chunk_size,
+                    embed_dim=self.dim_hidden,
                     num_heads=n_heads,
                     batch_first=True,
                 ),
-                FeedForward(dim=self.chunk_size),
+                FeedForward(dim=self.dim_hidden),
             ])
             for _ in range(n_layers)
         ])
 
         # self.time_agg_out = nn.LazyLinear(1)
-        self.time_agg_out = nn.Linear(self.chunk_size, 1)
+        self.time_agg_out = nn.Linear(self.dim_hidden, 1)
 
+        self.read_in = nn.Linear(self.chunk_size, dim_hidden)
+        
     def forward(self, x, chunk_id, session_id):
         """
         Shape of x: (K, N, C)
@@ -135,19 +138,19 @@ class TransformerPatchEncoder(nn.Module):
         
         return x
 
-def get_transformer(chunk_size):
+def get_transformer(dim):
     cfg = experiment_config()
     transformer_config = ModelConfig(**cfg["transformer_config"])
 
-    transformer_model = transformer_config.build(dim=chunk_size)
+    transformer_model = transformer_config.build(dim=dim)
     return transformer_model
 
 class HamedMetaModel(nn.Module):
-    def __init__(self, num_neurons, chunk_size, num_classes):
+    def __init__(self, num_neurons, chunk_size, dim_hidden, num_classes):
         super().__init__()
 
         # self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=0.5, dropout_input=dropout_input)
-        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=0, n_layers=1, n_heads=1)
+        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=dim_hidden, n_layers=1, n_heads=1)
 
         self.transformer = get_transformer(num_neurons)
 
@@ -204,13 +207,13 @@ if __name__=="__main__":
     # y, l = model(x, sid, cpos, uids)
     # print('y, l', y.shape, l.shape)
 
-    temp = TransformerPatchEncoder(192, 4, 0, 1, 1)
-    # print(temp)
-    x = torch.randn([616, 192, 4])
-    y = temp(x, None, None)
+    # temp = TransformerPatchEncoder(192, 4, 0, 1, 1)
+    # # print(temp)
+    # x = torch.randn([616, 192, 4])
+    # y = temp(x, None, None)
     # print(y.shape)
 
-    model = HamedMetaModel(192, 4, 32)
+    model = HamedMetaModel(192, 4, 256, 32)
     print(model)
     x = torch.randn([616, 192, 4])
     sid = torch.randn([616])
