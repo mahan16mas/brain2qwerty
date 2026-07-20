@@ -94,7 +94,8 @@ class TransformerPatchEncoder(nn.Module):
         ])
 
         # self.time_agg_out = nn.LazyLinear(1)
-        self.time_agg_out = nn.Linear(self.dim_hidden, 1)
+        # self.time_agg_out = nn.Linear(self.dim_hidden, 1)
+        self.time_agg_out = BahdanauAttention(self.dim_hidden, 256)
 
         self.read_in = nn.Linear(self.chunk_size, dim_hidden)
         
@@ -194,7 +195,53 @@ class HamedMetaModel(nn.Module):
         return self._transformer_forward(uids, y_pred)
 
 
+class BahdanauAttention(nn.Module):
+    """Bahdanau attention from [1]_.
 
+    Implementation inspired from pytorch's seq2seq tutorial:
+    https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html#the-decoder
+
+    .. [1] Bahdanau, Dzmitry, Kyunghyun Cho, and Yoshua Bengio. "Neural machine translation by
+           jointly learning to align and translate." arXiv preprint arXiv:1409.0473 (2014).
+    """
+
+    def __init__(self, input_size, hidden_size):
+        super().__init__()
+        if input_size is None:
+            self.Wa = nn.LazyLinear(hidden_size)
+            self.Ua = nn.LazyLinear(hidden_size)
+        else:
+            self.Wa = nn.Linear(input_size, hidden_size)
+            self.Ua = nn.Linear(input_size, hidden_size)
+        self.Va = nn.Linear(hidden_size, 1)
+
+    def forward(self, keys, queries=None):
+        """
+        Parameters
+        ----------
+        keys:
+            Key tensor of shape (batch_size, n_features, n_times).
+        queries:
+            Optional query tensor of shape (batch_size, n_features, n_times).
+            If None, only keys are used.
+        """
+        keys = keys.transpose(2, 1)  # (B, F, T) -> (B, T, F)
+        sum_ = self.Wa(keys)
+        if queries is not None:
+            queries = queries.transpose(2, 1)
+            assert queries.shape == keys.shape
+            sum_ += self.Ua(queries)
+
+        scores = self.Va(torch.tanh(sum_))
+        scores = scores.squeeze(2).unsqueeze(1)
+
+        weights = nn.functional.softmax(scores, dim=-1)
+        context = torch.bmm(weights, keys)
+
+        context = context.transpose(2, 1)  # (B, 1, F) -> (B, F, 1)
+
+        return context 
+    
 if __name__=="__main__":
     # mmm = TransformerPatchEncoder(192, 4, 0, 2, 2)
     # model = HamedMetaModel(192, 32, 128)
@@ -224,6 +271,8 @@ if __name__=="__main__":
 
     # y, l = model(x, sid, cpos, uids)
     # print('y, l', y.shape, l.shape)
+
+    # self.time_agg_out = BahdanauAttention(input_size=None, hidden_size=256)
 
     K = 64
     N = 192
