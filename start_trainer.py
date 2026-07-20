@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser(description="Train Neural Decoder")
 # Strings
 parser.add_argument('--out_dir', type=str, default='default',
                     help="Defaults to modelName if not provided")
-parser.add_argument('--dataset_path', type=str, default=rf"/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release")
+parser.add_argument('--dataset_path', type=str, default=rf"D:\Pose\NeuroNLP\data\CORP_data_release")
 # A5000
 # DATASET_DIR = "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release"
 # LOCAL

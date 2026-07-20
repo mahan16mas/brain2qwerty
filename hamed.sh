@@ -1,4 +1,4 @@
-python start_trainer.py --batch_size 2 --epochs 1
+python start_trainer.py --batch_size 8 --epochs 10
 
 # git switch -c hamedrq7/hamed
 

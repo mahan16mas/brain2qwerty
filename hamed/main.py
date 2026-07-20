@@ -1,4 +1,4 @@
-from models import MetaModel
+from hamed_models import MetaModel
 from neuraltrain.optimizers import LightningOptimizer
 from torch import nn
 from tqdm import tqdm, trange
@@ -61,7 +61,6 @@ def eval_model(model, test_loader, device='cuda'):
         cer = total_edit_distance / total_seq_length
         return cer, avgDayLoss, error_and_lengths
 
-
 def fix_logits(logits):
     logits = torch.roll(torch.Tensor(logits), shifts=-6, dims=-1)
     logits[:, :, [26, 31]] = logits[:, :, [31, 26]]
@@ -99,8 +98,6 @@ def model_logits(model, test_loader, device='cuda', nlp=False):
 
     return rnn_outputs
 
-
-
 def train_model():
     out_dir='./debug'
     DS_DIR = rf"/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release"
@@ -122,13 +119,12 @@ def train_model():
     device = "cpu" # torch.device("cuda")
 
     model = MetaModel(
-        num_neurons=192 ,
+        num_neurons=192,
         num_classes=32,
         conv_dropout=conv_dropout,
         dropout_input=dropout_input,
     ).to(device)
     print(model)
-    exit()
     
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     optimizer_config_dict = {

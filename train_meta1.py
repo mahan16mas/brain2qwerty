@@ -1,4 +1,5 @@
 from meta_model import MetaModel
+from hamed_models import HamedMetaModel
 from loaders import get_dataset_loaders
 from neuraltrain.optimizers import LightningOptimizer
 from torch import nn
@@ -118,12 +119,13 @@ def train_model(args: dict):
     inf_losses = 0
     device = torch.device("cuda") # "cpu" # 
 
-    model = MetaModel(
-        num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-        num_classes=(41 if is_speech else 32),
-        conv_dropout=conv_dropout,
-        dropout_input=dropout_input,
-    ).to(device)
+    # model = MetaModel(
+    #     num_neurons=192 if not is_speech else (512 if is_nejm else 256),
+    #     num_classes=(41 if is_speech else 32),
+    #     conv_dropout=conv_dropout,
+    #     dropout_input=dropout_input,
+    # ).to(device)
+    model = HamedMetaModel(192, 4, 32).to(device)
     print(model)
     print(type(model))
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
@@ -166,9 +168,9 @@ def train_model(args: dict):
             channel_positions = channel_positions.to(device)
             channel_positions = torch.randn_like(channel_positions)
             uids_tensor = uids_tensor.to(device)
-            print('neuro_chunks', neuro_chunks.shape, 'targets_padded', targets_padded.shape, '\n',  
-                'target_lengths', target_lengths.shape, 'channel_positions', '\n', channel_positions.shape, 
-                    'uids_tensor', uids_tensor.shape)
+            # print('neuro_chunks', neuro_chunks.shape, 'targets_padded', targets_padded.shape, '\n',  
+            #     'target_lengths', target_lengths.shape, 'channel_positions', '\n', channel_positions.shape, 
+            #         'uids_tensor', uids_tensor.shape)
             subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
                 pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
@@ -242,7 +244,6 @@ def train_model(args: dict):
             )
 
         if True:
-
             torch.save(model.state_dict(), args["out_dir"] + "/modelWeights")
 
             save_checkpoint(checkpoint_address, model, optimizer, scheduler, epoch)
