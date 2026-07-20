@@ -127,12 +127,12 @@ class TransformerPatchEncoder(nn.Module):
 
         # x is (K, N, C)
         
-        print('before', x.shape)
+        # print('before', x.shape)
         x = self.time_agg_out(x) # this reduces feature dim, not sequences 
         if x.ndim == 3:
             x = x.squeeze(2)  # Remove singleton dimension
-        print(x.shape) # should be [K, N]
-        exit()
+        # print(x.shape) # should be [K, N]
+        
         return x
 
 def get_transformer(chunk_size):
