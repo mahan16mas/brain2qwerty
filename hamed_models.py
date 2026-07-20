@@ -112,7 +112,7 @@ class TransformerPatchEncoder(nn.Module):
         ## # Read-in: converts our input marix to transformer tokens; one token for each timestep
         ## x = self.readin(x)  # (B, T, N) -> (B, T, D)
         x = self.read_in(x)
-        
+
         ########## x = x.permute(2, 1, 0) # (T, N, K) -> (K, N, T)
 
         # print('---- in patch encoder ----')
@@ -151,7 +151,7 @@ class HamedMetaModel(nn.Module):
         super().__init__()
 
         # self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=0.5, dropout_input=dropout_input)
-        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=dim_hidden, n_layers=1, n_heads=1)
+        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=dim_hidden, n_layers=2, n_heads=4)
 
         self.transformer = get_transformer(num_neurons)
 
