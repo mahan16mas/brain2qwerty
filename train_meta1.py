@@ -158,6 +158,8 @@ def train_model(args: dict):
         if inf_losses > 10: break
         epoch_loss = 0
         n_items = 0
+        total_edit_distance = 0
+        total_seq_length = 0
         for batch in tqdm(train_loader):
             optimizer.zero_grad()
             model.train()
@@ -168,9 +170,6 @@ def train_model(args: dict):
             channel_positions = channel_positions.to(device)
             channel_positions = torch.randn_like(channel_positions)
             uids_tensor = uids_tensor.to(device)
-            # print('neuro_chunks', neuro_chunks.shape, 'targets_padded', targets_padded.shape, '\n',  
-            #     'target_lengths', target_lengths.shape, 'channel_positions', '\n', channel_positions.shape, 
-            #         'uids_tensor', uids_tensor.shape)
             subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
                 pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
@@ -192,6 +191,31 @@ def train_model(args: dict):
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
             scheduler.step()
+
+            # report train cer as well 
+            for iterIdx in range(pred.shape[0]):
+                decodedSeq = torch.argmax(
+                    torch.tensor(pred[iterIdx, 0: lengths[iterIdx], :]),
+                    dim=-1,
+                )  # [num_seq,]
+                decodedSeq = torch.unique_consecutive(decodedSeq, dim=-1)
+                decodedSeq = decodedSeq.cpu().detach().numpy()
+                decodedSeq = np.array([i for i in decodedSeq if i != 0])
+
+                trueSeq = np.array(
+                    targets_padded[iterIdx][0: target_lengths[iterIdx]].cpu().detach()
+                )
+                matcher = SequenceMatcher(
+                    a=trueSeq.tolist(), b=decodedSeq.tolist()
+                )
+                total_edit_distance += matcher.distance()
+                total_seq_length += len(trueSeq)
+
+        cer = total_edit_distance / total_seq_length
+        print(
+                f"epoch {epoch}, train cer: {cer:>7f}" # ctc loss: {epoch_loss:>7f}, 
+            )
+        
         epoch_loss /= n_items
         with torch.no_grad():
             model.eval()
