@@ -111,6 +111,7 @@ class TransformerPatchEncoder(nn.Module):
 
         ## # Read-in: converts our input marix to transformer tokens; one token for each timestep
         ## x = self.readin(x)  # (B, T, N) -> (B, T, D)
+        x = self.read_in(x)
         
         ########## x = x.permute(2, 1, 0) # (T, N, K) -> (K, N, T)
 
