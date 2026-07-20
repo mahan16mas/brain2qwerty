@@ -95,7 +95,7 @@ class TransformerPatchEncoder(nn.Module):
 
         # self.time_agg_out = nn.LazyLinear(1)
         # self.time_agg_out = nn.Linear(self.dim_hidden, 1)
-        self.time_agg_out = BahdanauAttention(self.dim_hidden, 256)
+        self.time_agg_out = BahdanauAttention(input_size=None, hidden_size=256)
 
         self.read_in = nn.Linear(self.chunk_size, dim_hidden)
         
