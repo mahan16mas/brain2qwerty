@@ -145,7 +145,7 @@ class HamedMetaModel(nn.Module):
         super().__init__()
 
         # self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=0.5, dropout_input=dropout_input)
-        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=0, n_layers=4, n_heads=2)
+        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=0, n_layers=1, n_heads=1)
 
         self.transformer = get_transformer(num_neurons)
 
