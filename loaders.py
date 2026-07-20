@@ -288,15 +288,15 @@ def get_dataset_loaders_nlp_21(
 
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
                               collate_fn=ctc_collate,
-                            #   num_workers=4, pin_memory=True, 
-                            #   persistent_workers=True
+                              num_workers=4, pin_memory=True, 
+                              persistent_workers=True
                               )
     test_loader = DataLoader(
         valid_set,
         batch_size=batch_size,
         shuffle=False,
-        # num_workers=0,
-        # pin_memory=True,
+        num_workers=0,
+        pin_memory=True,
         collate_fn=ctc_collate,
     )
     return train_loader, test_loader, None
