@@ -147,11 +147,11 @@ def get_transformer(dim):
     return transformer_model
 
 class HamedMetaModel(nn.Module):
-    def __init__(self, num_neurons, chunk_size, dim_hidden, num_classes):
+    def __init__(self, num_neurons, chunk_size, dim_hidden, num_classes, n_layers=2, n_heads=4):
         super().__init__()
 
         # self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=0.5, dropout_input=dropout_input)
-        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=dim_hidden, n_layers=2, n_heads=4)
+        self.patch_encoder = TransformerPatchEncoder(num_neurons, chunk_size=chunk_size, dim_hidden=dim_hidden, n_layers=n_layers, n_heads=n_heads)
 
         self.transformer = get_transformer(num_neurons)
 
@@ -214,13 +214,35 @@ if __name__=="__main__":
     # y = temp(x, None, None)
     # print(y.shape)
 
-    model = HamedMetaModel(192, 4, 256, 32)
-    print(model)
-    x = torch.randn([616, 192, 4])
-    sid = torch.randn([616])
-    cpos = torch.randn([616, 192, 2])
-    uids = torch.randn([616]) 
-    # torch.Size([616, 192, 4]) torch.Size([616]) torch.Size([616, 192, 2]) torch.Size([616])
+    # model = HamedMetaModel(192, 4, 256, 32)
+    # print(model)
+    # x = torch.randn([616, 192, 4])
+    # sid = torch.zeros([616])
+    # cpos = torch.randn([616, 192, 2])
+    # uids = torch.randn([616]) 
+    # # torch.Size([616, 192, 4]) torch.Size([616]) torch.Size([616, 192, 2]) torch.Size([616])
 
-    y, l = model(x, sid, cpos, uids)
-    print('y, l', y.shape, l.shape)
+    # y, l = model(x, sid, cpos, uids)
+    # print('y, l', y.shape, l.shape)
+
+    K = 64
+    N = 192
+    C = 4 
+    model = HamedMetaModel(N, C, 256, 32, 1, 1)
+    x = torch.randn([K, N, C])
+    sid = torch.zeros([K])
+    cpos = torch.randn([K, N, C])
+    uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+
+    from torchinfo import summary
+    print(summary(model, input_data=(x, sid, cpos, uids), 
+        # col_names=(
+        #     "input_size",
+        #     "output_size",
+        #     "num_params",
+        #     "trainable",
+        # ),
+        # depth=10,
+        verbose=1,)
+        )
+    
