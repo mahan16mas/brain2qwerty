@@ -295,7 +295,7 @@ def get_dataset_loaders_nlp_21(
         valid_set,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=0,
+        num_workers=4,
         pin_memory=True,
         collate_fn=ctc_collate,
     )
