@@ -76,17 +76,18 @@ class TransformerPatchEncoder(nn.Module):
         # )
 
         self.read_in = nn.Linear(self.chunk_size, dim_hidden//2)
-        nn.init.trunc_normal_(self.read_in.weight, 0, emb_init_scale)
-        nn.init.zeros_(self.read_in.bias)
+        # nn.init.trunc_normal_(self.read_in.weight, 0, emb_init_scale)
+        # nn.init.zeros_(self.read_in.bias)
 
         self.unit_embeddings = nn.Parameter(
-            torch.empty(
-                self.num_neurons,
-                self.dim_hidden // 2,
-            ),
+            # torch.empty(
+            #     self.num_neurons,
+            #     self.dim_hidden // 2,
+            # ),
+            data=generate_unit_embs(self.num_neurons, self.dim_hidden // 2),
             requires_grad=True,
         )
-        torch.nn.init.normal_(self.unit_embeddings, mean=0, std=emb_init_scale)
+        # torch.nn.init.normal_(self.unit_embeddings, mean=0, std=emb_init_scale)
 
         # Create the transformer layers:
         # each composed of the Attention and the feedforward (FFN) blocks
