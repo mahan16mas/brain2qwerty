@@ -75,7 +75,7 @@ class TransformerPatchEncoder(nn.Module):
         # )
 
         self.unit_embeddings = nn.Parameter(
-            data=generate_unit_embs(self.num_neurons, dim=self.dim_hidden),
+            data=generate_unit_embs(self.num_neurons, dim=self.dim_hidden//2),
             requires_grad=True,
         )
 
@@ -94,10 +94,10 @@ class TransformerPatchEncoder(nn.Module):
         ])
 
         # self.time_agg_out = nn.LazyLinear(1)
-        # self.time_agg_out = nn.Linear(self.dim_hidden, 1)
-        self.time_agg_out = BahdanauAttention(input_size=None, hidden_size=256)
+        self.time_agg_out = nn.Linear(self.dim_hidden, 1)
+        # self.time_agg_out = BahdanauAttention(input_size=None, hidden_size=256)
 
-        self.read_in = nn.Linear(self.chunk_size, dim_hidden)
+        self.read_in = nn.Linear(self.chunk_size, dim_hidden//2)
         
     def forward(self, x, chunk_id, session_id):
         """
@@ -120,9 +120,14 @@ class TransformerPatchEncoder(nn.Module):
         # print(x.shape )
 
         # Add position embeddings to the tokens
-        # x = x + self.position_embeddings[None, ...]  # -> (B, T, D)
-        x = x + self.unit_embeddings[None, ...]
-        # print(x.shape)
+        #### x = x + self.position_embeddings[None, ...]  # -> (B, T, D)
+        # x = x + self.unit_embeddings[None, ...]
+        
+        x = torch.cat(
+            (x, self.unit_embeddings.unsqueeze(0).expand(x.size(0), -1, -1)),
+            dim=-1,
+        )
+        
 
         # Transformer
         for attn, ffn in self.transformer_layers:
@@ -243,6 +248,7 @@ class BahdanauAttention(nn.Module):
         return context 
     
 if __name__=="__main__":
+
     # mmm = TransformerPatchEncoder(192, 4, 0, 2, 2)
     # model = HamedMetaModel(192, 32, 128)
     # print(model)
