@@ -83,7 +83,7 @@ class TransformerPatchEncoder(nn.Module):
             torch.empty(
                 self.num_neurons,
                 self.dim_hidden // 2,
-            )
+            ),
             requires_grad=True,
         )
         torch.nn.init.normal_(self.unit_embeddings, mean=0, std=emb_init_scale)
