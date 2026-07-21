@@ -80,7 +80,10 @@ class TransformerPatchEncoder(nn.Module):
         nn.init.zeros_(self.read_in.bias)
 
         self.unit_embeddings = nn.Parameter(
-            data=generate_unit_embs(self.num_neurons, dim=self.dim_hidden//2),
+            torch.empty(
+                self.num_neurons,
+                self.dim_hidden // 2,
+            )
             requires_grad=True,
         )
         torch.nn.init.normal_(self.unit_embeddings, mean=0, std=emb_init_scale)
