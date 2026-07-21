@@ -22,7 +22,7 @@ for dataset in datasets:
     for name, folders in name_to_folders.items():
         scores = []
         for folder in folders:
-            file = f"{folder}/{'' if 'Multi' not in name else dataset + '_'}evalStats.pkl"
+            file = f"{folder}/{'' if 'Multi' not in name else dataset + '_'}evalStats"
             scores.append(get_mean(file))
         mean = np.mean(scores)
         std = np.std(scores)
