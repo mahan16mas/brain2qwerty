@@ -59,6 +59,7 @@ class TransformerPatchEncoder(nn.Module):
         self,
         num_neurons, chunk_size, # data properties
         dim_hidden, n_layers, n_heads,    # transformer properties
+        emb_init_scale = 0.02, 
     ):
         """Initialize the neural net components"""
         super().__init__()
@@ -74,10 +75,15 @@ class TransformerPatchEncoder(nn.Module):
         #     requires_grad=False, # can set to True here, but might overfit
         # )
 
+        self.read_in = nn.Linear(self.chunk_size, dim_hidden//2)
+        nn.init.trunc_normal_(self.read_in.weight, 0, emb_init_scale)
+        nn.init.zeros_(self.read_in.bias)
+
         self.unit_embeddings = nn.Parameter(
             data=generate_unit_embs(self.num_neurons, dim=self.dim_hidden//2),
             requires_grad=True,
         )
+        torch.nn.init.normal_(self.unit_embeddings.weight, mean=0, std=emb_init_scale)
 
         # Create the transformer layers:
         # each composed of the Attention and the feedforward (FFN) blocks
@@ -97,7 +103,6 @@ class TransformerPatchEncoder(nn.Module):
         self.time_agg_out = nn.Linear(self.dim_hidden, 1)
         # self.time_agg_out = BahdanauAttention(input_size=None, hidden_size=256)
 
-        self.read_in = nn.Linear(self.chunk_size, dim_hidden//2)
         
     def forward(self, x, chunk_id, session_id):
         """
