@@ -26,7 +26,7 @@ for seed in seeds:
         seen_cer = get_mean(err_dist[:border])
         unseen_cer = get_mean(err_dist[border:])
         mean_cer = get_mean(err_dist)
-        rows.append({"experiment_setup":f"NoLM-{'C' if is_nlp else 'P'}ER", "dataset_name":dataset, "model_name":"META",
+        rows.append({"experiment_setup":f"NoLM-{'C' if is_nlp else 'P'}ER", "dataset_name":ds_name, "model_name":"META",
                          "seen_test_day_average":seen_cer, "unseen_test_day_average":unseen_cer, "mean_test_day_average":mean_cer,})
 
 
