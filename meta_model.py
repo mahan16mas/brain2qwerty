@@ -60,6 +60,12 @@ class MetaModel(nn.Module):
 if __name__=="__main__":
     model = MetaModel(192, 32)
     print(model.model)
+    B, T, D = 4, 1000, 192
+    x = torch.randn((B, T, D))
+    y_pred = model.model(x)
+    print(y_pred.shape)
+    
+    exit()
 
     from xp_config import experiment_config
     from neuraltrain.models import BaseModelConfig as ModelConfig
