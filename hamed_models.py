@@ -132,10 +132,13 @@ class TransformerPatchEncoder(nn.Module):
         #### x = x + self.position_embeddings[None, ...]  # -> (B, T, D)
         # x = x + self.unit_embeddings[None, ...]
         
+        print(x.shape)
+        print(self.unit_embeddings.unsqueeze(0).expand(x.size(0), -1, -1).shape)
         x = torch.cat(
             (x, self.unit_embeddings.unsqueeze(0).expand(x.size(0), -1, -1)),
             dim=-1,
         )
+        print(x.shape)
         
 
         # Transformer
