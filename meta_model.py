@@ -58,12 +58,34 @@ class MetaModel(nn.Module):
 
 
 if __name__=="__main__":
-    model = MetaModel(192, 32)
+    
+    K = 64 # num chunks
+    N = 192
+    C = 4 # chunk size
+    x = torch.randn([K, N, C])
+    sid = torch.zeros([K])
+    cpos = torch.randn([K, N, C])
+    uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    model = MetaModel(N, 10)
     print(model.model)
-    B, T, D = 4, 1000, 192
-    x = torch.randn((B, T, D))
-    y_pred = model.model(x)
+
+    y_pred = model.model(x, sid, uids)
     print(y_pred.shape)
+
+    # out, _ = model(x, sid, cpos, uids)
+    # print(out.shape, '\n')
+        
+    # from torchinfo import summary
+    # print(summary(model, input_data=(x, sid, cpos, uids), 
+    #     # col_names=(
+    #     #     "input_size",
+    #     #     "output_size",
+    #     #     "num_params",
+    #     #     "trainable",
+    #     # ),
+    #     # depth=10,
+    #     verbose=1,)
+    #     )
     
     exit()
 
