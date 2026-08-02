@@ -21,7 +21,7 @@ meta_ENCODER = {
     "gelu": True,
     "skip": True,
     "scale": 0.1,
-    "subject_layers_config": {},
+    "subject_layers_config": None,
     "merger_config": None 
     # {
     #     "n_virtual_channels": 270,
