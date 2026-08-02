@@ -6,7 +6,7 @@
 
 # Convolutional encoder with a per-subject 2D-Fourier channel merger; produces
 # one embedding per keystroke window.
-ENCODER = {
+meta_ENCODER = {
     "name": "SimpleConvTimeAgg",
     "time_agg_out": "att",
     "dropout_input": 0.2,
@@ -33,7 +33,7 @@ ENCODER = {
 }
 
 # Sentence-level transformer over the per-keystroke embeddings.
-TRANSFORMER = {
+meta_TRANSFORMER = {
     "name": "TransformerEncoder",
     "alibi_pos_bias": True,
     "depth": 4,

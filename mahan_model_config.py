@@ -6,7 +6,7 @@
 
 # Convolutional encoder with a per-subject 2D-Fourier channel merger; produces
 # one embedding per keystroke window.
-ENCODER = {
+mahan_ENCODER = {
     "name": "SimpleConvTimeAgg",
     "time_agg_out": "att",
     "dropout_input": 0.2,
@@ -25,7 +25,7 @@ ENCODER = {
     "subject_layers_config": None,
 }
 
-TRANSFORMER = {
+mahan_TRANSFORMER = {
     "name": "TransformerEncoder",
     "alibi_pos_bias": True,
     "depth": 2,
