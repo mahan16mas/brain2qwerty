@@ -10,7 +10,7 @@ version = "2.0.0"
 description = "Brain2Qwerty: decoding typed sentences from non-invasive brain activity (V1 keystroke Conv+Transformer; V2 CTC + contrastive + LLM)."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 authors = [
     { name = "Jarod Levy" },
     { name = "Mingfang (Lucy) Zhang" },
