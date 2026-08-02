@@ -34,7 +34,7 @@ exports = (
         )
 from itertools import product
 from collections import defaultdict
-datasets = [0, 1, 2, 3]
+datasets = [1] # [0, 1, 2, 3]
 dropouts = [(0.1, 0.1), (0.0, 0.0), (0.5, 0.2)]
 epochs = [40, 50, 300]
 all_hypers = product(datasets, dropouts, epochs)
@@ -71,6 +71,9 @@ for dataset_num, (conv_dropout, input_dropout), epoch in all_hypers:
     )
     all_runs[name] = args
 print(out_dirs)
+
+print(all_runs)
+exit()
 
 num_sumbissions = 0
 for job_name, file_name in all_runs.items():
