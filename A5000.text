@@ -1,0 +1,11 @@
+# git switch eating
+# git fetch origin
+# git branch --set-upstream-to=origin/eating
+# git pull
+
+cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed;
+source new_python/bin/activate;
+source /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/wandb_auth/wandb_env.sh;
+cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/brain2qwerty
+
+

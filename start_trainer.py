@@ -33,3 +33,7 @@ parsed_args = parser.parse_args()
 # Convert namespace to dictionary
 args_dict = vars(parsed_args)
 train_model(args_dict)
+
+"""
+python start_trainer.py --out_dir 'debug' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 8 --epochs 40 --conv_dropout 0.5 --dropout_input 0.2 
+"""
