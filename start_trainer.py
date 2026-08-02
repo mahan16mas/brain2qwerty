@@ -28,6 +28,8 @@ parser.add_argument('--epochs', type=int, default=300)
 parser.add_argument('--conv_dropout', type=float, default=0.5)
 parser.add_argument('--dropout_input', type=float, default=0.2)
 
+parser.add_argument('--do_wandb', action='store_true', help='log w wandb')
+
 parsed_args = parser.parse_args()
 
 # Convert namespace to dictionary
@@ -35,5 +37,5 @@ args_dict = vars(parsed_args)
 train_model(args_dict)
 
 """
-python start_trainer.py --out_dir 'debug' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 8 --epochs 40 --conv_dropout 0.5 --dropout_input 0.2 
+CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_default_300' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 8 --epochs 300 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb
 """

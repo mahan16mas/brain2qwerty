@@ -103,6 +103,11 @@ def model_logits(model, test_loader, device='cuda', nlp=False):
 
 
 def train_model(args: dict):
+    do_wandb = args.get("do_wandb", False)
+    if do_wandb:
+        import wandb
+        exp_name = args["out_dir"]
+        wandb.init(project="NeuroNLP", name=f'{exp_name}')
 
     checkpoint_address = f"{args['out_dir']}/checkpoint.pt"
     is_speech = args.get('is_speech', False)
@@ -147,7 +152,7 @@ def train_model(args: dict):
     so_far_batch = 0
     # so_far_batch = load_checkpoint(checkpoint_address, model, optimizer, scheduler)
     testCER, testLoss = [], []
-    epochs = min(epochs, 50)
+    # epochs = min(epochs, 50)
 
     for epoch in range(epochs):
         if epoch < so_far_batch: continue
@@ -235,6 +240,15 @@ def train_model(args: dict):
             print(
                 f"epoch {epoch}, ctc loss: {epoch_loss:>7f}, cer: {cer:>7f}"
             )
+
+        if do_wandb: 
+            wandb.log({
+                'epoch': epoch,
+                'train_loss': epoch_loss,
+                'test_loss': avgDayLoss,
+                'test_cer': cer,
+                'lr': optimizer.param_groups[0]["lr"]
+            })
 
         if True:
 

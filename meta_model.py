@@ -58,6 +58,19 @@ class MetaModel(nn.Module):
 
 
 if __name__=="__main__":
+    import torch.nn as nn 
+    import torch 
+    ## Testing Conv1d 
+    
+    K = 64 # num chunks
+    N = 192
+    C = 4 # chunk size
+    x = torch.randn([K, N, C])
+    
+    conv = nn.Conv1d(192, 512, kernel_size=(1,), stride=(1,))
+    y = conv(x)
+    print(y.shape)
+    exit()
     
     K = 64 # num chunks
     N = 192
