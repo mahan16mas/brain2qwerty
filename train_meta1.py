@@ -104,6 +104,7 @@ def model_logits(model, test_loader, device='cuda', nlp=False):
 
 def train_model(args: dict):
     do_wandb = args.get("do_wandb", False)
+    use_mahan_model_params = args.get("use_mahan_model_params", False)
     if do_wandb:
         import wandb
         exp_name = args["out_dir"]
@@ -128,7 +129,9 @@ def train_model(args: dict):
         num_classes=(41 if is_speech else 32),
         conv_dropout=conv_dropout,
         dropout_input=dropout_input,
+        mahan_model_params = use_mahan_model_params,
     ).to(device)
+    print(model)
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     optimizer_config_dict = {
         "name": "LightningOptimizer",

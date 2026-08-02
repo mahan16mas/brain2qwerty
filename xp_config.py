@@ -8,7 +8,8 @@ import os
 from pathlib import Path
 
 from brain2qwerty_v1.utils import BUTTON_MAPPING, NUM_CLASSES
-from model_config import ENCODER, TRANSFORMER
+from mahan_model_config import mahan_ENCODER, mahan_TRANSFORMER
+from meta_model_config import  meta_ENCODER, meta_TRANSFORMER
 
 STUDY_PATH = os.environ.get(
     "BRAIN2QWERTY_STUDIES", str(Path.home() / "brain2qwerty_data" / "studies")
@@ -17,7 +18,7 @@ CACHE = os.environ.get("BRAIN2QWERTY_CACHE", str(Path.home() / ".cache" / "brain
 RESULTS = os.environ.get("BRAIN2QWERTY_RESULTS", str(Path(CACHE) / "results"))
 
 
-def experiment_config() -> dict:
+def experiment_config(meta_default: bool = True) -> dict:
     """Full Brain2Qwerty V1 configuration (SpanishBCBL, MEG)."""
     return {
         "output_dir": RESULTS,
@@ -65,8 +66,8 @@ def experiment_config() -> dict:
             "pin_memory": True,
             "persistent_workers": True,
         },
-        "brain_model_config": ENCODER,
-        "transformer_config": TRANSFORMER,
+        "brain_model_config": meta_ENCODER if meta_default else mahan_ENCODER,
+        "transformer_config": meta_TRANSFORMER if meta_default else mahan_TRANSFORMER,
         "loss": {"name": "CrossEntropyLoss"},
         "optimizer": {
             "name": "LightningOptimizer",
