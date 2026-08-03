@@ -40,12 +40,21 @@ args_dict = vars(parsed_args)
 train_model(args_dict)
 
 """
+# [X]
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_meta_default_50' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb 
 
+# [X]
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --use_rnn_decoder --out_dir 'nlp21_meta_convRNN_default_50' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb 
 
+# [ ]
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_meta_default_50_time-agg-gap' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --time_agg_out 'gap' 
 
+# [ ]
 CUDA_VISIBLE_DEVICES=0 python start_trainer.py --out_dir 'nlp21_meta_default_50_time-agg-linear' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --time_agg_out 'linear' 
 
+# [ ]
+CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_meta_default_50_cnn-hidden-1024' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 1024
+
+# [ ]
+CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_meta_default_50_cnn-hidden-1024' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 1024
 """

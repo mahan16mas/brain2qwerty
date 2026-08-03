@@ -5,11 +5,14 @@ import torch
 import numpy as np
 from utils.augmentation import GaussianSmoothing
 
-def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att"):
+def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048):
     cfg = experiment_config(meta_default=not mahan_model_params)
     cfg["brain_model_config"]["conv_dropout"] = conv_dropout
     cfg["brain_model_config"]["dropout_input"] = dropout_input
     cfg["brain_model_config"]["time_agg_out"] = time_agg_out
+    if not mahan_model_params: 
+        cfg["brain_model_config"]["hidden"] = cnn_hidden
+        
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
 
@@ -20,10 +23,10 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     return brain_model,transformer_model, hidden_dim
 
 class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att"):
+    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att"):
         super().__init__()
 
-        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out )
+        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden)
         self.linear = nn.Linear(hidden, num_classes)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
@@ -80,23 +83,26 @@ if __name__=="__main__":
     # y_pred = model.model(x, sid, uids)
     # print(y_pred.shape)
     out, _ = model(x, sid, cpos, uids)
-    print(model)
-    exit()
+    # print(model)
+    # exit()
     # print(out.shape)
 
     # out, _ = model(x, sid, cpos, uids)
     # print(out.shape, '\n')
         
     from torchinfo import summary
-    print(summary(model, input_data=(x, sid, cpos, uids), 
-        # col_names=(
-        #     "input_size",
-        #     "output_size",
-        #     "num_params",
-        #     "trainable",
-        # ),
-        # depth=10,
-        verbose=1,)
+    print(
+        summary(
+            model, input_data=(x, sid, cpos, uids), 
+            # col_names=(
+            #     "input_size",
+            #     "output_size",
+            #     "num_params",
+            #     "trainable",
+            # ),
+            # depth=10,
+            # verbose=2,
+            )
         )
     
     exit()

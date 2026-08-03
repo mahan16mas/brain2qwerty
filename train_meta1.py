@@ -90,13 +90,13 @@ def model_logits(model, test_loader, device='cuda', nlp=False):
             if nlp:
                 pred = fix_logits(pred)
             for iterIdx in range(pred.shape[0]):
-                    trueSeq = np.array(targets_padded[iterIdx][0: target_lengths[iterIdx]].cpu().detach())
+                trueSeq = np.array(targets_padded[iterIdx][0: target_lengths[iterIdx]].cpu().detach())
 
-                    rnn_outputs["logits"].append(pred[iterIdx].cpu().detach().numpy().tolist())
-                    rnn_outputs["logitLengths"].append(
-                        lengths[iterIdx].cpu().detach().item()
-                    )
-                    rnn_outputs["trueSeqs"].append(trueSeq.tolist())
+                rnn_outputs["logits"].append(pred[iterIdx].cpu().detach().numpy().tolist())
+                rnn_outputs["logitLengths"].append(
+                    lengths[iterIdx].cpu().detach().item()
+                )
+                rnn_outputs["trueSeqs"].append(trueSeq.tolist())
 
 
     return rnn_outputs
@@ -117,6 +117,7 @@ def train_model(args: dict):
     is_nejm = args.get("is_nejm", False)
     train_loader, test_loader, _ = get_dataset_loaders(args['dataset_path'], args['batch_size'], False, is_speech, nlp_10, is_nejm, )
     epochs = args.get("epochs", 300)
+    cnn_hidden = args.get("cnn_hidden", 2048)
     conv_dropout = args.get("conv_dropout", 0.5)
     dropout_input = args.get("dropout_input", 0.2)
     time_agg_out = args.get("time_agg_out", "att")
@@ -135,6 +136,8 @@ def train_model(args: dict):
             conv_dropout=conv_dropout,
             dropout_input=dropout_input,
             mahan_model_params = use_mahan_model_params,
+            time_agg_out = time_agg_out, 
+            cnn_hidden=cnn_hidden,
         ).to(device)
     else: 
         model = ConvRNN(
@@ -143,6 +146,8 @@ def train_model(args: dict):
             conv_dropout=conv_dropout,
             dropout_input=dropout_input,
             mahan_model_params = use_mahan_model_params,
+            time_agg_out = time_agg_out,
+            cnn_hidden=cnn_hidden,
         ).to(device)
 
     print(model)
