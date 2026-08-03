@@ -5,11 +5,11 @@ import torch
 import numpy as np
 from utils.augmentation import GaussianSmoothing
 
-def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False):
+def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att"):
     cfg = experiment_config(meta_default=not mahan_model_params)
     cfg["brain_model_config"]["conv_dropout"] = conv_dropout
     cfg["brain_model_config"]["dropout_input"] = dropout_input
-
+    cfg["brain_model_config"]["time_agg_out"] = time_agg_out
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
 
@@ -20,10 +20,10 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     return brain_model,transformer_model, hidden_dim
 
 class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
+    def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att"):
         super().__init__()
 
-        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params)
+        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out )
         self.linear = nn.Linear(hidden, num_classes)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
@@ -68,35 +68,36 @@ if __name__=="__main__":
     import torch.nn as nn 
     import torch 
     
-    K = 64 # num chunks
+    K = 8 # num chunks
     N = 192
     C = 4 # chunk size
     x = torch.randn([K, N, C])
     sid = torch.zeros([K])
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    model = MetaModel(N, 10)
-    print(model.model)
-
+    model = MetaModel(N, 10, mahan_model_params=False, time_agg_out="gap") # 'gap', 'linear', 'att'
+    
     # y_pred = model.model(x, sid, uids)
     # print(y_pred.shape)
     out, _ = model(x, sid, cpos, uids)
-    print(out.shape)
+    print(model)
+    exit()
+    # print(out.shape)
 
     # out, _ = model(x, sid, cpos, uids)
     # print(out.shape, '\n')
         
-    # from torchinfo import summary
-    # print(summary(model, input_data=(x, sid, cpos, uids), 
-    #     # col_names=(
-    #     #     "input_size",
-    #     #     "output_size",
-    #     #     "num_params",
-    #     #     "trainable",
-    #     # ),
-    #     # depth=10,
-    #     verbose=1,)
-    #     )
+    from torchinfo import summary
+    print(summary(model, input_data=(x, sid, cpos, uids), 
+        # col_names=(
+        #     "input_size",
+        #     "output_size",
+        #     "num_params",
+        #     "trainable",
+        # ),
+        # depth=10,
+        verbose=1,)
+        )
     
     exit()
 
@@ -232,6 +233,272 @@ if __name__=="__main__":
 
         So the layer compresses the time dimension from four time steps into one summary vector, while retaining all 2048 feature channels. It learns whether each sample should emphasize, for example, the first, second, third, or fourth time step.
 
+    ====================================================================================================
+    Layer (type:depth-idx)                             Output Shape              Param #
+    ====================================================================================================
+    MetaModel                                          [2, 32, 10]               --
+    ├─SimpleConvTimeAggModel: 1-1                      [64, 2048]                --
+    │    └─Sequential: 2-1                             [64, 512, 4]              --
+    │    │    └─Conv1d: 3-1                            [64, 512, 4]              98,816
+    │    └─ConvSequence: 2-2                           [64, 2048, 4]             --
+    │    │    └─ModuleList: 3-2                        --                        91,285,504
+    │    └─BahdanauAttention: 2-3                      [64, 2048, 1]             524,544
+    │    │    └─Linear: 3-3                            [64, 4, 256]              524,544
+    │    │    └─Linear: 3-4                            [64, 4, 1]                257
+    ├─Encoder: 1-2                                     [2, 32, 2048]             --
+    │    └─RotaryEmbedding: 2-4                        [1, 32, 512]              --
+    │    └─ModuleList: 2-5                             --                        --
+    │    │    └─ModuleList: 3-5                        --                        16,779,265
+    │    │    └─ModuleList: 3-6                        --                        33,566,721
+    │    │    └─ModuleList: 3-7                        --                        16,779,265
+    │    │    └─ModuleList: 3-8                        --                        33,566,721
+    │    │    └─ModuleList: 3-9                        --                        16,779,265
+    │    │    └─ModuleList: 3-10                       --                        33,566,721
+    │    │    └─ModuleList: 3-11                       --                        16,779,265
+    │    │    └─ModuleList: 3-12                       --                        33,566,721
+    │    └─ScaleNorm: 2-6                              [2, 32, 2048]             1
+    ├─Linear: 1-3                                      [2, 32, 10]               20,490
+    ====================================================================================================
+    Total params: 293,838,100
+    Trainable params: 293,838,100
+    Non-trainable params: 0
+    Total mult-adds (Units.GIGABYTES): 23.82
+
+MetaModel(
+  (model): SimpleConvTimeAggModel(
+    (initial_linear): Sequential(
+      (0): Conv1d(192, 512, kernel_size=(1,), stride=(1,))
+    )
+    (encoder): ConvSequence(
+      (sequence): ModuleList(
+        (0): Sequential(
+          (0): Dropout(p=0.2, inplace=False)
+          (1): Conv1d(512, 2048, kernel_size=(3,), stride=(1,), padding=(1,))
+          (2): BatchNorm1d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (3): GELU(approximate='none')
+          (4): Dropout(p=0.5, inplace=False)
+        )
+        (1): Sequential(
+          (0): Conv1d(2048, 2048, kernel_size=(3,), stride=(1,), padding=(2,), dilation=(2,))
+          (1): BatchNorm1d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (2): GELU(approximate='none')
+          (3): Dropout(p=0.5, inplace=False)
+          (4): LayerScale()
+        )
+        (2): Sequential(
+          (0): Conv1d(2048, 2048, kernel_size=(3,), stride=(1,), padding=(4,), dilation=(4,))
+          (1): BatchNorm1d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (2): GELU(approximate='none')
+          (3): Dropout(p=0.5, inplace=False)
+          (4): LayerScale()
+        )
+        (3): Sequential(
+          (0): Conv1d(2048, 2048, kernel_size=(3,), stride=(1,), padding=(1,))
+          (1): BatchNorm1d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (2): GELU(approximate='none')
+          (3): Dropout(p=0.5, inplace=False)
+          (4): LayerScale()
+        )
+        (4): Sequential(
+          (0): Conv1d(2048, 2048, kernel_size=(3,), stride=(1,), padding=(2,), dilation=(2,))
+          (1): BatchNorm1d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (2): GELU(approximate='none')
+          (3): Dropout(p=0.5, inplace=False)
+          (4): LayerScale()
+        )
+        (5): Sequential(
+          (0): Conv1d(2048, 2048, kernel_size=(3,), stride=(1,), padding=(4,), dilation=(4,))
+          (1): BatchNorm1d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (2): GELU(approximate='none')
+          (3): Dropout(p=0.5, inplace=False)
+          (4): LayerScale()
+        )
+        (6): Sequential(
+          (0): Conv1d(2048, 2048, kernel_size=(3,), stride=(1,), padding=(1,))
+          (1): BatchNorm1d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (2): GELU(approximate='none')
+          (3): Dropout(p=0.5, inplace=False)
+          (4): LayerScale()
+        )
+        (7): Sequential(
+          (0): Conv1d(2048, 2048, kernel_size=(3,), stride=(1,), padding=(2,), dilation=(2,))
+          (1): LayerScale()
+        )
+      )
+      (glus): ModuleList(
+        (0-7): 8 x None
+      )
+    )
+    (time_agg_out): BahdanauAttention(
+      (Wa): Linear(in_features=2048, out_features=256, bias=True)
+      (Ua): LazyLinear(in_features=0, out_features=256, bias=True)
+      (Va): Linear(in_features=256, out_features=1, bias=True)
+    )
+  )
+  (transformer): Encoder(
+    (layers): ModuleList(
+      (0): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): Attention(
+          (to_q): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_k): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_v): Linear(in_features=2048, out_features=2048, bias=False)
+          (split_q_heads): Rearrange('b n (h d) -> b h n d', h=2)
+          (split_k_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (split_v_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (merge_heads): Rearrange('b h n d -> b n (h d)')
+          (attend): Attend(
+            (attn_dropout): Dropout(p=0.1, inplace=False)
+          )
+          (to_out): Linear(in_features=2048, out_features=2048, bias=False)
+        )
+        (2): Residual()
+      )
+      (1): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): FeedForward(
+          (ff): Sequential(
+            (0): Sequential(
+              (0): Linear(in_features=2048, out_features=8192, bias=True)
+              (1): GELU(approximate='none')
+            )
+            (1): Dropout(p=0.0, inplace=False)
+            (2): Linear(in_features=8192, out_features=2048, bias=True)
+          )
+        )
+        (2): Residual()
+      )
+      (2): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): Attention(
+          (to_q): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_k): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_v): Linear(in_features=2048, out_features=2048, bias=False)
+          (split_q_heads): Rearrange('b n (h d) -> b h n d', h=2)
+          (split_k_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (split_v_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (merge_heads): Rearrange('b h n d -> b n (h d)')
+          (attend): Attend(
+            (attn_dropout): Dropout(p=0.1, inplace=False)
+          )
+          (to_out): Linear(in_features=2048, out_features=2048, bias=False)
+        )
+        (2): Residual()
+      )
+      (3): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): FeedForward(
+          (ff): Sequential(
+            (0): Sequential(
+              (0): Linear(in_features=2048, out_features=8192, bias=True)
+              (1): GELU(approximate='none')
+            )
+            (1): Dropout(p=0.0, inplace=False)
+            (2): Linear(in_features=8192, out_features=2048, bias=True)
+          )
+        )
+        (2): Residual()
+      )
+      (4): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): Attention(
+          (to_q): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_k): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_v): Linear(in_features=2048, out_features=2048, bias=False)
+          (split_q_heads): Rearrange('b n (h d) -> b h n d', h=2)
+          (split_k_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (split_v_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (merge_heads): Rearrange('b h n d -> b n (h d)')
+          (attend): Attend(
+            (attn_dropout): Dropout(p=0.1, inplace=False)
+          )
+          (to_out): Linear(in_features=2048, out_features=2048, bias=False)
+        )
+        (2): Residual()
+      )
+      (5): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): FeedForward(
+          (ff): Sequential(
+            (0): Sequential(
+              (0): Linear(in_features=2048, out_features=8192, bias=True)
+              (1): GELU(approximate='none')
+            )
+            (1): Dropout(p=0.0, inplace=False)
+            (2): Linear(in_features=8192, out_features=2048, bias=True)
+          )
+        )
+        (2): Residual()
+      )
+      (6): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): Attention(
+          (to_q): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_k): Linear(in_features=2048, out_features=2048, bias=False)
+          (to_v): Linear(in_features=2048, out_features=2048, bias=False)
+          (split_q_heads): Rearrange('b n (h d) -> b h n d', h=2)
+          (split_k_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (split_v_heads): Rearrange('b n (h d) -> b h n d', d=1024)
+          (merge_heads): Rearrange('b h n d -> b n (h d)')
+          (attend): Attend(
+            (attn_dropout): Dropout(p=0.1, inplace=False)
+          )
+          (to_out): Linear(in_features=2048, out_features=2048, bias=False)
+        )
+        (2): Residual()
+      )
+      (7): ModuleList(
+        (0): ModuleList(
+          (0): ScaleNorm()
+          (1-2): 2 x None
+        )
+        (1): FeedForward(
+          (ff): Sequential(
+            (0): Sequential(
+              (0): Linear(in_features=2048, out_features=8192, bias=True)
+              (1): GELU(approximate='none')
+            )
+            (1): Dropout(p=0.0, inplace=False)
+            (2): Linear(in_features=8192, out_features=2048, bias=True)
+          )
+        )
+        (2): Residual()
+      )
+    )
+    (layer_integrators): ModuleList(
+      (0-7): 8 x None
+    )
+    (rotary_pos_emb): RotaryEmbedding()
+    (rel_pos): AlibiPositionalBias()
+    (adaptive_mlp): Identity()
+    (final_norm): ScaleNorm()
+    (skip_combines): ModuleList(
+      (0-7): 8 x None
+    )
+  )
+  (linear): Linear(in_features=2048, out_features=10, bias=True)
+)
     """
 
     from xp_config import experiment_config
@@ -266,3 +533,4 @@ if __name__=="__main__":
 
         transformer_config = ModelConfig(**cfg["transformer_config"])
         transformer_model = transformer_config.build(dim=hidden_dim)
+

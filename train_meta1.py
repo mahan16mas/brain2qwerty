@@ -119,6 +119,7 @@ def train_model(args: dict):
     epochs = args.get("epochs", 300)
     conv_dropout = args.get("conv_dropout", 0.5)
     dropout_input = args.get("dropout_input", 0.2)
+    time_agg_out = args.get("time_agg_out", "att")
     os.makedirs(args["out_dir"], exist_ok=True)
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
@@ -139,10 +140,6 @@ def train_model(args: dict):
         model = ConvRNN(
             num_neurons=192 if not is_speech else (512 if is_nejm else 256),
             num_classes=(41 if is_speech else 32),
-            rnn_hidden=2048,
-            rnn_layers=5,
-            bidir=False,
-            rnn_dr=0.4, 
             conv_dropout=conv_dropout,
             dropout_input=dropout_input,
             mahan_model_params = use_mahan_model_params,
@@ -159,7 +156,6 @@ def train_model(args: dict):
         },
         "interval": "step",
     }
-
 
     opt_config = LightningOptimizer.model_validate(optimizer_config_dict)
 

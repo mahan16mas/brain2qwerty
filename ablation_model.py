@@ -28,8 +28,9 @@ class RNN_decoder(nn.Module):
     
 class ConvRNN(nn.Module):
     def __init__(self, num_neurons, num_classes, # hidden=2048,
-                 rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4, 
                  conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
+        """rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4, 
+        """
         super().__init__()
 
         cfg = experiment_config(meta_default=not mahan_model_params)
@@ -43,7 +44,24 @@ class ConvRNN(nn.Module):
     
         self.patch_encoder = brain_config.build(n_in_channels=num_neurons, n_outputs=hidden_dim)
 
-        self.rnn_decoder = RNN_decoder(input_size=hidden_dim, rnn_hidden=rnn_hidden, rnn_layers=rnn_layers, bidir=bidir, rnn_dr=rnn_dr)
+        if mahan_model_params:
+            RNN = {
+                # making it big enough so the RNN decoder is kinda similar in terms of number of parameters to the default meta transformer 
+                "rnn_hidden": 1024, 
+                "rnn_layers": 3, 
+                "bidir": False, 
+                "rnn_dr": 0.4, 
+            }
+        else: 
+            RNN = {
+                # making it big enough so the RNN decoder is kinda similar in terms of number of parameters to the default meta transformer 
+                "rnn_hidden": 2048, 
+                "rnn_layers": 5, 
+                "bidir": False, 
+                "rnn_dr": 0.4, 
+            }
+
+        self.rnn_decoder = RNN_decoder(input_size=hidden_dim, rnn_hidden=RNN["rnn_hidden"], rnn_layers=RNN["rnn_layers"], bidir=RNN["bidir"], rnn_dr=RNN["rnn_dr"])
     
         self.linear = nn.Linear(self.rnn_decoder.rnn_output_dim, num_classes)
 
@@ -87,6 +105,67 @@ class ConvRNN(nn.Module):
         return self._decoder_forward(uids, y_pred)
 
 
+
+class CEBRATransformer(nn.Module):
+    def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
+        super().__init__()
+        import sys
+        sys.path.append('CEBRA-main')
+        from cebra.models import Offset36Dropoutv2
+        
+        cfg = experiment_config(meta_default=not mahan_model_params)
+        cfg["brain_model_config"]["conv_dropout"] = conv_dropout
+        cfg["brain_model_config"]["dropout_input"] = dropout_input
+    
+        brain_config = ModelConfig(**cfg["brain_model_config"])
+        transformer_config = ModelConfig(**cfg["transformer_config"])
+    
+        hidden_dim = brain_config.hidden
+    
+        self.model = brain_config.build(n_in_channels=num_neurons, n_outputs=hidden_dim)
+        self.transformer = transformer_config.build(dim=hidden_dim)
+        hidden = hidden_dim
+       
+        self.linear = nn.Linear(hidden, num_classes)
+
+    def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
+        return self.model(neuro, None, None)
+
+    def _transformer_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
+        # y_pred: [K, D] where K is number of chunks 
+
+        uids = uids.detach().cpu().numpy() 
+        unique_uids, first_idx = np.unique(uids, return_index=True)
+        # print(unique_uids, first_idx)
+        unique_uids = unique_uids[np.argsort(first_idx)]
+        # print('-----')
+        # print('unique_uids', unique_uids)
+        grouped = [
+            torch.stack([y_pred[i] for i, s in enumerate(uids) if s == uid])
+            for uid in unique_uids
+        ]
+        # print(len(grouped))
+        # print(grouped[0].shape, grouped[1].shape)
+                
+        max_len = max(len(g) for g in grouped)
+        x = torch.zeros(len(grouped), max_len, y_pred.shape[1], device=y_pred.device) # [B, T_max, D] where B is number of unique trials in the current batch of chunks
+        mask = torch.zeros(len(grouped), max_len, device=y_pred.device) # [B, T_max]
+        out_lengths = torch.zeros(len(grouped), device=y_pred.device) # [B]
+        for i, g in enumerate(grouped):
+            x[i, : len(g)] = g
+            mask[i, : len(g)] = 1
+            out_lengths[i] = len(g)
+
+        out = self.transformer(x, mask=mask.bool())
+        return self.linear(out), out_lengths.long()
+
+    def forward(self, neuro, subject_id, channel_positions, uids):
+        # neuro = self.smoother.forward(neuro)
+        y_pred = self._cnn_forward(neuro, subject_id, channel_positions)
+        # print('cnn output', y_pred.shape)
+        return self._transformer_forward(uids, y_pred)
+
+
 if __name__=="__main__":
     import torch.nn as nn 
     import torch 
@@ -98,7 +177,7 @@ if __name__=="__main__":
     sid = torch.zeros([K])
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    model = ConvRNN(N, 10)
+    model = ConvRNN(N, 10, mahan_model_params=True)
     print(model.patch_encoder)
 
     # y_pred = model.model(x, sid, uids)
@@ -109,17 +188,17 @@ if __name__=="__main__":
     # out, _ = model(x, sid, cpos, uids)
     # print(out.shape, '\n')
         
-    # from torchinfo import summary
-    # print(summary(model, input_data=(x, sid, cpos, uids), 
-    #     # col_names=(
-    #     #     "input_size",
-    #     #     "output_size",
-    #     #     "num_params",
-    #     #     "trainable",
-    #     # ),
-    #     # depth=10,
-    #     verbose=1,)
-    #     )
+    from torchinfo import summary
+    print(summary(model, input_data=(x, sid, cpos, uids), 
+        # col_names=(
+        #     "input_size",
+        #     "output_size",
+        #     "num_params",
+        #     "trainable",
+        # ),
+        # depth=10,
+        verbose=1,)
+        )
     
     exit()
 

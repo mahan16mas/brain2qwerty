@@ -31,6 +31,7 @@ parser.add_argument('--dropout_input', type=float, default=0.2)
 parser.add_argument('--do_wandb', action='store_true', help='log w wandb')
 parser.add_argument('--use_mahan_model_params', action='store_true', help='use mahan params for model configs instead of meta defualts')
 parser.add_argument('--use_rnn_decoder', action='store_true', help='use ConvRNN model from ablation_model.py')
+parser.add_argument('--time_agg_out', type=str, help="time_aggregation method/layer used in convolutional patch encoder pooling part", default="att", choices=['gap', 'linear', 'att'])
 
 parsed_args = parser.parse_args()
 
@@ -42,4 +43,9 @@ train_model(args_dict)
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_meta_default_50' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb 
 
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --use_rnn_decoder --out_dir 'nlp21_meta_convRNN_default_50' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb 
+
+CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_meta_default_50_time-agg-gap' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --time_agg_out 'gap' 
+
+CUDA_VISIBLE_DEVICES=0 python start_trainer.py --out_dir 'nlp21_meta_default_50_time-agg-linear' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --time_agg_out 'linear' 
+
 """
