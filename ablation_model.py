@@ -5,31 +5,52 @@ import torch
 import numpy as np
 from utils.augmentation import GaussianSmoothing
 
-def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False):
-    cfg = experiment_config(meta_default=not mahan_model_params)
-    cfg["brain_model_config"]["conv_dropout"] = conv_dropout
-    cfg["brain_model_config"]["dropout_input"] = dropout_input
+class RNN_decoder(nn.Module): 
+    def __init__(self, input_size=2048, rnn_hidden=2048, rnn_layers=5, bidir=False, rnn_dr=0.4, ):
+        super().__init__()
+        current_dim = input_size
+        self.rnn = nn.GRU(
+            input_size=current_dim, 
+            hidden_size=rnn_hidden,
+            num_layers=rnn_layers,
+            batch_first=True, 
+            bidirectional=bidir, 
+            dropout=rnn_dr
+        )
+        current_dim = rnn_hidden * (2 if bidir else 1)
 
-    brain_config = ModelConfig(**cfg["brain_model_config"])
-    transformer_config = ModelConfig(**cfg["transformer_config"])
+        self.rnn_output_dim = current_dim
 
-    hidden_dim = brain_config.hidden
-
-    brain_model = brain_config.build(n_in_channels=n_in_channels, n_outputs=hidden_dim)
-    transformer_model = transformer_config.build(dim=hidden_dim)
-    return brain_model,transformer_model, hidden_dim
-
-class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
+    def forward(self, x, lengths):
+        # x: [B, T, D]
+        x, _ = self.rnn(x)
+        return x, lengths
+    
+class ConvRNN(nn.Module):
+    def __init__(self, num_neurons, num_classes, # hidden=2048,
+                 rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4, 
+                 conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
         super().__init__()
 
-        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params)
-        self.linear = nn.Linear(hidden, num_classes)
+        cfg = experiment_config(meta_default=not mahan_model_params)
+        cfg["brain_model_config"]["conv_dropout"] = conv_dropout
+        cfg["brain_model_config"]["dropout_input"] = dropout_input
+    
+        brain_config = ModelConfig(**cfg["brain_model_config"])
+        # transformer_config = ModelConfig(**cfg["transformer_config"])
+    
+        hidden_dim = brain_config.hidden # cnn_hidden output
+    
+        self.patch_encoder = brain_config.build(n_in_channels=num_neurons, n_outputs=hidden_dim)
+
+        self.rnn_decoder = RNN_decoder(input_size=hidden_dim, rnn_hidden=rnn_hidden, rnn_layers=rnn_layers, bidir=bidir, rnn_dr=rnn_dr)
+    
+        self.linear = nn.Linear(self.rnn_decoder.rnn_output_dim, num_classes)
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
-        return self.model(neuro, None, None)
+        return self.patch_encoder(neuro, None, None)
 
-    def _transformer_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
+    def _decoder_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
         # y_pred: [K, D] where K is number of chunks 
 
         uids = uids.detach().cpu().numpy() 
@@ -54,14 +75,16 @@ class MetaModel(nn.Module):
             mask[i, : len(g)] = 1
             out_lengths[i] = len(g)
 
-        out = self.transformer(x, mask=mask.bool())
-        return self.linear(out), out_lengths.long()
+        out_lengths = out_lengths.long()
+        # out = self.transformer(x, mask=mask.bool())
+        rnn_out, out_lengths = self.rnn_decoder(x, out_lengths)
+        return self.linear(rnn_out), out_lengths 
 
     def forward(self, neuro, subject_id, channel_positions, uids):
         # neuro = self.smoother.forward(neuro)
-        y_pred = self._cnn_forward(neuro, subject_id, channel_positions)
+        y_pred = self.patch_encoder(neuro, subject_id, channel_positions)
         # print('cnn output', y_pred.shape)
-        return self._transformer_forward(uids, y_pred)
+        return self._decoder_forward(uids, y_pred)
 
 
 if __name__=="__main__":
@@ -75,8 +98,8 @@ if __name__=="__main__":
     sid = torch.zeros([K])
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    model = MetaModel(N, 10)
-    print(model.model)
+    model = ConvRNN(N, 10)
+    print(model.patch_encoder)
 
     # y_pred = model.model(x, sid, uids)
     # print(y_pred.shape)

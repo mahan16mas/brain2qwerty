@@ -1,4 +1,5 @@
 from meta_model import MetaModel
+from ablation_model import ConvRNN
 from loaders import get_dataset_loaders
 from neuraltrain.optimizers import LightningOptimizer
 from torch import nn
@@ -124,13 +125,29 @@ def train_model(args: dict):
     inf_losses = 0
     device = torch.device("cuda")
 
-    model = MetaModel(
-        num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-        num_classes=(41 if is_speech else 32),
-        conv_dropout=conv_dropout,
-        dropout_input=dropout_input,
-        mahan_model_params = use_mahan_model_params,
-    ).to(device)
+    use_rnn_decoder = args.get("use_rnn_decoder", False)
+
+    if not use_rnn_decoder: 
+        model = MetaModel(
+            num_neurons=192 if not is_speech else (512 if is_nejm else 256),
+            num_classes=(41 if is_speech else 32),
+            conv_dropout=conv_dropout,
+            dropout_input=dropout_input,
+            mahan_model_params = use_mahan_model_params,
+        ).to(device)
+    else: 
+        model = ConvRNN(
+            num_neurons=192 if not is_speech else (512 if is_nejm else 256),
+            num_classes=(41 if is_speech else 32),
+            rnn_hidden=2048,
+            rnn_layers=5,
+            bidir=False,
+            rnn_dr=0.4, 
+            conv_dropout=conv_dropout,
+            dropout_input=dropout_input
+            mahan_model_params = use_mahan_model_params,
+        ).to(device)
+        
     print(model)
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     optimizer_config_dict = {
