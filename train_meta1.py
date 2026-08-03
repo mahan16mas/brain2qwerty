@@ -144,10 +144,10 @@ def train_model(args: dict):
             bidir=False,
             rnn_dr=0.4, 
             conv_dropout=conv_dropout,
-            dropout_input=dropout_input
+            dropout_input=dropout_input,
             mahan_model_params = use_mahan_model_params,
         ).to(device)
-        
+
     print(model)
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
     optimizer_config_dict = {
