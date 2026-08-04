@@ -12,7 +12,7 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     cfg["brain_model_config"]["time_agg_out"] = time_agg_out
     if not mahan_model_params: 
         cfg["brain_model_config"]["hidden"] = cnn_hidden
-        
+
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
 
@@ -78,7 +78,7 @@ if __name__=="__main__":
     sid = torch.zeros([K])
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    model = MetaModel(N, 10, mahan_model_params=False, time_agg_out="gap") # 'gap', 'linear', 'att'
+    model = MetaModel(N, 10, mahan_model_params=False, time_agg_out="gap", cnn_hidden=1024) # 'gap', 'linear', 'att'
     
     # y_pred = model.model(x, sid, uids)
     # print(y_pred.shape)
@@ -101,7 +101,7 @@ if __name__=="__main__":
             #     "trainable",
             # ),
             # depth=10,
-            # verbose=2,
+            verbose=1,
             )
         )
     

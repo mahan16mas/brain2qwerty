@@ -1,0 +1,32 @@
+cd /mnt/upmwmathis/scratch/hossein/transformer_bci/brain2qwerty/
+
+git fetch origin;
+git switch eating;
+git branch --set-upstream-to=origin/eating;
+git pull
+
+# interactive 
+runai submit \
+  --name transformer-bci-smoke-001 \
+  --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
+  --gpu 1 \
+  --cpu 2 \
+  --memory 64Gi \
+  --node-pools h100 \
+  --large-shm \
+  --pvc home:/home/mirzaei \
+  --pvc upmwmathis-scratch:/data \
+  -e HOME=/home/mirzaei \
+  -e PYTHONUNBUFFERED=1 \
+  -p upmwmathis-mirzaei \
+  --run-as-user \
+  --preemptible \
+  --interactive \
+  --attach \
+  --command -- bash
+
+
+cd /data/hossein/transformer_bci/brain2qwerty; 
+source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate
+
+runai bash transformer-bci-smoke-002 -p upmwmathis-mirzaei
