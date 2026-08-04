@@ -27,6 +27,12 @@ runai submit \
 
 
 cd /data/hossein/transformer_bci/brain2qwerty; 
-source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate
+source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate;
+source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh;
 
-runai bash transformer-bci-smoke-002 -p upmwmathis-mirzaei
+# Usefull commands 
+runai list | grep Running
+runai bash transformer-bci-smoke-001 -p upmwmathis-mirzaei
+runai describe job transformer-bci-smoke-001 -p upmwmathis-mirzaei
+runai delete job transformer-bci-smoke-001 -p upmwmathis-mirzaei
+runai list jobs -p upmwmathis-mirzaei
