@@ -44,7 +44,7 @@ train_model(args_dict)
 # [X]
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir 'nlp21_meta_default_50' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb 
 # [ ]
-python start_trainer.py --out_dir 'nlp21_meta_default_300' --batch_size 64 --epochs 300 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb  
+python start_trainer.py --out_dir 'nlp21_meta_default_300' --batch_size 64 --epochs 300 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb  --dataset_path "/data/hossein/data/speech/speech_data_raw.npz"
 
 # [X]
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --use_rnn_decoder --out_dir 'nlp21_meta_convRNN_default_50' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb 
