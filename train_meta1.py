@@ -226,7 +226,7 @@ def train_model(args: dict):
             uids_tensor = uids_tensor.to(device)
             subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
-                pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
+                pred, lengths = model(neuro_chunks, subject_id, channel_positions, uids_tensor)
                 ctc_loss = criterion(
                     torch.permute(pred.log_softmax(2), [1, 0, 2]),
                     targets_padded,
