@@ -78,7 +78,7 @@ python start_trainer.py --out_dir 'nlp21_meta_default_300' --batch_size 64 --epo
 # [X]
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --use_rnn_decoder --out_dir 'nlp21_meta_convRNN_default_50' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb 
 
-# [             ]
+# [R]
 # this is kinda extention on ConvOnly model
 CUDA_VISIBLE_DEVICES=1 python start_trainer.py --use_rnn_decoder --out_dir 'nlp21_meta_convRNN_shallow_RNN_default_50_bs8' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 8 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --rnn_hidden 2048 --rnn_layers 1
 
