@@ -222,19 +222,6 @@ class CEBRACNN(nn.Module):
         D - number of channels (neuron dimensions)
         T - time dimension (equals to chunk size 4)
         """
-        print("x:", x.device, x.dtype)
-        print(
-            "weight:",
-            self.initial_linear.weight.device,
-            self.initial_linear.weight.dtype,
-        )
-        print(
-            "bias:",
-            self.initial_linear.bias.device,
-            self.initial_linear.bias.dtype,
-        )
-        print("CUDA autocast:", torch.is_autocast_enabled("cuda"))
-
         x = self.initial_linear(x) # [K, initial_layer_size, C]
         # print(x.shape)
         x = self._apply_cebra(x)

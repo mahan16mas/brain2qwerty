@@ -160,7 +160,7 @@ def train_model(args: dict):
                     cebra_pad_mode=args.get("cebra_pad_mode", "replicate"),
                     transformer_depth=args.get("transformer_depth", 4),
                     transformer_head=args.get("transformer_head", 2),
-                )
+                ).to(device)
         else: 
             from ablation_model import ConvOnly
             model = ConvOnly(
