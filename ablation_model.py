@@ -88,7 +88,8 @@ class ConvOnly(nn.Module):
 
 class ConvRNN(nn.Module):
     def __init__(self, num_neurons, num_classes, # hidden=2048,
-                 conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
+                 conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False,
+                 rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4):
         """rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4, 
         """
         super().__init__()
@@ -104,23 +105,25 @@ class ConvRNN(nn.Module):
     
         self.patch_encoder = brain_config.build(n_in_channels=num_neurons, n_outputs=hidden_dim)
 
-        if mahan_model_params:
-            RNN = {
-                # making it big enough so the RNN decoder is kinda similar in terms of number of parameters to the default meta transformer 
-                "rnn_hidden": 1024, 
-                "rnn_layers": 3, 
-                "bidir": False, 
-                "rnn_dr": 0.4, 
-            }
-        else: 
-            RNN = {
-                # making it big enough so the RNN decoder is kinda similar in terms of number of parameters to the default meta transformer 
-                "rnn_hidden": 2048, 
-                "rnn_layers": 5, 
-                "bidir": False, 
-                "rnn_dr": 0.4, 
-            }
-
+        # if mahan_model_params:
+        #     RNN = {
+        #         # making it big enough so the RNN decoder is kinda similar in terms of number of parameters to the default meta transformer 
+        #         "rnn_hidden": 1024, 
+        #         "rnn_layers": 3, 
+        #         "bidir": False, 
+        #         "rnn_dr": 0.4, 
+        #     }
+        # else: 
+        #     RNN = {
+        #         # making it big enough so the RNN decoder is kinda similar in terms of number of parameters to the default meta transformer 
+        #         "rnn_hidden": 2048, 
+        #         "rnn_layers": 5, 
+        #         "bidir": False, 
+        #         "rnn_dr": 0.4, 
+        #     }
+        RNN = {
+            "rnn_hidden": rnn_hidden, "rnn_layers": rnn_layers, 'bidir': bidir, "rnn_dr": rnn_dr,
+        }
         self.rnn_decoder = RNN_decoder(input_size=hidden_dim, rnn_hidden=RNN["rnn_hidden"], rnn_layers=RNN["rnn_layers"], bidir=RNN["bidir"], rnn_dr=RNN["rnn_dr"])
     
         self.linear = nn.Linear(self.rnn_decoder.rnn_output_dim, num_classes)
@@ -165,28 +168,48 @@ class ConvRNN(nn.Module):
         return self._decoder_forward(uids, y_pred)
 
 class CEBRACNN(nn.Module): 
-    def __init__(self, num_neurons, initial_layer_size=512, cebra_num_units=256, cebra_num_outputs=64):
+    def __init__(self, num_neurons, initial_layer_size=512, cebra_num_units=256, cebra_num_outputs=64, cebra_model_name="Offset5Model", cebra_pad_mode="replicate"):
         super().__init__()
-
+        self.cebra_pad_mode = cebra_pad_mode
         self.initial_linear = nn.Conv1d(num_neurons, initial_layer_size, 1)
 
         import sys
         sys.path.append('CEBRA-main')
-        from cebra.models import Offset36Dropoutv2
+        from cebra.models import Offset5Model # Offset36Dropoutv2
 
-        self.cebra = Offset36Dropoutv2(initial_layer_size, cebra_num_units, cebra_num_outputs)
+        """
+        try this later: 
+        @register("resample1-model", deprecated=True)
+        @register("offset4-model-2x-subsample")
+        class Resample1Model(_OffsetModel, ResampleModelMixin):
+        """
+        # self.cebra = Offset36Dropoutv2(initial_layer_size, cebra_num_units, cebra_num_outputs)
+        
+        if cebra_model_name == "Offset5Model": 
+            self.cebra = Offset5Model(initial_layer_size, cebra_num_units, cebra_num_outputs)
+        else:
+            print('in progress, gonna encounter erorr after this line')
 
-        from neuraltrain.models.common import BahdanauAttention
-        self.time_agg_out = BahdanauAttention(input_size=cebra_num_outputs, hidden_size=256)
+        time_agg_out = "linear" # a safe option for testing
+        if time_agg_out == "gap":
+            self.time_agg_out = nn.AdaptiveAvgPool1d(1)
+        elif time_agg_out == "linear":
+            self.time_agg_out = nn.LazyLinear(1)
+        elif time_agg_out == "att":
+            from neuraltrain.models.common import BahdanauAttention
+            self.time_agg_out = BahdanauAttention(input_size=cebra_num_outputs, hidden_size=256)
 
     def _apply_cebra(self, x):
-        
-        x = F.pad(x, (18, 17), mode='replicate')
+        left_pad, right_pad = self.cebra.get_offset().left, self.cebra.get_offset().right
+
+        x = F.pad(x, (left_pad, right_pad-1), mode=self.cebra_pad_mode) # reflect
         # x: [B, D, T_W_padded]
         # print('After self._apply_cebra F.pad(x, (18, 17), ', x.shape)
 
+        # print('bef ceb', x.shape)
         x = self.cebra(x)  # (B, D, T)
-        
+        # print('after ceb', x.shape)
+
         return x
     
     def forward(self, x): 
@@ -211,30 +234,26 @@ class CEBRACNN(nn.Module):
 
 
 class CEBRATransformer(nn.Module):
-    def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
+    def __init__(self, num_neurons, num_classes, initial_layer_size = 512, cebra_num_units = 256, cebra_num_outputs = 64, cebra_model_name="Offset5Model", cebra_pad_mode = "replicate", transformer_depth=4, transformer_head=2):
         super().__init__()
 
-        import sys
-        sys.path.append('CEBRA-main')
-        from cebra.models import Offset36Dropoutv2
-        
-        cfg = experiment_config(meta_default=not mahan_model_params)
-        cfg["brain_model_config"]["conv_dropout"] = conv_dropout
-        cfg["brain_model_config"]["dropout_input"] = dropout_input
+        self.patch_encoder = CEBRACNN(
+            num_neurons = num_neurons,
+            initial_layer_size = initial_layer_size,  
+            cebra_num_units = cebra_num_units,
+            cebra_num_outputs = cebra_num_outputs,
+            cebra_model_name = cebra_model_name,
+            cebra_pad_mode=cebra_pad_mode
+        )
 
-        brain_config = ModelConfig(**cfg["brain_model_config"])
+        cfg = experiment_config()
+        cfg["transformer_config"]["depth"] = transformer_depth
+        cfg["transformer_config"]["heads"] = transformer_head
         transformer_config = ModelConfig(**cfg["transformer_config"])
-    
-        hidden_dim = brain_config.hidden
-    
-        self.model = brain_config.build(n_in_channels=num_neurons, n_outputs=hidden_dim)
-        self.transformer = transformer_config.build(dim=hidden_dim)
-        hidden = hidden_dim
-       
-        self.linear = nn.Linear(hidden, num_classes)
 
-    def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
-        return self.model(neuro, None, None)
+        self.transformer = transformer_config.build(dim=cebra_num_outputs)
+        transformer_output_dim = cebra_num_outputs       
+        self.linear = nn.Linear(transformer_output_dim, num_classes)
 
     def _transformer_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
         # y_pred: [K, D] where K is number of chunks 
@@ -266,12 +285,46 @@ class CEBRATransformer(nn.Module):
 
     def forward(self, neuro, subject_id, channel_positions, uids):
         # neuro = self.smoother.forward(neuro)
-        y_pred = self._cnn_forward(neuro, subject_id, channel_positions)
-        # print('cnn output', y_pred.shape)
+        y_pred = self.patch_encoder(neuro)
+        print('cnn output', y_pred.shape)
         return self._transformer_forward(uids, y_pred)
 
 
 if __name__=="__main__":
+    from torchinfo import summary
+    # import torch.nn as nn 
+    # import torch 
+    
+    # K = 64 # num chunks
+    # N = 192
+    # C = 4 # chunk size
+    # x = torch.randn([K, N, C])
+    # sid = torch.zeros([K])
+    # cpos = torch.randn([K, N, C])
+    # uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    # # lengths = torch.randint(0, T_max, (B, )) + 1 
+    # model = ConvOnly(192, 32)
+    # # print(model)
+    # out, l = model(x, sid, cpos, uids)
+    # print(out.shape)
+    # exit()
+
+    # import torch.nn as nn 
+    # import torch 
+    
+    # K = 64 # num chunks
+    # N = 192
+    # C = 4 # chunk size
+    # x = torch.randn([K, N, C])
+    # sid = torch.zeros([K])
+    # cpos = torch.randn([K, N, C])
+    # uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    # # lengths = torch.randint(0, T_max, (B, )) + 1 
+    # model = CEBRACNN(192, )
+    # # print(model)
+    # out = model(x)
+    # print(out.shape)
+    # exit()
 
     import torch.nn as nn 
     import torch 
@@ -284,27 +337,21 @@ if __name__=="__main__":
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
-    model = ConvOnly(192, 32)
+    model = CEBRATransformer(192, 32, cebra_num_units=1024, cebra_num_outputs = 256)
     # print(model)
     out, l = model(x, sid, cpos, uids)
     print(out.shape)
-    exit()
 
-    import torch.nn as nn 
-    import torch 
-    
-    K = 64 # num chunks
-    N = 192
-    C = 4 # chunk size
-    x = torch.randn([K, N, C])
-    sid = torch.zeros([K])
-    cpos = torch.randn([K, N, C])
-    uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    # lengths = torch.randint(0, T_max, (B, )) + 1 
-    model = CEBRACNN(192, )
-    # print(model)
-    out = model(x)
-    print(out.shape)
+    print(summary(model, input_data=(x, sid, cpos, uids), 
+    # col_names=(
+    #     "input_size",
+    #     "output_size",
+    #     "num_params",
+    #     "trainable",
+    # ),
+    # depth=10,
+    verbose=1,)
+    )
     exit()
 
 
