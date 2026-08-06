@@ -87,7 +87,7 @@ class ConvOnly(nn.Module):
         return self._decoder_forward(uids, y_pred)
 
 class ConvRNN(nn.Module):
-    def __init__(self, num_neurons, num_classes, # hidden=2048,
+    def __init__(self, num_neurons, num_classes, cnn_hidden=2048,
                  conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False,
                  rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4):
         """rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4, 
@@ -97,6 +97,7 @@ class ConvRNN(nn.Module):
         cfg = experiment_config(meta_default=not mahan_model_params)
         cfg["brain_model_config"]["conv_dropout"] = conv_dropout
         cfg["brain_model_config"]["dropout_input"] = dropout_input
+        cfg["brain_model_config"]["hidden"] = cnn_hidden
     
         brain_config = ModelConfig(**cfg["brain_model_config"])
         # transformer_config = ModelConfig(**cfg["transformer_config"])

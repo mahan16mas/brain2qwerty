@@ -174,11 +174,14 @@ def train_model(args: dict):
         model = ConvRNN(
             num_neurons=192 if not is_speech else (512 if is_nejm else 256),
             num_classes=(41 if is_speech else 32),
+            cnn_hidden=cnn_hidden,
             conv_dropout=conv_dropout,
             dropout_input=dropout_input,
             mahan_model_params = use_mahan_model_params,
-            time_agg_out = time_agg_out,
-            cnn_hidden=cnn_hidden,
+            rnn_hidden = args.get("rnn_hidden"),
+            rnn_layers = args.get("rnn_layers"),
+            bidir = args.get("bidir", False),
+            rnn_dr = args.get("rnn_dr")
         ).to(device)
 
     print(model)
