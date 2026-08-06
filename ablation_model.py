@@ -4,6 +4,7 @@ from torch import nn
 import torch
 import numpy as np
 from utils.augmentation import GaussianSmoothing
+import torch.nn.functional as F
 
 class RNN_decoder(nn.Module): 
     def __init__(self, input_size=2048, rnn_hidden=2048, rnn_layers=5, bidir=False, rnn_dr=0.4, ):
@@ -25,7 +26,66 @@ class RNN_decoder(nn.Module):
         # x: [B, T, D]
         x, _ = self.rnn(x)
         return x, lengths
+
+class ConvOnly(nn.Module):
+    def __init__(self, num_neurons, num_classes, # hidden=2048,
+                 conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
+        """rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4, 
+        """
+        super().__init__()
+
+        cfg = experiment_config(meta_default=not mahan_model_params)
+        cfg["brain_model_config"]["conv_dropout"] = conv_dropout
+        cfg["brain_model_config"]["dropout_input"] = dropout_input
     
+        brain_config = ModelConfig(**cfg["brain_model_config"])
+        # transformer_config = ModelConfig(**cfg["transformer_config"])
+    
+        hidden_dim = brain_config.hidden # cnn_hidden output
+    
+        self.patch_encoder = brain_config.build(n_in_channels=num_neurons, n_outputs=hidden_dim)
+
+        self.linear = nn.Linear(hidden_dim, num_classes)
+
+    def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
+        return self.patch_encoder(neuro, None, None)
+
+    def _decoder_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
+        # y_pred: [K, D] where K is number of chunks 
+
+        uids = uids.detach().cpu().numpy() 
+        unique_uids, first_idx = np.unique(uids, return_index=True)
+        # print(unique_uids, first_idx)
+        unique_uids = unique_uids[np.argsort(first_idx)]
+        # print('-----')
+        # print('unique_uids', unique_uids)
+        grouped = [
+            torch.stack([y_pred[i] for i, s in enumerate(uids) if s == uid])
+            for uid in unique_uids
+        ]
+        # print(len(grouped))
+        # print(grouped[0].shape, grouped[1].shape)
+                
+        max_len = max(len(g) for g in grouped)
+        x = torch.zeros(len(grouped), max_len, y_pred.shape[1], device=y_pred.device) # [B, T_max, D] where B is number of unique trials in the current batch of chunks
+        mask = torch.zeros(len(grouped), max_len, device=y_pred.device) # [B, T_max]
+        out_lengths = torch.zeros(len(grouped), device=y_pred.device) # [B]
+        for i, g in enumerate(grouped):
+            x[i, : len(g)] = g
+            mask[i, : len(g)] = 1
+            out_lengths[i] = len(g)
+
+        out_lengths = out_lengths.long()
+        # print('before linear', x.shape)
+        outputs = self.linear(x)
+        return outputs, out_lengths 
+
+    def forward(self, neuro, subject_id, channel_positions, uids):
+        # neuro = self.smoother.forward(neuro)
+        y_pred = self.patch_encoder(neuro, subject_id, channel_positions)
+        # print('cnn output', y_pred.shape)
+        return self._decoder_forward(uids, y_pred)
+
 class ConvRNN(nn.Module):
     def __init__(self, num_neurons, num_classes, # hidden=2048,
                  conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
@@ -104,11 +164,56 @@ class ConvRNN(nn.Module):
         # print('cnn output', y_pred.shape)
         return self._decoder_forward(uids, y_pred)
 
+class CEBRACNN(nn.Module): 
+    def __init__(self, num_neurons, initial_layer_size=512, cebra_num_units=256, cebra_num_outputs=64):
+        super().__init__()
+
+        self.initial_linear = nn.Conv1d(num_neurons, initial_layer_size, 1)
+
+        import sys
+        sys.path.append('CEBRA-main')
+        from cebra.models import Offset36Dropoutv2
+
+        self.cebra = Offset36Dropoutv2(initial_layer_size, cebra_num_units, cebra_num_outputs)
+
+        from neuraltrain.models.common import BahdanauAttention
+        self.time_agg_out = BahdanauAttention(input_size=cebra_num_outputs, hidden_size=256)
+
+    def _apply_cebra(self, x):
+        
+        x = F.pad(x, (18, 17), mode='replicate')
+        # x: [B, D, T_W_padded]
+        # print('After self._apply_cebra F.pad(x, (18, 17), ', x.shape)
+
+        x = self.cebra(x)  # (B, D, T)
+        
+        return x
+    
+    def forward(self, x): 
+        """
+        x: [B, D, T]
+        lengths: [K]
+
+        B - number of samples (chunks)
+        D - number of channels (neuron dimensions)
+        T - time dimension (equals to chunk size 4)
+        """
+        x = self.initial_linear(x) # [K, initial_layer_size, C]
+        # print(x.shape)
+        x = self._apply_cebra(x)
+
+        x = self.time_agg_out(x)
+
+        if x.ndim == 3:
+            x = x.squeeze(2)  # Remove singleton dimension
+
+        return x 
 
 
 class CEBRATransformer(nn.Module):
     def __init__(self, num_neurons, num_classes, hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False):
         super().__init__()
+
         import sys
         sys.path.append('CEBRA-main')
         from cebra.models import Offset36Dropoutv2
@@ -116,7 +221,7 @@ class CEBRATransformer(nn.Module):
         cfg = experiment_config(meta_default=not mahan_model_params)
         cfg["brain_model_config"]["conv_dropout"] = conv_dropout
         cfg["brain_model_config"]["dropout_input"] = dropout_input
-    
+
         brain_config = ModelConfig(**cfg["brain_model_config"])
         transformer_config = ModelConfig(**cfg["transformer_config"])
     
@@ -167,6 +272,42 @@ class CEBRATransformer(nn.Module):
 
 
 if __name__=="__main__":
+
+    import torch.nn as nn 
+    import torch 
+    
+    K = 64 # num chunks
+    N = 192
+    C = 4 # chunk size
+    x = torch.randn([K, N, C])
+    sid = torch.zeros([K])
+    cpos = torch.randn([K, N, C])
+    uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    # lengths = torch.randint(0, T_max, (B, )) + 1 
+    model = ConvOnly(192, 32)
+    # print(model)
+    out, l = model(x, sid, cpos, uids)
+    print(out.shape)
+    exit()
+
+    import torch.nn as nn 
+    import torch 
+    
+    K = 64 # num chunks
+    N = 192
+    C = 4 # chunk size
+    x = torch.randn([K, N, C])
+    sid = torch.zeros([K])
+    cpos = torch.randn([K, N, C])
+    uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    # lengths = torch.randint(0, T_max, (B, )) + 1 
+    model = CEBRACNN(192, )
+    # print(model)
+    out = model(x)
+    print(out.shape)
+    exit()
+
+
     import torch.nn as nn 
     import torch 
     

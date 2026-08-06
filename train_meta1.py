@@ -128,17 +128,29 @@ def train_model(args: dict):
     device = torch.device("cuda")
 
     use_rnn_decoder = args.get("use_rnn_decoder", False)
-
+    cnn_only = args.get("cnn_only", False)
+    
+    assert not (cnn_only and use_rnn_decoder), 'exvlusive args'
     if not use_rnn_decoder: 
-        model = MetaModel(
-            num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-            num_classes=(41 if is_speech else 32),
-            conv_dropout=conv_dropout,
-            dropout_input=dropout_input,
-            mahan_model_params = use_mahan_model_params,
-            time_agg_out = time_agg_out, 
-            cnn_hidden=cnn_hidden,
-        ).to(device)
+        if not cnn_only:
+            model = MetaModel(
+                num_neurons=192 if not is_speech else (512 if is_nejm else 256),
+                num_classes=(41 if is_speech else 32),
+                conv_dropout=conv_dropout,
+                dropout_input=dropout_input,
+                mahan_model_params = use_mahan_model_params,
+                time_agg_out = time_agg_out, 
+                cnn_hidden=cnn_hidden,
+            ).to(device)
+        else: 
+            from ablation_model import ConvOnly
+            model = ConvOnly(
+                num_neurons=192 if not is_speech else (512 if is_nejm else 256),
+                num_classes=(41 if is_speech else 32),
+                conv_dropout=conv_dropout,
+                dropout_input=dropout_input,
+                mahan_model_params = use_mahan_model_params,
+            ).to(device)
     else: 
         model = ConvRNN(
             num_neurons=192 if not is_speech else (512 if is_nejm else 256),
