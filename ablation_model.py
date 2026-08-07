@@ -291,6 +291,64 @@ class CEBRATransformer(nn.Module):
         return self._transformer_forward(uids, y_pred)
 
 
+class CEBRARNN(nn.Module):
+    def __init__(self, num_neurons, num_classes, initial_layer_size = 512, cebra_num_units = 256, cebra_num_outputs = 64, cebra_model_name="Offset5Model", cebra_pad_mode = "replicate", rnn_hidden = 2048, rnn_layers=5, bidir=False, rnn_dr=0.4):
+        super().__init__()
+
+        self.patch_encoder = CEBRACNN(
+            num_neurons = num_neurons,
+            initial_layer_size = initial_layer_size,  
+            cebra_num_units = cebra_num_units,
+            cebra_num_outputs = cebra_num_outputs,
+            cebra_model_name = cebra_model_name,
+            cebra_pad_mode=cebra_pad_mode
+        )
+
+        RNN = {
+            "rnn_hidden": rnn_hidden, "rnn_layers": rnn_layers, 'bidir': bidir, "rnn_dr": rnn_dr,
+        }
+        self.rnn_decoder = RNN_decoder(input_size=hidden_dim, rnn_hidden=RNN["rnn_hidden"], rnn_layers=RNN["rnn_layers"], bidir=RNN["bidir"], rnn_dr=RNN["rnn_dr"])
+            
+        self.linear = nn.Linear(self.rnn_decoder.rnn_output_dim, num_classes)
+
+    def _decoder_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
+        # y_pred: [K, D] where K is number of chunks 
+
+        uids = uids.detach().cpu().numpy() 
+        unique_uids, first_idx = np.unique(uids, return_index=True)
+        # print(unique_uids, first_idx)
+        unique_uids = unique_uids[np.argsort(first_idx)]
+        # print('-----')
+        # print('unique_uids', unique_uids)
+        grouped = [
+            torch.stack([y_pred[i] for i, s in enumerate(uids) if s == uid])
+            for uid in unique_uids
+        ]
+        # print(len(grouped))
+        # print(grouped[0].shape, grouped[1].shape)
+                
+        max_len = max(len(g) for g in grouped)
+        x = torch.zeros(len(grouped), max_len, y_pred.shape[1], device=y_pred.device) # [B, T_max, D] where B is number of unique trials in the current batch of chunks
+        mask = torch.zeros(len(grouped), max_len, device=y_pred.device) # [B, T_max]
+        out_lengths = torch.zeros(len(grouped), device=y_pred.device) # [B]
+        for i, g in enumerate(grouped):
+            x[i, : len(g)] = g
+            mask[i, : len(g)] = 1
+            out_lengths[i] = len(g)
+
+        out_lengths = out_lengths.long()
+        # out = self.transformer(x, mask=mask.bool())
+        rnn_out, out_lengths = self.rnn_decoder(x, out_lengths)
+        return self.linear(rnn_out), out_lengths 
+
+
+    def forward(self, neuro, subject_id, channel_positions, uids):
+        # neuro = self.smoother.forward(neuro)
+        y_pred = self.patch_encoder(neuro)
+        # print('cnn output', y_pred.shape)
+        return self._decoder_forward(uids, y_pred)
+
+
 if __name__=="__main__":
     from torchinfo import summary
     # import torch.nn as nn 
@@ -327,6 +385,35 @@ if __name__=="__main__":
     # print(out.shape)
     # exit()
 
+    # import torch.nn as nn 
+    # import torch 
+    
+    # K = 64 # num chunks
+    # N = 192
+    # C = 4 # chunk size
+    # x = torch.randn([K, N, C])
+    # sid = torch.zeros([K])
+    # cpos = torch.randn([K, N, C])
+    # uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    # # lengths = torch.randint(0, T_max, (B, )) + 1 
+    # model = CEBRATransformer(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, transformer_depth=4, transformer_head=2)
+    # # print(model)
+    # out, l = model(x, sid, cpos, uids)
+    # print(out.shape)
+
+    # print(summary(model, input_data=(x, sid, cpos, uids), 
+    # # col_names=(
+    # #     "input_size",
+    # #     "output_size",
+    # #     "num_params",
+    # #     "trainable",
+    # # ),
+    # # depth=10,
+    # verbose=1,)
+    # )
+    # exit()
+
+    
     import torch.nn as nn 
     import torch 
     
@@ -338,7 +425,7 @@ if __name__=="__main__":
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
-    model = CEBRATransformer(192, 32, cebra_num_units=2048, cebra_num_outputs = 2048)
+    model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, transformer_depth=4, transformer_head=2)
     # print(model)
     out, l = model(x, sid, cpos, uids)
     print(out.shape)
@@ -354,7 +441,6 @@ if __name__=="__main__":
     verbose=1,)
     )
     exit()
-
 
     import torch.nn as nn 
     import torch 
