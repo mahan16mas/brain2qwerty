@@ -187,7 +187,8 @@ class CEBRACNN(nn.Module):
         # self.cebra = Offset36Dropoutv2(initial_layer_size, cebra_num_units, cebra_num_outputs)
         
         if cebra_model_name == "Offset5Model": 
-            self.cebra = Offset5Model(initial_layer_size, cebra_num_units, cebra_num_outputs)
+            # self.cebra = Offset5Model(initial_layer_size, cebra_num_units, cebra_num_outputs)
+            self.cebra = Offset5Model(num_neurons, cebra_num_units, cebra_num_outputs)
         else:
             print('in progress, gonna encounter erorr after this line')
 
@@ -307,7 +308,7 @@ class CEBRARNN(nn.Module):
         RNN = {
             "rnn_hidden": rnn_hidden, "rnn_layers": rnn_layers, 'bidir': bidir, "rnn_dr": rnn_dr,
         }
-        self.rnn_decoder = RNN_decoder(input_size=hidden_dim, rnn_hidden=RNN["rnn_hidden"], rnn_layers=RNN["rnn_layers"], bidir=RNN["bidir"], rnn_dr=RNN["rnn_dr"])
+        self.rnn_decoder = RNN_decoder(input_size=cebra_num_outputs, rnn_hidden=RNN["rnn_hidden"], rnn_layers=RNN["rnn_layers"], bidir=RNN["bidir"], rnn_dr=RNN["rnn_dr"])
             
         self.linear = nn.Linear(self.rnn_decoder.rnn_output_dim, num_classes)
 
@@ -425,7 +426,7 @@ if __name__=="__main__":
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
-    model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, transformer_depth=4, transformer_head=2)
+    model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=1024, rnn_layers=5)
     # print(model)
     out, l = model(x, sid, cpos, uids)
     print(out.shape)

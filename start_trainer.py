@@ -50,7 +50,9 @@ parser.add_argument('--cebra_pad_mode', type=str, help="Only used when you have 
 parser.add_argument('--transformer_depth', type=int, default=4, help="Only used when you have passed --cebra_patch_encoder")
 parser.add_argument('--transformer_head', type=int, default=2, help="Only used when you have passed --cebra_patch_encoder")
 
-
+parser.add_argument('--cebra_rnn', action='store_true', help='use CEBRARNN model')
+# for cebra dim, use the `cebra_hidden_dim`, `cebra_out_dim`, `cebra_model_name`, `cebra_pad_mode`, and also add time_agg customization in it later
+# for rnn arch, use rnn_hidden, rnn_layers, bidir, rnn_dr
 
 
 parsed_args = parser.parse_args()

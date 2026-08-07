@@ -130,6 +130,8 @@ def train_model(args: dict):
     use_rnn_decoder = args.get("use_rnn_decoder", False)
     cnn_only = args.get("cnn_only", False)
     cebra_patch_encoder = args.get("cebra_patch_encoder", False)
+    cebra_rnn = args.get("cebra_rnn", False)
+    
     assert not (cnn_only and use_rnn_decoder), 'exvlusive args'
     assert not (cebra_patch_encoder and use_rnn_decoder), 'exvlusive args'
     assert not (cebra_patch_encoder and cnn_only), 'exvlusive args'
@@ -137,16 +139,32 @@ def train_model(args: dict):
     if not use_rnn_decoder: 
         if not cnn_only:
             if not cebra_patch_encoder:
-                # default meta architecture 
-                model = MetaModel(
-                    num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-                    num_classes=(41 if is_speech else 32),
-                    conv_dropout=conv_dropout,
-                    dropout_input=dropout_input,
-                    mahan_model_params = use_mahan_model_params,
-                    time_agg_out = time_agg_out, 
-                    cnn_hidden=cnn_hidden,
-                ).to(device)
+                if not cebra_rnn: 
+                    # default meta architecture 
+                    model = MetaModel(
+                        num_neurons=192 if not is_speech else (512 if is_nejm else 256),
+                        num_classes=(41 if is_speech else 32),
+                        conv_dropout=conv_dropout,
+                        dropout_input=dropout_input,
+                        mahan_model_params = use_mahan_model_params,
+                        time_agg_out = time_agg_out, 
+                        cnn_hidden=cnn_hidden,
+                    ).to(device)
+                else: 
+                    from ablation_model import CEBRARNN
+                    model = CEBRARNN(
+                        num_neurons=192 if not is_speech else (512 if is_nejm else 256),
+                        num_classes=(41 if is_speech else 32),
+                        initial_layer_size=512, # hardcoded for now 
+                        cebra_num_units=args.get("cebra_hidden_dim", 256), 
+                        cebra_num_outputs=args.get("cebra_out_dim", 64), 
+                        cebra_model_name=args.get("cebra_model_name", "Offset5Model"), 
+                        cebra_pad_mode=args.get("cebra_pad_mode", "replicate"),
+                        rnn_hidden = args.get("rnn_hidden"),
+                        rnn_layers = args.get("rnn_layers"),
+                        bidir = args.get("bidir", False),
+                        rnn_dr = args.get("rnn_dr")
+                    )
             else: 
                 from ablation_model import CEBRATransformer
 
