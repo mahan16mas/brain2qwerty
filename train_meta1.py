@@ -164,7 +164,7 @@ def train_model(args: dict):
                         rnn_layers = args.get("rnn_layers"),
                         bidir = args.get("bidir", False),
                         rnn_dr = args.get("rnn_dr")
-                    )
+                    ).to(device)
             else: 
                 from ablation_model import CEBRATransformer
 
