@@ -31,7 +31,7 @@ source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate;
 source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh;
 
 ### activating venv in jumphost server; 
-  source /mnt/upmwmathis/scratch/hossein/mm_project/brain2qwerty/.venv/bin/activate;
+source /mnt/upmwmathis/scratch/hossein/mm_project/brain2qwerty/.venv/bin/activate;
 
 
 # Usefull commands 

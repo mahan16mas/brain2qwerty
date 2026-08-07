@@ -172,7 +172,7 @@ class CEBRACNN(nn.Module):
     def __init__(self, num_neurons, initial_layer_size=512, cebra_num_units=256, cebra_num_outputs=64, cebra_model_name="Offset5Model", cebra_pad_mode="replicate"):
         super().__init__()
         self.cebra_pad_mode = cebra_pad_mode
-        self.initial_linear = nn.Conv1d(num_neurons, initial_layer_size, 1)
+        # self.initial_linear = nn.Conv1d(num_neurons, initial_layer_size, 1)
 
         import sys
         sys.path.append('CEBRA-main')
@@ -222,7 +222,7 @@ class CEBRACNN(nn.Module):
         D - number of channels (neuron dimensions)
         T - time dimension (equals to chunk size 4)
         """
-        x = self.initial_linear(x) # [K, initial_layer_size, C]
+        # x = self.initial_linear(x) # [K, initial_layer_size, C]
         # print(x.shape)
         x = self._apply_cebra(x)
 
