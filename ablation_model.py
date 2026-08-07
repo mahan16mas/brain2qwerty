@@ -385,33 +385,33 @@ if __name__=="__main__":
     # print(out.shape)
     # exit()
 
-    # import torch.nn as nn 
-    # import torch 
+    import torch.nn as nn 
+    import torch 
     
-    # K = 64 # num chunks
-    # N = 192
-    # C = 4 # chunk size
-    # x = torch.randn([K, N, C])
-    # sid = torch.zeros([K])
-    # cpos = torch.randn([K, N, C])
-    # uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    # # lengths = torch.randint(0, T_max, (B, )) + 1 
-    # model = CEBRATransformer(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, transformer_depth=4, transformer_head=2)
-    # # print(model)
-    # out, l = model(x, sid, cpos, uids)
-    # print(out.shape)
+    K = 64 # num chunks
+    N = 192
+    C = 4 # chunk size
+    x = torch.randn([K, N, C])
+    sid = torch.zeros([K])
+    cpos = torch.randn([K, N, C])
+    uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    # lengths = torch.randint(0, T_max, (B, )) + 1 
+    model = CEBRATransformer(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, transformer_depth=4, transformer_head=2)
+    # print(model)
+    out, l = model(x, sid, cpos, uids)
+    print(out.shape)
 
-    # print(summary(model, input_data=(x, sid, cpos, uids), 
-    # # col_names=(
-    # #     "input_size",
-    # #     "output_size",
-    # #     "num_params",
-    # #     "trainable",
-    # # ),
-    # # depth=10,
-    # verbose=1,)
-    # )
-    # exit()
+    print(summary(model, input_data=(x, sid, cpos, uids), 
+    # col_names=(
+    #     "input_size",
+    #     "output_size",
+    #     "num_params",
+    #     "trainable",
+    # ),
+    # depth=10,
+    verbose=1,)
+    )
+    exit()
 
     
     import torch.nn as nn 
