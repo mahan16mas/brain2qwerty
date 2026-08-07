@@ -10,9 +10,9 @@ runai submit \
   --name transformer-bci-smoke-001 \
   --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
   --gpu 1 \
-  --cpu 2 \
+  --cpu 4 \
   --memory 64Gi \
-  --node-pools h100 \
+  --node-pools h200 \
   --large-shm \
   --pvc home:/home/mirzaei \
   --pvc upmwmathis-scratch:/data \
@@ -29,6 +29,10 @@ runai submit \
 cd /data/hossein/transformer_bci/brain2qwerty; 
 source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate;
 source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh;
+
+### activating venv in jumphost server; 
+  source /mnt/upmwmathis/scratch/hossein/mm_project/brain2qwerty/.venv/bin/activate;
+
 
 # Usefull commands 
 runai list | grep Running
