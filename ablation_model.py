@@ -287,7 +287,7 @@ class CEBRATransformer(nn.Module):
     def forward(self, neuro, subject_id, channel_positions, uids):
         # neuro = self.smoother.forward(neuro)
         y_pred = self.patch_encoder(neuro)
-        print('cnn output', y_pred.shape)
+        # print('cnn output', y_pred.shape)
         return self._transformer_forward(uids, y_pred)
 
 
@@ -338,7 +338,7 @@ if __name__=="__main__":
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
-    model = CEBRATransformer(192, 32, cebra_num_units=1024, cebra_num_outputs = 256)
+    model = CEBRATransformer(192, 32, cebra_num_units=2048, cebra_num_outputs = 2048)
     # print(model)
     out, l = model(x, sid, cpos, uids)
     print(out.shape)

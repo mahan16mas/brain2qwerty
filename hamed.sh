@@ -1,5 +1,2 @@
-# [             ]
-CUDA_VISIBLE_DEVICES=0 python start_trainer.py --cebra_patch_encoder --out_dir 'nlp21_meta_CEBRATRANSFORMER_defaultCEBRA(h-256_o-64_replicate_tr-d-4_tr-h-2)_bs16' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name "Offset5Model" --cebra_hidden_dim 256 --cebra_out_dim 64  --cebra_pad_mode 'replicate' --transformer_depth 4 --transformer_head 2
-
-# [             ]
-CUDA_VISIBLE_DEVICES=0 python start_trainer.py --cebra_patch_encoder --out_dir 'nlp21_meta_CEBRATRANSFORMER_defaultCEBRA(h-1024_o-256_reflect_tr-d-4_tr-h-2)_bs16' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name "Offset5Model" --cebra_hidden_dim 1024 --cebra_out_dim 256  --cebra_pad_mode 'replicate' --transformer_depth 4 --transformer_head 2
+# [   ]
+CUDA_VISIBLE_DEVICES=1 python start_trainer.py --cebra_patch_encoder --out_dir 'nlp21_meta_CEBRATRANSFORMER_defaultCEBRA(h-2048_o-2048_reflect_tr-d-4_tr-h-2)_bs16' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name "Offset5Model" --cebra_hidden_dim 2048 --cebra_out_dim 2048  --cebra_pad_mode 'replicate' --transformer_depth 4 --transformer_head 2
