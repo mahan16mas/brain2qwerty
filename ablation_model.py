@@ -338,9 +338,7 @@ class CEBRARNN(nn.Module):
 
         out_lengths = out_lengths.long()
         # out = self.transformer(x, mask=mask.bool())
-        
-        # rnn_out, out_lengths = self.rnn_decoder(x, out_lengths)
-        rnn_out = x 
+        rnn_out, out_lengths = self.rnn_decoder(x, out_lengths)
         return self.linear(rnn_out), out_lengths 
 
 
