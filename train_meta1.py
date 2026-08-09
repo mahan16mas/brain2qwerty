@@ -204,24 +204,37 @@ def train_model(args: dict):
 
     print(model)
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
-    optimizer_config_dict = {
-        "name": "LightningOptimizer",
-        "optimizer": {"name": "AdamW", "lr": 5e-5, "kwargs": {"weight_decay": 1e-4}},
-        "scheduler": {
-            "name": "OneCycleLR",
-            "kwargs": {"max_lr": 5e-5, "pct_start": 0.1},
-        },
-        "interval": "step",
-    }
+    # optimizer_config_dict = {
+    #     "name": "LightningOptimizer",
+    #     "optimizer": {"name": "AdamW", "lr": 5e-5, "kwargs": {"weight_decay": 1e-4}},
+    #     "scheduler": {
+    #         "name": "OneCycleLR",
+    #         "kwargs": {"max_lr": 5e-5, "pct_start": 0.1},
+    #     },
+    #     "interval": "step",
+    # }
 
-    opt_config = LightningOptimizer.model_validate(optimizer_config_dict)
+    # opt_config = LightningOptimizer.model_validate(optimizer_config_dict)
 
-    optimizer_assets = opt_config.build(
+    # optimizer_assets = opt_config.build(
+    #     model.parameters(),
+    #     total_steps=epochs * len(train_loader),
+    # )
+    # optimizer = optimizer_assets["optimizer"]
+    # scheduler = optimizer_assets["lr_scheduler"]["scheduler"]
+    optimizer = torch.optim.Adam(
         model.parameters(),
-        total_steps=epochs * len(train_loader),
+        lr=0.02,
+        betas=(0.9, 0.999),
+        eps=0.1,
+        weight_decay=1e-5,
     )
-    optimizer = optimizer_assets["optimizer"]
-    scheduler = optimizer_assets["lr_scheduler"]["scheduler"]
+    scheduler = torch.optim.lr_scheduler.LinearLR(
+        optimizer,
+        start_factor=1.0,
+        end_factor=0.002 / 0.02,
+        total_iters=epochs,
+    )
     so_far_batch = 0
     # so_far_batch = load_checkpoint(checkpoint_address, model, optimizer, scheduler)
     testCER, testLoss = [], []

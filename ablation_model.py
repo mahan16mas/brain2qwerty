@@ -433,7 +433,7 @@ if __name__=="__main__":
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
-    model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=1024, rnn_layers=5)
+    model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=1024, rnn_layers=8)
     # print(model)
     out, l = model(x, sid, cpos, uids)
     print(out.shape)
