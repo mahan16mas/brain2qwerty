@@ -54,6 +54,9 @@ parser.add_argument('--cebra_rnn', action='store_true', help='use CEBRARNN model
 # for cebra dim, use the `cebra_hidden_dim`, `cebra_out_dim`, `cebra_model_name`, `cebra_pad_mode`, and also add time_agg customization in it later
 # for rnn arch, use rnn_hidden, rnn_layers, bidir, rnn_dr
 
+parser.add_argument('--add_noise', action='store_true', help='add noise when training')
+parser.add_argument('--whiteNoiseSD', type=float, default=0.8)
+parser.add_argument('--constantOffsetSD', type=float, default=0.2)
 
 parsed_args = parser.parse_args()
 

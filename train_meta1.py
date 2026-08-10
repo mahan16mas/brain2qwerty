@@ -126,7 +126,8 @@ def train_model(args: dict):
     np.random.seed(args["seed"])
     inf_losses = 0
     device = torch.device("cuda")
-
+    do_add_noise = args.get("add_noise", False)
+    
     use_rnn_decoder = args.get("use_rnn_decoder", False)
     cnn_only = args.get("cnn_only", False)
     cebra_patch_encoder = args.get("cebra_patch_encoder", False)
@@ -250,6 +251,8 @@ def train_model(args: dict):
             model.train()
             neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
             neuro_chunks = neuro_chunks.to(device)
+            print(neuro_chunks.shape)
+            exit()
             targets_padded = targets_padded.to(device)
             target_lengths = target_lengths.to(device)
             channel_positions = channel_positions.to(device)
