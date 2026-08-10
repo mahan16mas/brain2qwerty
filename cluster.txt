@@ -7,12 +7,12 @@ git pull
 
 # interactive 
 runai submit \
-  --name transformer-bci-smoke-001 \
+  --name meta-bci-1 \
   --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
   --gpu 1 \
   --cpu 4 \
   --memory 64Gi \
-  --node-pools h200 \
+  --node-pools h100 \
   --large-shm \
   --pvc home:/home/mirzaei \
   --pvc upmwmathis-scratch:/data \
@@ -36,7 +36,7 @@ source /mnt/upmwmathis/scratch/hossein/mm_project/brain2qwerty/.venv/bin/activat
 
 # Usefull commands 
 runai list | grep Running
-runai bash transformer-bci-smoke-001 -p upmwmathis-mirzaei
-runai describe job transformer-bci-smoke-001 -p upmwmathis-mirzaei
-runai delete job transformer-bci-smoke-001 -p upmwmathis-mirzaei
+runai bash meta-bci-1 -p upmwmathis-mirzaei
+runai describe job meta-bci-1 -p upmwmathis-mirzaei
+runai delete job meta-bci-1 -p upmwmathis-mirzaei
 runai list jobs -p upmwmathis-mirzaei

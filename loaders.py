@@ -52,6 +52,7 @@ def ctc_collate(batch: list[tuple[torch.Tensor, str, int]]):
     uids_tensor = torch.tensor(uids, dtype=torch.long)
     neuro_chunks = neuro_chunks.permute(0, 2, 1)
     channel_positions = torch.zeros(neuro_chunks.shape[0], neuro_chunks.shape[1], 2)
+    print(neuro_chunks.shape)
     return neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor
 
 
