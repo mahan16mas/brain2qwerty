@@ -10,26 +10,49 @@ from typing import Tuple, List
 import pickle
 import os
 CHUNK_SIZE = 25 # 4
+STRIDE = 4 
 
 def ctc_collate(batch: list[tuple[torch.Tensor, str, int]]):
     xs, ys, ds = zip(*batch)
 
+    ### old code with no over lapping 
+    # all_chunks = []
+    # uids = []
 
+    # for uid, x in enumerate(xs):
+    #     T, feat_dim = x.shape
+    #     num_chunks = (T + CHUNK_SIZE - 1) // CHUNK_SIZE
+
+    #     for c in range(num_chunks):
+    #         start = c * CHUNK_SIZE
+    #         end = start + CHUNK_SIZE
+
+    #         if end <= T:
+    #             chunk = x[start:end]
+    #         else:
+    #             chunk = x[T - CHUNK_SIZE : T]
+
+    #         all_chunks.append(chunk)
+    #         uids.append(uid)
+    
+    ### new code with stride and overlap
     all_chunks = []
     uids = []
 
     for uid, x in enumerate(xs):
         T, feat_dim = x.shape
-        num_chunks = (T + CHUNK_SIZE - 1) // CHUNK_SIZE
 
-        for c in range(num_chunks):
-            start = c * CHUNK_SIZE
-            end = start + CHUNK_SIZE
+        # Normal sliding windows
+        starts = list(range(0, T - CHUNK_SIZE + 1, STRIDE))
 
-            if end <= T:
-                chunk = x[start:end]
-            else:
-                chunk = x[T - CHUNK_SIZE : T]
+        # Make sure the end of the recording is included
+        last_start = T - CHUNK_SIZE
+
+        if last_start >= 0 and (not starts or starts[-1] != last_start):
+            starts.append(last_start)
+
+        for start in starts:
+            chunk = x[start : start + CHUNK_SIZE]
 
             all_chunks.append(chunk)
             uids.append(uid)
