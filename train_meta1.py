@@ -251,20 +251,16 @@ def train_model(args: dict):
             model.train()
             neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
             neuro_chunks = neuro_chunks.to(device)
-            print(neuro_chunks.shape)
-            exit()
-            """
-            if not no_noise:
+            if do_add_noise: 
                 if args["whiteNoiseSD"] > 0:
                     X += torch.randn(X.shape, device=device) * args["whiteNoiseSD"]
 
                 if args["constantOffsetSD"] > 0:
                     X += (
-                        torch.randn([X.shape[0], 1, X.shape[2]], device=device)
+                        torch.randn([X.shape[0], X.shape[1], 1], device=device)
                         * args["constantOffsetSD"]
                     )
-        
-            """
+            
             targets_padded = targets_padded.to(device)
             target_lengths = target_lengths.to(device)
             channel_positions = channel_positions.to(device)
