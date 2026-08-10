@@ -109,7 +109,7 @@ def train_model(args: dict):
     if do_wandb:
         import wandb
         exp_name = args["out_dir"]
-        wandb.init(project="NeuroNLP", name=f'{exp_name}')
+        wandb.init(project="NeuroNLP", name=f'{exp_name}', config=args)
 
     checkpoint_address = f"{args['out_dir']}/checkpoint.pt"
     is_speech = args.get('is_speech', False)
@@ -127,6 +127,7 @@ def train_model(args: dict):
     inf_losses = 0
     device = torch.device("cuda")
     do_add_noise = args.get("add_noise", False)
+    # do_add_smoothing = args.get("add_smoothing", False)
 
     use_rnn_decoder = args.get("use_rnn_decoder", False)
     cnn_only = args.get("cnn_only", False)

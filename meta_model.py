@@ -23,11 +23,15 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     return brain_model,transformer_model, hidden_dim
 
 class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att"):
+    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",         
+                 # do_smoothing = False, smooth_width=2.0
+                 ):
         super().__init__()
 
         self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden)
         self.linear = nn.Linear(hidden, num_classes)
+
+        #### self.smoother = (GaussianSmoothing(num_neurons, 20, smooth_width, dim=1)) if do_smoothing else (nn.Identity())
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
         return self.model(neuro, None, None)

@@ -55,6 +55,7 @@ parser.add_argument('--cebra_rnn', action='store_true', help='use CEBRARNN model
 # for rnn arch, use rnn_hidden, rnn_layers, bidir, rnn_dr
 
 parser.add_argument('--add_noise', action='store_true', help='add noise when training')
+parser.add_argument('--add_smoothing', action='store_true', help='add smoothing inside forward')
 parser.add_argument('--whiteNoiseSD', type=float, default=0.8)
 parser.add_argument('--constantOffsetSD', type=float, default=0.2)
 

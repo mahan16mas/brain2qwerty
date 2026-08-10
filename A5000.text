@@ -20,7 +20,7 @@ cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/brain2qwerty
     - run bigger chunk with overlap on meta
     - and once without overlap?
 
-- effect of conv hidden size (256, 512 ...)
+- effect of conv hidden size (256, 512 ...) [kinda X]
 - lyapanov 
 - continue the GPT convo about receptive field of 35 
 - make CEBRA-RNN work 
@@ -32,4 +32,4 @@ cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/brain2qwerty
 - run default cebra, but no overlap in unfolding, maybe use offset 5, with kernel 5 or sth and stride 5?
 وقتی تعدادی زیادی output seq تولید میکنی با RNN، که اینا برمیگردن از یک سری window پشت سر هم از داده ورودی که همپوشانی زیادی دارن، وقتی سی تی سی میزنی، مدل نمیفهمه اقا من این خروجی که شبیه قبلی هم هست (چون از جای یکسانی منشا میگیرن) رو blank بزنم اخر یا نه
 
-
+- run the 0.38 with a larger and reasonable cnn
