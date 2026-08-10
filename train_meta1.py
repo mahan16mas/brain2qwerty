@@ -115,7 +115,10 @@ def train_model(args: dict):
     is_speech = args.get('is_speech', False)
     nlp_10 = args.get("nlp_10", False)
     is_nejm = args.get("is_nejm", False)
-    train_loader, test_loader, _ = get_dataset_loaders(args['dataset_path'], args['batch_size'], False, is_speech, nlp_10, is_nejm, )
+    assert not (no_smoothing and do_add_noise), 'exvlusive args'
+    train_loader, test_loader, _ = get_dataset_loaders(args['dataset_path'], args['batch_size'], 
+                                                       no_smoothing, # False, 
+                                                       is_speech, nlp_10, is_nejm, )
     epochs = args.get("epochs", 300)
     cnn_hidden = args.get("cnn_hidden", 2048)
     conv_dropout = args.get("conv_dropout", 0.5)
@@ -128,6 +131,7 @@ def train_model(args: dict):
     device = torch.device("cuda")
     do_add_noise = args.get("add_noise", False)
     # do_add_smoothing = args.get("add_smoothing", False)
+    no_smoothing = args.get("no_smoothing", False)
 
     use_rnn_decoder = args.get("use_rnn_decoder", False)
     cnn_only = args.get("cnn_only", False)

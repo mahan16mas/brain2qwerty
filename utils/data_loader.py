@@ -53,7 +53,11 @@ def get_input(path, norm=False, gauss=False, train=False, eps=0,
     root = Path(path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if gauss:
+        print('Adding gaussian smoothing when loading data')
         smoother = GaussianSmoothing(192, 20, gauss_sigma, dim=1).to(device)
+    else:
+        print('No guassian smoothing when loading data')
+        
     files_recursive = sorted(root.rglob("*.mat"))
     print(f"Found {len(files_recursive)} .mat files")
 
