@@ -127,7 +127,7 @@ def train_model(args: dict):
     inf_losses = 0
     device = torch.device("cuda")
     do_add_noise = args.get("add_noise", False)
-    
+
     use_rnn_decoder = args.get("use_rnn_decoder", False)
     cnn_only = args.get("cnn_only", False)
     cebra_patch_encoder = args.get("cebra_patch_encoder", False)
@@ -253,6 +253,18 @@ def train_model(args: dict):
             neuro_chunks = neuro_chunks.to(device)
             print(neuro_chunks.shape)
             exit()
+            """
+            if not no_noise:
+                if args["whiteNoiseSD"] > 0:
+                    X += torch.randn(X.shape, device=device) * args["whiteNoiseSD"]
+
+                if args["constantOffsetSD"] > 0:
+                    X += (
+                        torch.randn([X.shape[0], 1, X.shape[2]], device=device)
+                        * args["constantOffsetSD"]
+                    )
+        
+            """
             targets_padded = targets_padded.to(device)
             target_lengths = target_lengths.to(device)
             channel_positions = channel_positions.to(device)
