@@ -253,11 +253,11 @@ def train_model(args: dict):
             neuro_chunks = neuro_chunks.to(device)
             if do_add_noise: 
                 if args["whiteNoiseSD"] > 0:
-                    X += torch.randn(X.shape, device=device) * args["whiteNoiseSD"]
+                    neuro_chunks += torch.randn(neuro_chunks.shape, device=device) * args["whiteNoiseSD"]
 
                 if args["constantOffsetSD"] > 0:
-                    X += (
-                        torch.randn([X.shape[0], X.shape[1], 1], device=device)
+                    neuro_chunks += (
+                        torch.randn([neuro_chunks.shape[0], neuro_chunks.shape[1], 1], device=device)
                         * args["constantOffsetSD"]
                     )
             
