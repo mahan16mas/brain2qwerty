@@ -9,3 +9,27 @@ source /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/wandb_auth/wandb_env
 cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/brain2qwerty
 
 
+
+## TO DO 
+- time_agg_out [x]
+- skip layer + look at the conv module carefully [ ]
+    - exact difference between meta.conv and cebra.conv 
+- what CEBRA model to use? --> offset5 
+- try chunk size 25 for nlp 
+    - test it with kernel 25 and stride 4 
+    - run bigger chunk with overlap on meta
+    - and once without overlap?
+
+- effect of conv hidden size (256, 512 ...)
+- lyapanov 
+- continue the GPT convo about receptive field of 35 
+- make CEBRA-RNN work 
+- CNN only [x]
+- talk w mahan about patch making 
+- test default meta w noise [R]
+- how to find the best chunk size for patching? 
+    - idea: assume conv only model, try t orun it with different chunk sizes + see the output class distrtibutions 
+- run default cebra, but no overlap in unfolding, maybe use offset 5, with kernel 5 or sth and stride 5?
+وقتی تعدادی زیادی output seq تولید میکنی با RNN، که اینا برمیگردن از یک سری window پشت سر هم از داده ورودی که همپوشانی زیادی دارن، وقتی سی تی سی میزنی، مدل نمیفهمه اقا من این خروجی که شبیه قبلی هم هست (چون از جای یکسانی منشا میگیرن) رو blank بزنم اخر یا نه
+
+
