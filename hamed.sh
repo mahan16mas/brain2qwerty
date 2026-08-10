@@ -46,7 +46,7 @@
 
 # finding good noise
 
-python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
+# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
 
 
 python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.4-0.1)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.4 --constantOffsetSD 0.1
