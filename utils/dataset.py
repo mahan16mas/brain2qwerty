@@ -164,6 +164,7 @@ class HandwritingDataset_noisy(Dataset):
         self.charset = charset
         self.whiteNoiseSD = whiteNoiseSD 
         self.constantOffsetSD = constantOffsetSD
+        self.smoother = GaussianSmoothing(192, 20, 2.0, dim=1)
 
     def __len__(self):
         return len(self.items)
@@ -177,9 +178,8 @@ class HandwritingDataset_noisy(Dataset):
 
         x = x.clone()
 
-        print('x in get item func', x.shape)
-
-        x = x + torch.randn_like(x) * self.whiteNoiseSD
+        if self.whiteNoiseSD > 0: 
+            x = x + torch.randn_like(x) * self.whiteNoiseSD
 
         if self.constantOffsetSD > 0:
             x = x + torch.randn(
@@ -188,6 +188,6 @@ class HandwritingDataset_noisy(Dataset):
                 dtype=x.dtype,
             ) * self.constantOffsetSD
 
-        x = gaussian_smoothing(x.unsqueeze(0)).squeeze(0)
+        x = self.smoother(x.unsqueeze(0)).squeeze(0)
 
         return x, y, d
