@@ -1,7 +1,7 @@
-# git switch eating
-# git fetch origin
-# git branch --set-upstream-to=origin/eating
-# git pull
+git switch eating;
+git fetch origin;
+git branch --set-upstream-to=origin/eating;
+git pull
 
 cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed;
 source new_python/bin/activate;
