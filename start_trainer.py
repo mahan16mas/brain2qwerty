@@ -61,6 +61,10 @@ parser.add_argument('--constantOffsetSD', type=float, default=0.2)
 
 parser.add_argument('--no_smoothing', action='store_true', help='no smoothing at all - this can not be called with --ad_noise')
 
+parser.add_argument('--chunk_size', type=int, default=4, help="")
+parser.add_argument('--chunk_stride', type=int, default=4, help="")
+
+
 parsed_args = parser.parse_args()
 
 # Convert namespace to dictionary

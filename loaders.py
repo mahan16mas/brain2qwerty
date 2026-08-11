@@ -9,10 +9,17 @@ from utils.data_loader import get_input
 from typing import Tuple, List
 import pickle
 import os
+
+from functools import partial
+
 CHUNK_SIZE = 4 # 4
 STRIDE = 4 
 
-def ctc_collate(batch: list[tuple[torch.Tensor, str, int]]):
+def ctc_collate(
+        batch: list[tuple[torch.Tensor, str, int]], 
+        chunk_size=4,
+        stride=4,
+    ):
     xs, ys, ds = zip(*batch)
 
     ### old code with no over lapping 
@@ -43,16 +50,16 @@ def ctc_collate(batch: list[tuple[torch.Tensor, str, int]]):
         T, feat_dim = x.shape
 
         # Normal sliding windows
-        starts = list(range(0, T - CHUNK_SIZE + 1, STRIDE))
+        starts = list(range(0, T - chunk_size + 1, stride))
 
         # Make sure the end of the recording is included
-        last_start = T - CHUNK_SIZE
+        last_start = T - chunk_size
 
         if last_start >= 0 and (not starts or starts[-1] != last_start):
             starts.append(last_start)
 
         for start in starts:
-            chunk = x[start : start + CHUNK_SIZE]
+            chunk = x[start : start + chunk_size]
 
             all_chunks.append(chunk)
             uids.append(uid)
@@ -64,7 +71,7 @@ def ctc_collate(batch: list[tuple[torch.Tensor, str, int]]):
     target_lengths = torch.tensor([t.numel() for t in target_seqs], dtype=torch.long)
     max_target_len = max(target_lengths) if len(target_lengths) > 0 else 0
     targets_padded = torch.zeros(B_sentences, max_target_len, dtype=torch.long)
-
+    
     offset = 0
     for i, length in enumerate(target_lengths):
         targets_padded[i, :length] = torch.cat(target_seqs)[
@@ -266,6 +273,8 @@ def get_dataset_loaders_nlp_21(
         dataset_name,
         batch_size,
         gauss_in=True,
+        chunk_size=4,
+        stride=4,
 ):
     train_input = get_input(
         os.path.join(dataset_name, "seed_model_training_data/mat/"),
@@ -303,8 +312,14 @@ def get_dataset_loaders_nlp_21(
     valid_input = valid_input_0 + valid_input
     train_set = HandwritingDataset(train_input)
     valid_set = HandwritingDataset(valid_input)
+
+    collate_fn = partial(
+        ctc_collate,
+        chunk_size=chunk_size,
+        stride=stride,
+    )
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
-                              num_workers=4, pin_memory=True, collate_fn=ctc_collate,
+                              num_workers=4, pin_memory=True, collate_fn=collate_fn,
                               persistent_workers=True)
     test_loader = DataLoader(
         valid_set,
@@ -312,7 +327,7 @@ def get_dataset_loaders_nlp_21(
         shuffle=False,
         num_workers=0,
         pin_memory=True,
-        collate_fn=ctc_collate,
+        collate_fn=collate_fn,
     )
     return train_loader, test_loader, None
 
@@ -378,12 +393,15 @@ def get_dataset_loaders(
         speech=True,
         nlp_10=False,
         is_nejm=False,
+        chunk_size=4,
+        stride=4,
     ):
     if speech:
         if is_nejm: return get_dataset_loaders_speech_nejm(dataset_name, batch_size, gauss_in)
         return get_dataset_loaders_speech(dataset_name, batch_size, gauss_in)
     if not nlp_10:
-        return get_dataset_loaders_nlp_21(dataset_name, batch_size, gauss_in)
+        return get_dataset_loaders_nlp_21(dataset_name, batch_size, gauss_in, chunk_size=chunk_size,
+                stride=stride,)
     return get_dataset_loaders_nlp_10(dataset_name, batch_size, gauss_in)
 
 

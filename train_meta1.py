@@ -117,15 +117,20 @@ def train_model(args: dict):
     is_nejm = args.get("is_nejm", False)
     no_smoothing = args.get("no_smoothing", False)
     do_add_noise = args.get("add_noise", False)
+
+    chunk_size=args.get("chunk_size", 4)
+    chunk_stride=args.get("chunk_stride", 4)
     assert not (no_smoothing and do_add_noise), 'exvlusive args'
-    if do_add_noise: 
-        pass 
-    else: 
-        train_loader, test_loader, _ = get_dataset_loaders(
-            args['dataset_path'], args['batch_size'], 
-            no_smoothing, # False, 
-            is_speech, nlp_10, is_nejm, 
-        )
+    # if do_add_noise: 
+    #     pass 
+    # else: 
+    train_loader, test_loader, _ = get_dataset_loaders(
+        args['dataset_path'], args['batch_size'], 
+        no_smoothing, # False, 
+        is_speech, nlp_10, is_nejm,
+        chunk_size=chunk_size,
+        stride=chunk_stride 
+    )
     epochs = args.get("epochs", 300)
     cnn_hidden = args.get("cnn_hidden", 2048)
     conv_dropout = args.get("conv_dropout", 0.5)
@@ -255,11 +260,14 @@ def train_model(args: dict):
         if inf_losses > 10: break
         epoch_loss = 0
         n_items = 0
+        _t_e_m_p = True
         for batch in tqdm(train_loader):
+            
             optimizer.zero_grad()
             model.train()
             neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
             neuro_chunks = neuro_chunks.to(device)
+            
             if do_add_noise: 
                 if args["whiteNoiseSD"] > 0:
                     neuro_chunks += torch.randn(neuro_chunks.shape, device=device) * args["whiteNoiseSD"]
@@ -269,7 +277,10 @@ def train_model(args: dict):
                         torch.randn([neuro_chunks.shape[0], neuro_chunks.shape[1], 1], device=device)
                         * args["constantOffsetSD"]
                     )
-            
+            if _t_e_m_p:
+                _t_e_m_p = False 
+                if epoch == 0: 
+                    print('chunk shape', neuro_chunks.shape)
             targets_padded = targets_padded.to(device)
             target_lengths = target_lengths.to(device)
             channel_positions = channel_positions.to(device)

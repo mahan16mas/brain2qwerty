@@ -42,22 +42,9 @@
 ###################################################### 
 
 ### Default meta with chunk size of 25 
-# python start_trainer.py --out_dir "nlp21_meta_default_50_chunk25(kernel25stride4-overlap)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb
+CUDA_VISIBLE_DEVICES=0 python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)-noInsideModelSmoothing" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
 
-# finding good noise
+CUDA_VISIBLE_DEVICES=0 python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.1-0.025)-noInsideModelSmoothing" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.025
 
-# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
+CUDA_VISIBLE_DEVICES=0 python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)-noSmoothing" --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
 
-
-# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.4-0.1)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.4 --constantOffsetSD 0.1
-
-
-# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.2-0.05)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.2 --constantOffsetSD 0.05
-
-
-# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.1-0.025)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.025
-
-# python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)-noInsideModelSmoothing" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
-
-
-python start_trainer.py --out_dir nlp21_meta_default_50_no_smoothing --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --no_smoothing
