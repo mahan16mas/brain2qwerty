@@ -121,16 +121,24 @@ def train_model(args: dict):
     chunk_size=args.get("chunk_size", 4)
     chunk_stride=args.get("chunk_stride", 4)
     assert not (no_smoothing and do_add_noise), 'exvlusive args'
-    # if do_add_noise: 
-    #     pass 
-    # else: 
-    train_loader, test_loader, _ = get_dataset_loaders(
-        args['dataset_path'], args['batch_size'], 
-        no_smoothing, # False, 
-        is_speech, nlp_10, is_nejm,
-        chunk_size=chunk_size,
-        stride=chunk_stride 
-    )
+    if do_add_noise: 
+        from loaders import get_dataset_loaders_with_noise
+        train_loader, test_loader, _ = get_dataset_loaders_with_noise(
+            args['dataset_path'], args['batch_size'], 
+            is_speech, nlp_10, is_nejm,
+            chunk_size=chunk_size,
+            stride=chunk_stride,
+            whiteNoiseSD=args["whiteNoiseSD"],
+            constantOffsetSD=args["constantOffsetSD"]
+        )
+    else: 
+        train_loader, test_loader, _ = get_dataset_loaders(
+            args['dataset_path'], args['batch_size'], 
+            no_smoothing, # False, 
+            is_speech, nlp_10, is_nejm,
+            chunk_size=chunk_size,
+            stride=chunk_stride 
+        )
     epochs = args.get("epochs", 300)
     cnn_hidden = args.get("cnn_hidden", 2048)
     conv_dropout = args.get("conv_dropout", 0.5)

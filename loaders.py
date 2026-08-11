@@ -1,6 +1,6 @@
 import torch
 from utils.dataset import charset
-from utils.dataset import HandwritingDataset, BrainToTextDataset, SpeechDataset
+from utils.dataset import HandwritingDataset, BrainToTextDataset, SpeechDataset, HandwritingDataset_noisy
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from edit_distance import SequenceMatcher
@@ -334,6 +334,10 @@ def get_dataset_loaders_nlp_21(
 def get_dataset_loaders_nlp_21_with_noise(
         dataset_name,
         batch_size,
+        chunk_size=4,
+        stride=4,
+        whiteNoiseSD=0.8,
+        constantOffsetSD=0.2
 ):
     train_input = get_input(
         os.path.join(dataset_name, "seed_model_training_data/mat/"),
@@ -345,7 +349,7 @@ def get_dataset_loaders_nlp_21_with_noise(
     valid_input_0 = get_input(
         os.path.join(dataset_name, "seed_model_training_data/mat/"),
         norm=True,
-        gauss=False,
+        gauss=True,
         train=False,
         valid=True,
         gauss_sigma=2.0
@@ -353,7 +357,7 @@ def get_dataset_loaders_nlp_21_with_noise(
     valid_input_1, borders_1 = get_input(
         os.path.join(dataset_name, "online_evaluation_data/no_recalibration/mat/"),
         norm=True,
-        gauss=False,
+        gauss=True,
         train=False,
         gauss_sigma=2.0,
         return_borders=True
@@ -361,7 +365,7 @@ def get_dataset_loaders_nlp_21_with_noise(
     valid_input_2, borders_2 = get_input(
         os.path.join(dataset_name, "online_evaluation_data/recalibration/mat/"),
         norm=True,
-        gauss=False,
+        gauss=True,
         train=False,
         gauss_sigma=2.0,
         return_borders=True
@@ -369,10 +373,15 @@ def get_dataset_loaders_nlp_21_with_noise(
     valid_input = merge_by_borders(valid_input_1, borders_1, valid_input_2, borders_2)
     assert len(valid_input) == len(valid_input_1) + len(valid_input_2)
     valid_input = valid_input_0 + valid_input
-    train_set = HandwritingDataset(train_input)
+    train_set = HandwritingDataset_noisy(train_input, whiteNoiseSD=whiteNoiseSD, constantOffsetSD=constantOffsetSD)
     valid_set = HandwritingDataset(valid_input)
+    collate_fn = partial(
+        ctc_collate,
+        chunk_size=chunk_size,
+        stride=stride,
+    )
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True,
-                              num_workers=4, pin_memory=True, collate_fn=ctc_collate,
+                              num_workers=4, pin_memory=True, collate_fn=collate_fn,
                               persistent_workers=True)
     test_loader = DataLoader(
         valid_set,
@@ -380,7 +389,7 @@ def get_dataset_loaders_nlp_21_with_noise(
         shuffle=False,
         num_workers=0,
         pin_memory=True,
-        collate_fn=ctc_collate,
+        collate_fn=collate_fn,
     )
     return train_loader, test_loader, None
 
@@ -409,14 +418,18 @@ def get_dataset_loaders(
 def get_dataset_loaders_with_noise(
         dataset_name,
         batch_size,
-        gauss_in=True,
         speech=True,
         nlp_10=False,
         is_nejm=False,
+        chunk_size=4,
+        stride=4,
+        whiteNoiseSD=0.8,
+        constantOffsetSD=0.2
     ):
     if speech:
         return None
     if not nlp_10:
-        return get_dataset_loaders_nlp_21_with_noise(dataset_name, batch_size, gauss_in)
+        return get_dataset_loaders_nlp_21_with_noise(dataset_name, batch_size, chunk_size=chunk_size,
+                stride=stride, whiteNoiseSD=whiteNoiseSD, constantOffsetSD=constantOffsetSD)
     return None
 

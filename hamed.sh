@@ -41,10 +41,9 @@
 
 ###################################################### 
 
-### Default meta with chunk size of 25 
-CUDA_VISIBLE_DEVICES=0 python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)-noInsideModelSmoothing" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
+python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)_(chunk4_stride4)" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --stride 4
 
-CUDA_VISIBLE_DEVICES=0 python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.1-0.025)-noInsideModelSmoothing" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.025
+python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.1-0.025)_(chunk4_stride4)" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.025 --chunk_size 4 --stride 4
 
-CUDA_VISIBLE_DEVICES=0 python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)-noSmoothing" --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2
+python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)_(chunk4_stride4)" --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --stride 4
 

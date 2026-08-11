@@ -153,3 +153,41 @@ class HandwritingDataset(Dataset):
 
         return x, y, d
 
+class HandwritingDataset_noisy(Dataset):
+    """
+    items: List of (features, transcript, session_id)
+    """
+    def __init__(self, items: List[Tuple[torch.FloatTensor, str, int]], whiteNoiseSD=0.8, constantOffsetSD=0.2):
+        super().__init__()
+        self.items = items
+
+        self.charset = charset
+        self.whiteNoiseSD = whiteNoiseSD 
+        self.constantOffsetSD = constantOffsetSD
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        x, y, d = self.items[idx]
+
+        assert isinstance(x, torch.Tensor) and x.dtype == torch.float32 and x.dim() == 2
+        assert isinstance(y, str)
+        assert isinstance(d, int)
+
+        x = x.clone()
+
+        print('x in get item func', x.shape)
+
+        x = x + torch.randn_like(x) * self.whiteNoiseSD
+
+        if self.constantOffsetSD > 0:
+            x = x + torch.randn(
+                1, x.shape[1],
+                device=x.device,
+                dtype=x.dtype,
+            ) * self.constantOffsetSD
+
+        x = gaussian_smoothing(x.unsqueeze(0)).squeeze(0)
+
+        return x, y, d
