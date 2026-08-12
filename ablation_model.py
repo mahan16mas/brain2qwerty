@@ -456,9 +456,14 @@ if __name__=="__main__":
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
     ### model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=128, rnn_layers=1, cebra_model_name="Offset36Dropoutv2")
-    model = CEBRATransformer(192, 32, initial_layer_size=512, cebra_num_units=1024, cebra_num_outputs = 1024, transformer_depth = 4, transformer_head= 2, cebra_model_name="Offset36Dropoutv2")
+    model = CEBRATransformer(192, 32, initial_layer_size=512, cebra_num_units=256, cebra_num_outputs = 256, transformer_depth = 2, transformer_head= 1, cebra_model_name="Offset36Dropoutv2")
     """
-    python start_trainer.py --cebra_patch_encoder --out_dir "nlp21_meta_CEBRATRANSFORMER_(Offset35_h-256_o-64_tr-d-2_tr-h-1)_bs16_chunk32_no-init-layer" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name Offset36Dropoutv2 --cebra_hidden_dim 256 --cebra_out_dim 64 --cebra_pad_mode replicate --transformer_depth 2 --transformer_head 1 --chunk_size 32 --chunk_stride 4
+    python start_trainer.py --cebra_patch_encoder --out_dir "nlp21_meta_CEBRATRANSFORMER_(Offset35_h-256_o-256_tr-d-2_tr-h-1)_bs16_chunk32_no-init-layer" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name Offset36Dropoutv2 --cebra_hidden_dim 256 --cebra_out_dim 256 --cebra_pad_mode replicate --transformer_depth 2 --transformer_head 1 --chunk_size 32 --chunk_stride 4
+
+    #### python start_trainer.py --use_rnn_decoder --out_dir nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)_(chunk4_stride4) --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
+    
+    python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk25_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 25 --chunk_stride 4 --do_wandb
+    
     """
     # print(model)
     out, l = model(x, sid, cpos, uids)

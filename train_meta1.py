@@ -226,7 +226,7 @@ def train_model(args: dict):
         ).to(device)
 
     print(model)
-    if True: 
+    if False: 
         from torchinfo import summary
         K = 10 # num chunks
         N = 192 if not is_speech else (512 if is_nejm else 256)
