@@ -1,3 +1,66 @@
+import wandb
+import math
+
+api = wandb.Api()
+
+entity = "Trust-Pose-NLP"
+project = "NeuroNLP"
+
+runs = api.runs(f"{entity}/{project}")
+
+for run in runs:
+    print(f"\nProcessing {run.name} ({run.id})")
+
+    # Skip experiments that we've already processed
+    if "best_test_cer" in run.summary:
+        print(
+            f"  already processed, skipping "
+            f"(best_test_cer = {run.summary['best_test_cer']})"
+        )
+        continue
+
+    best_cer = math.inf
+    found_test_cer = False
+
+    # Look through the complete history.
+    # If test_cer was never logged, no valid values will be found.
+    for row in run.scan_history(keys=["test_cer"]):
+        cer = row.get("test_cer")
+
+        if cer is None:
+            continue
+
+        found_test_cer = True
+
+        try:
+            cer = float(cer)
+
+            if not math.isnan(cer):
+                best_cer = min(best_cer, cer)
+
+        except (TypeError, ValueError):
+            print(f"  warning: invalid test_cer value: {cer}")
+
+    # test_cer was not logged for this experiment
+    if not found_test_cer:
+        print("  test_cer not found, skipping")
+        continue
+
+    # test_cer existed, but contained no usable numerical values
+    if best_cer == math.inf:
+        print("  test_cer exists but has no valid numerical values, skipping")
+        continue
+
+    print(f"  best test CER = {best_cer}")
+
+    # Add the result to the old run's summary
+    run.summary["best_test_cer"] = best_cer
+    run.summary.update()
+
+    print("  summary updated")
+
+exit()
+
 import torch
 
 CHUNK_SIZE = 6

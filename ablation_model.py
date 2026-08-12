@@ -179,8 +179,13 @@ class ConvRNN(nn.Module):
 class CEBRACNN(nn.Module): 
     def __init__(self, num_neurons, initial_layer_size=512, cebra_num_units=256, cebra_num_outputs=64, cebra_model_name="Offset5Model", cebra_pad_mode="replicate"):
         super().__init__()
+        curr_dim = num_neurons
         self.cebra_pad_mode = cebra_pad_mode
-        self.initial_linear = nn.Conv1d(num_neurons, initial_layer_size, 1)
+
+        self.do_init_layer = False 
+        if self.do_init_layer: 
+            self.initial_linear = nn.Conv1d(curr_dim, initial_layer_size, 1)
+            curr_dim = initial_layer_size
 
         import sys
         sys.path.append('CEBRA-main')
@@ -195,7 +200,7 @@ class CEBRACNN(nn.Module):
         # self.cebra = Offset36Dropoutv2(initial_layer_size, cebra_num_units, cebra_num_outputs)
         
         if cebra_model_name == "Offset5Model": 
-            self.cebra = Offset5Model(initial_layer_size, cebra_num_units, cebra_num_outputs)
+            self.cebra = Offset5Model(curr_dim, cebra_num_units, cebra_num_outputs)
             self.left_pad, self.right_pad = self.cebra.get_offset().left, self.cebra.get_offset().right
 
         elif cebra_model_name == "Offset36Dropoutv2": 
@@ -205,6 +210,8 @@ class CEBRACNN(nn.Module):
             self.cebra_pad_mode = 'replicate'
         else:
             print('in progress, gonna encounter erorr after this line')
+
+        curr_dim = cebra_num_outputs 
 
         time_agg_out = "linear" # a safe option for testing
         if time_agg_out == "gap":
@@ -219,6 +226,7 @@ class CEBRACNN(nn.Module):
         
     def _apply_cebra(self, x):
 
+        
         if self.apply_pad_before_cebra: 
             x = F.pad(x, (self.left_pad, self.right_pad-1), mode=self.cebra_pad_mode) # reflect
         # x: [B, D, T_W_padded]
@@ -242,7 +250,9 @@ class CEBRACNN(nn.Module):
         D - number of channels (neuron dimensions)
         T - time dimension (equals to chunk size 4)
         """
-        x = self.initial_linear(x) # [K, initial_layer_size, C]
+        if self.do_init_layer: 
+            x = self.initial_linear(x) # [K, initial_layer_size, C]
+
         # print(x.shape)
         x = self._apply_cebra(x)
 
@@ -446,9 +456,9 @@ if __name__=="__main__":
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
     ### model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=128, rnn_layers=1, cebra_model_name="Offset36Dropoutv2")
-    model = CEBRATransformer(192, 32, initial_layer_size=512, cebra_num_units=2048, cebra_num_outputs = 2048, transformer_depth = 4, transformer_head= 2, cebra_model_name="Offset36Dropoutv2")
+    model = CEBRATransformer(192, 32, initial_layer_size=512, cebra_num_units=1024, cebra_num_outputs = 1024, transformer_depth = 4, transformer_head= 2, cebra_model_name="Offset36Dropoutv2")
     """
-    python start_trainer.py --cebra_patch_encoder --out_dir "nlp21_meta_CEBRATRANSFORMER_(Offset45_h-2048_o-2048_tr-d-4_tr-h-2)_bs16_chunk32" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name Offset36Dropoutv2 --cebra_hidden_dim 2048 --cebra_out_dim 2048 --cebra_pad_mode replicate --transformer_depth 4 --transformer_head 2 --chunk_size 32 --chunk_stride 4
+    python start_trainer.py --cebra_patch_encoder --out_dir "nlp21_meta_CEBRATRANSFORMER_(Offset35_h-256_o-64_tr-d-2_tr-h-1)_bs16_chunk32_no-init-layer" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name Offset36Dropoutv2 --cebra_hidden_dim 256 --cebra_out_dim 64 --cebra_pad_mode replicate --transformer_depth 2 --transformer_head 1 --chunk_size 32 --chunk_stride 4
     """
     # print(model)
     out, l = model(x, sid, cpos, uids)
