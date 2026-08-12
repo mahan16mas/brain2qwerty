@@ -462,8 +462,13 @@ if __name__=="__main__":
 
     #### python start_trainer.py --use_rnn_decoder --out_dir nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)_(chunk4_stride4) --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
     
-    python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
+    python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk25_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 25 --chunk_stride 4 --do_wandb
+
+    python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)_w_noise(0.8-0.2)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 
+
+    python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)_w_noise(0.1-0.125)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.125 
     
+        
     """
     # print(model)
     out, l = model(x, sid, cpos, uids)
