@@ -10,15 +10,7 @@ class RNN_decoder(nn.Module):
     def __init__(self, input_size=2048, rnn_hidden=2048, rnn_layers=5, bidir=False, rnn_dr=0.4, ):
         super().__init__()
         current_dim = input_size
-        # self.rnn = nn.GRU(
-        #     input_size=current_dim, 
-        #     hidden_size=rnn_hidden,
-        #     num_layers=rnn_layers,
-        #     batch_first=True, 
-        #     bidirectional=bidir, 
-        #     dropout=rnn_dr
-        # )
-        self.rnn = nn.LSTM(
+        self.rnn = nn.GRU(
             input_size=current_dim, 
             hidden_size=rnn_hidden,
             num_layers=rnn_layers,
@@ -26,6 +18,14 @@ class RNN_decoder(nn.Module):
             bidirectional=bidir, 
             dropout=rnn_dr
         )
+        # self.rnn = nn.LSTM(
+        #     input_size=current_dim, 
+        #     hidden_size=rnn_hidden,
+        #     num_layers=rnn_layers,
+        #     batch_first=True, 
+        #     bidirectional=bidir, 
+        #     dropout=rnn_dr
+        # )
         current_dim = rnn_hidden * (2 if bidir else 1)
 
         self.rnn_output_dim = current_dim
@@ -462,7 +462,7 @@ if __name__=="__main__":
 
     #### python start_trainer.py --use_rnn_decoder --out_dir nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)_(chunk4_stride4) --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
     
-    python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk25_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 25 --chunk_stride 4 --do_wandb
+    python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
     
     """
     # print(model)
