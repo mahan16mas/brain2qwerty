@@ -14,6 +14,7 @@ cd /mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/brain2qwerty
 - time_agg_out [x]
 - skip layer + look at the conv module carefully [ ]
     - exact difference between meta.conv and cebra.conv 
+        meta keeps the temporal dimension throughout convolutional layers...
 - what CEBRA model to use? --> offset5 
 - try chunk size 25 for nlp 
     - test it with kernel 25 and stride 4 

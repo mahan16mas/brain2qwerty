@@ -40,12 +40,11 @@
 # CUDA_VISIBLE_DEVICES=1 python start_trainer.py --cebra_rnn --out_dir 'nlp21_meta_CEBRA-LSTM(h-1024_o-1024_reflect_rnn-dim-1024_rnn-layers-8_bidir)_bs16' --dataset_path "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name "Offset5Model" --cebra_hidden_dim 1024 --cebra_out_dim 1024  --cebra_pad_mode 'replicate' --rnn_hidden 1024 --rnn_layers 8 --bidir
 
 ###################################################### 
-python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)_(chunk25_stride4)" --dataset_path "/data/hossein/mm_project/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 25 --chunk_stride 4
+# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)_(chunk25_stride4)" --dataset_path "/data/hossein/mm_project/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 25 --chunk_stride 4
 
-python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)_(chunk4_stride4)" --dataset_path "/data/hossein/mm_project/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4
+# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.8-0.2)_(chunk4_stride4)" --dataset_path "/data/hossein/mm_project/CORP_data_release" --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4
 
-python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.1-0.025)_(chunk4_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.025 --chunk_size 4 --chunk_stride 4
+# python start_trainer.py --out_dir "nlp21_meta_default_50_w_noise(0.1-0.025)_(chunk4_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.025 --chunk_size 4 --chunk_stride 4
 
-python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)_(chunk4_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
-
+# python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)_(chunk4_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
 

@@ -184,7 +184,7 @@ class CEBRACNN(nn.Module):
 
         import sys
         sys.path.append('CEBRA-main')
-        from cebra.models import Offset5Model # Offset36Dropoutv2
+        from cebra.models import Offset5Model, Offset36Dropoutv2
 
         """
         try this later: 
@@ -196,6 +196,13 @@ class CEBRACNN(nn.Module):
         
         if cebra_model_name == "Offset5Model": 
             self.cebra = Offset5Model(initial_layer_size, cebra_num_units, cebra_num_outputs)
+            self.left_pad, self.right_pad = self.cebra.get_offset().left, self.cebra.get_offset().right
+
+        elif cebra_model_name == "Offset36Dropoutv2": 
+            self.cebra = Offset36Dropoutv2(initial_layer_size, cebra_num_units, cebra_num_outputs)
+            # self.left_pad, self.right_pad = self.cebra.get_offset().left, self.cebra.get_offset().right
+            self.left_pad, self.right_pad = 3, 2
+            self.cebra_pad_mode = 'replicate'
         else:
             print('in progress, gonna encounter erorr after this line')
 
@@ -208,15 +215,20 @@ class CEBRACNN(nn.Module):
             from neuraltrain.models.common import BahdanauAttention
             self.time_agg_out = BahdanauAttention(input_size=cebra_num_outputs, hidden_size=256)
 
+        self.apply_pad_before_cebra = True  # based on model? 
+        
     def _apply_cebra(self, x):
-        left_pad, right_pad = self.cebra.get_offset().left, self.cebra.get_offset().right
 
-        x = F.pad(x, (left_pad, right_pad-1), mode=self.cebra_pad_mode) # reflect
+        if self.apply_pad_before_cebra: 
+            x = F.pad(x, (self.left_pad, self.right_pad-1), mode=self.cebra_pad_mode) # reflect
         # x: [B, D, T_W_padded]
         # print('After self._apply_cebra F.pad(x, (18, 17), ', x.shape)
 
         # print('bef ceb', x.shape)
         x = self.cebra(x)  # (B, D, T)
+        # TEMP FIX: 
+        if len(x.shape) == 2: 
+            x = x.unsqueeze(2)
         # print('after ceb', x.shape)
 
         return x
@@ -425,15 +437,19 @@ if __name__=="__main__":
     import torch.nn as nn 
     import torch 
     
-    K = 64 # num chunks
+    K = 10 # num chunks
     N = 192
-    C = 4 # chunk size
+    C = 32 # chunk size
     x = torch.randn([K, N, C])
     sid = torch.zeros([K])
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
     # lengths = torch.randint(0, T_max, (B, )) + 1 
-    model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=1024, rnn_layers=8)
+    ### model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=128, rnn_layers=1, cebra_model_name="Offset36Dropoutv2")
+    model = CEBRATransformer(192, 32, initial_layer_size=512, cebra_num_units=2048, cebra_num_outputs = 2048, transformer_depth = 4, transformer_head= 2, cebra_model_name="Offset36Dropoutv2")
+    """
+    python start_trainer.py --cebra_patch_encoder --out_dir nlp21_meta_CEBRATRANSFORMER_(Offset45_h-2048_o-2048_tr-d-4_tr-h-2)_bs16_chunk32 --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name Offset36Dropoutv2 --cebra_hidden_dim 2048 --cebra_out_dim 2048 --cebra_pad_mode replicate --transformer_depth 4 --transformer_head 2 --chunk_size 32 --chunk_stride 4
+    """
     # print(model)
     out, l = model(x, sid, cpos, uids)
     print(out.shape)
