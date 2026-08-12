@@ -231,17 +231,17 @@ def train_model(args: dict):
         K = 10 # num chunks
         N = 192 if not is_speech else (512 if is_nejm else 256)
         C = chunk_size # chunk size
-        x = torch.randn([K, N, C])
-        sid = torch.zeros([K])
-        cpos = torch.randn([K, N, C])
-        uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+        x = torch.randn([K, N, C]).to(device)
+        sid = torch.zeros([K]).to(device)
+        cpos = torch.randn([K, N, C]).to(device)
+        uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2]))).to(device)
         # lengths = torch.randint(0, T_max, (B, )) + 1 
         # print(model)
         out, l = model(x, sid, cpos, uids)
         print(out.shape)
     
         summary(model, input_data=(x, sid, cpos, uids), 
-                device=device,verbose=1,
+                verbose=1,
         )
 
     criterion = nn.CTCLoss(blank=0, zero_infinity=True)
