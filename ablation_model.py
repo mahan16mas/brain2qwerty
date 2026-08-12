@@ -204,7 +204,7 @@ class CEBRACNN(nn.Module):
             self.left_pad, self.right_pad = self.cebra.get_offset().left, self.cebra.get_offset().right
 
         elif cebra_model_name == "Offset36Dropoutv2": 
-            self.cebra = Offset36Dropoutv2(initial_layer_size, cebra_num_units, cebra_num_outputs)
+            self.cebra = Offset36Dropoutv2(curr_dim, cebra_num_units, cebra_num_outputs)
             # self.left_pad, self.right_pad = self.cebra.get_offset().left, self.cebra.get_offset().right
             self.left_pad, self.right_pad = 3, 2
             self.cebra_pad_mode = 'replicate'
