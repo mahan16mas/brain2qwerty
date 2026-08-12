@@ -45,7 +45,7 @@ parser.add_argument('--cebra_patch_encoder', action='store_true', help='use CEBR
 # initial_layer_size=512, # hardcoded for now 
 parser.add_argument('--cebra_hidden_dim', type=int, default=256, help="Only used when you have passed --cebra_patch_encoder")
 parser.add_argument('--cebra_out_dim', type=int, default=64, help="Only used when you have passed --cebra_patch_encoder")
-parser.add_argument('--cebra_model_name', type=str, help="Only used when you have passed --cebra_patch_encoder", default="att", choices=['Offset5Model'])
+parser.add_argument('--cebra_model_name', type=str, help="Only used when you have passed --cebra_patch_encoder", default="att", choices=['Offset5Model', 'Offset36Dropoutv2'])
 parser.add_argument('--cebra_pad_mode', type=str, help="Only used when you have passed --cebra_patch_encoder", default="att", choices=['replicate', 'reflect'])
 parser.add_argument('--transformer_depth', type=int, default=4, help="Only used when you have passed --cebra_patch_encoder")
 parser.add_argument('--transformer_head', type=int, default=2, help="Only used when you have passed --cebra_patch_encoder")

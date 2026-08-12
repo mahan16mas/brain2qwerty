@@ -448,7 +448,7 @@ if __name__=="__main__":
     ### model = CEBRARNN(192, 32, cebra_num_units=1024, cebra_num_outputs = 1024, rnn_hidden=128, rnn_layers=1, cebra_model_name="Offset36Dropoutv2")
     model = CEBRATransformer(192, 32, initial_layer_size=512, cebra_num_units=2048, cebra_num_outputs = 2048, transformer_depth = 4, transformer_head= 2, cebra_model_name="Offset36Dropoutv2")
     """
-    python start_trainer.py --cebra_patch_encoder --out_dir nlp21_meta_CEBRATRANSFORMER_(Offset45_h-2048_o-2048_tr-d-4_tr-h-2)_bs16_chunk32 --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name Offset36Dropoutv2 --cebra_hidden_dim 2048 --cebra_out_dim 2048 --cebra_pad_mode replicate --transformer_depth 4 --transformer_head 2 --chunk_size 32 --chunk_stride 4
+    python start_trainer.py --cebra_patch_encoder --out_dir "nlp21_meta_CEBRATRANSFORMER_(Offset45_h-2048_o-2048_tr-d-4_tr-h-2)_bs16_chunk32" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cebra_model_name Offset36Dropoutv2 --cebra_hidden_dim 2048 --cebra_out_dim 2048 --cebra_pad_mode replicate --transformer_depth 4 --transformer_head 2 --chunk_size 32 --chunk_stride 4
     """
     # print(model)
     out, l = model(x, sid, cpos, uids)
