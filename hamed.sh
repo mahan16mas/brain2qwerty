@@ -48,8 +48,18 @@
 
 # python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50__w_noise(0.8-0.2)_(chunk4_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb
 
-python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk25_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 25 --chunk_stride 4 --do_wandb
+# python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk25_stride4)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 25 --chunk_stride 4 --do_wandb
 
-python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)_w_noise(0.8-0.2)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 
+# python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)_w_noise(0.8-0.2)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb --add_noise --whiteNoiseSD 0.8 --constantOffsetSD 0.2 
 
-python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)_w_noise(0.1-0.125)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.125 
+# python start_trainer.py --use_rnn_decoder --out_dir "nlp21_meta_convRNN_default_50_(chunk4_stride4)_w_noise(0.1-0.125)" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --chunk_size 4 --chunk_stride 4 --do_wandb --add_noise --whiteNoiseSD 0.1 --constantOffsetSD 0.125 
+
+
+############# making META lighter 
+python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=4,2048)-Tran(4,2)_50_bs16" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 2048 --transformer_depth 4 --transformer_head 2
+
+python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=4,2048)-Tran(2,1)_50_bs16" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 2048 --transformer_depth 2 --transformer_head 1
+
+python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=4,1024)-Tran(4,2)_50_bs16" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 1024 --transformer_depth 4 --transformer_head 2
+
+python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=4,1024)-Tran(2,1)_50_bs16" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 1024 --transformer_depth 2 --transformer_head 1

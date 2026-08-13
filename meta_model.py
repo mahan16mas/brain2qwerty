@@ -5,13 +5,15 @@ import torch
 import numpy as np
 from utils.augmentation import GaussianSmoothing
 
-def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048):
+def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, transformer_head: int = 4, transformer_depth: int = 2):
     cfg = experiment_config(meta_default=not mahan_model_params)
     cfg["brain_model_config"]["conv_dropout"] = conv_dropout
     cfg["brain_model_config"]["dropout_input"] = dropout_input
     cfg["brain_model_config"]["time_agg_out"] = time_agg_out
     if not mahan_model_params: 
         cfg["brain_model_config"]["hidden"] = cnn_hidden
+        cfg["transformer_config"]["depth"] = transformer_depth
+        cfg["transformer_config"]["heads"] = transformer_head
 
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
@@ -23,12 +25,12 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     return brain_model,transformer_model, hidden_dim
 
 class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",         
+    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",  transformer_depth: int = 4, transformer_head: int = 2,        
                  # do_smoothing = False, smooth_width=2.0
                  ):
         super().__init__()
 
-        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden)
+        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden, transformer_head = transformer_head, transformer_depth = transformer_depth)
         self.linear = nn.Linear(hidden, num_classes)
 
         #### self.smoother = (GaussianSmoothing(num_neurons, 20, smooth_width, dim=1)) if do_smoothing else (nn.Identity())
@@ -75,19 +77,19 @@ if __name__=="__main__":
     import torch.nn as nn 
     import torch 
     
-    K = 8 # num chunks
+    K = 4 # num chunks
     N = 192
     C = 4 # chunk size
     x = torch.randn([K, N, C])
     sid = torch.zeros([K])
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    model = MetaModel(N, 10, mahan_model_params=False, time_agg_out="gap", cnn_hidden=1024) # 'gap', 'linear', 'att'
+    model = MetaModel(N, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, transformer_head=2, transformer_depth=4) # 'gap', 'linear', 'att'
+    print(model)
     
     # y_pred = model.model(x, sid, uids)
     # print(y_pred.shape)
     out, _ = model(x, sid, cpos, uids)
-    # print(model)
     # exit()
     # print(out.shape)
 
@@ -105,7 +107,8 @@ if __name__=="__main__":
             #     "trainable",
             # ),
             # depth=10,
-            verbose=1,
+            depth=5, # 5,
+            verbose=0,
             )
         )
     

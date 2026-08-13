@@ -172,6 +172,8 @@ def train_model(args: dict):
                         mahan_model_params = use_mahan_model_params,
                         time_agg_out = time_agg_out, 
                         cnn_hidden=cnn_hidden,
+                        transformer_depth=args.get("transformer_depth", 4),
+                        transformer_head=args.get("transformer_head", 2),
                     ).to(device)
                 else: 
                     from ablation_model import CEBRARNN
