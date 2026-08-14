@@ -5,13 +5,14 @@ import torch
 import numpy as np
 from utils.augmentation import GaussianSmoothing
 
-def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, transformer_head: int = 4, transformer_depth: int = 2):
+def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, cnn_depth=8, transformer_head: int = 4, transformer_depth: int = 2):
     cfg = experiment_config(meta_default=not mahan_model_params)
     cfg["brain_model_config"]["conv_dropout"] = conv_dropout
     cfg["brain_model_config"]["dropout_input"] = dropout_input
     cfg["brain_model_config"]["time_agg_out"] = time_agg_out
     if not mahan_model_params: 
         cfg["brain_model_config"]["hidden"] = cnn_hidden
+        cfg["brain_model_config"]["depth"] = cnn_depth
         cfg["transformer_config"]["depth"] = transformer_depth
         cfg["transformer_config"]["heads"] = transformer_head
 
@@ -25,12 +26,12 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     return brain_model,transformer_model, hidden_dim
 
 class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",  transformer_depth: int = 4, transformer_head: int = 2,        
+    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, cnn_depth=8, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",  transformer_depth: int = 4, transformer_head: int = 2,        
                  # do_smoothing = False, smooth_width=2.0
                  ):
         super().__init__()
 
-        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden, transformer_head = transformer_head, transformer_depth = transformer_depth)
+        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden, cnn_depth=cnn_depth, transformer_head = transformer_head, transformer_depth = transformer_depth)
         self.linear = nn.Linear(hidden, num_classes)
 
         #### self.smoother = (GaussianSmoothing(num_neurons, 20, smooth_width, dim=1)) if do_smoothing else (nn.Identity())

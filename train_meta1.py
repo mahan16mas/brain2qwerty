@@ -141,6 +141,7 @@ def train_model(args: dict):
         )
     epochs = args.get("epochs", 300)
     cnn_hidden = args.get("cnn_hidden", 2048)
+    cnn_depth = args.get("cnn_depth", 8)
     conv_dropout = args.get("conv_dropout", 0.5)
     dropout_input = args.get("dropout_input", 0.2)
     time_agg_out = args.get("time_agg_out", "att")
@@ -172,6 +173,7 @@ def train_model(args: dict):
                         mahan_model_params = use_mahan_model_params,
                         time_agg_out = time_agg_out, 
                         cnn_hidden=cnn_hidden,
+                        cnn_depth=cnn_depth,
                         transformer_depth=args.get("transformer_depth", 4),
                         transformer_head=args.get("transformer_head", 2),
                     ).to(device)
@@ -212,12 +214,14 @@ def train_model(args: dict):
                 conv_dropout=conv_dropout,
                 dropout_input=dropout_input,
                 mahan_model_params = use_mahan_model_params,
+                cnn_depth=cnn_depth,
             ).to(device)
     else: 
         model = ConvRNN(
             num_neurons=192 if not is_speech else (512 if is_nejm else 256),
             num_classes=(41 if is_speech else 32),
             cnn_hidden=cnn_hidden,
+            cnn_depth=cnn_depth,
             conv_dropout=conv_dropout,
             dropout_input=dropout_input,
             mahan_model_params = use_mahan_model_params,
