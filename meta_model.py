@@ -85,8 +85,8 @@ if __name__=="__main__":
     sid = torch.zeros([K])
     cpos = torch.randn([K, N, C])
     uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    model = MetaModel(N, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, transformer_head=2, transformer_depth=4) # 'gap', 'linear', 'att'
-    print(model)
+    model = MetaModel(N, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=512, cnn_depth=2, transformer_depth=4, transformer_head=2) # 'gap', 'linear', 'att'
+    # print(model)
     
     # y_pred = model.model(x, sid, uids)
     # print(y_pred.shape)
@@ -108,7 +108,7 @@ if __name__=="__main__":
             #     "trainable",
             # ),
             # depth=10,
-            depth=5, # 5,
+            depth=2, # 5,
             verbose=0,
             )
         )
