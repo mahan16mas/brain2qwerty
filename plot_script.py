@@ -20,7 +20,7 @@ errors = {
 
     # Now this one has FOUR values, corresponding to [1, 2, 4, 8]
     2048: {
-        (4, 2): ["X", 0.37053, 0.34175, 0.32261],
+        (4, 2): [0.39903, 0.37053, 0.34175, 0.32261],
         (2, 1): [0.7973, 0.45397, 0.75808, "X"],
     },
 
@@ -72,16 +72,32 @@ transformer_params = {
         (2, 1): 92_000_000,
     },
 }
+
+
+# Replace these with your actual values
+CEBRA_error = 0.44308
+CEBRA_noisy_error = 0.23203
+show_CEBRA_noisy = False
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MultipleLocator
 
 
 # ---------------------------------------------------------
-# MODEL CONFIGURATIONS
+# SETTINGS
 # ---------------------------------------------------------
 
-hidden_sizes = [512, 1024, 2048]
+# True  -> only 1024 and 2048
+# False -> 512, 1024, and 2048
+ignore_512 = True
+
+if ignore_512:
+    hidden_sizes = [1024, 2048]
+else:
+    hidden_sizes = [512, 1024, 2048]
+
 
 conv_depths = {
     512:  [2, 4, 8],
@@ -89,17 +105,13 @@ conv_depths = {
     2048: [1, 2, 4, 8],
 }
 
-
-# ---------------------------------------------------------
-# Y-AXIS SETTINGS
-# ---------------------------------------------------------
-
-# Change this to control how fine the y-axis ticks are.
-# For example:
-#   0.01  -> ticks every 0.01
-#   0.005 -> ticks every 0.005
-#   0.002 -> ticks every 0.002
+# Fine y-axis tick spacing
 y_tick_step = 0.05
+
+
+# ---------------------------------------------------------
+# BASELINE ERROR RATES
+# ---------------------------------------------------------
 
 
 # ---------------------------------------------------------
@@ -107,7 +119,6 @@ y_tick_step = 0.05
 # ---------------------------------------------------------
 
 def clean(values):
-    """Convert missing experiments marked with 'X' to NaN."""
     return np.array([
         np.nan if value == "X" else float(value)
         for value in values
@@ -115,7 +126,6 @@ def clean(values):
 
 
 def format_params(n):
-    """Format parameter counts nicely."""
     if n >= 1e9:
         return f"{n / 1e9:.1f}B"
     elif n >= 1e6:
@@ -130,12 +140,16 @@ def format_params(n):
 # CREATE FIGURE
 # ---------------------------------------------------------
 
+n_plots = len(hidden_sizes)
+
 fig, axes = plt.subplots(
     1,
-    3,
-    figsize=(13, 4.5),
+    n_plots,
+    figsize=(4.5 * n_plots, 4.5),
     sharey=True
 )
+
+axes = np.atleast_1d(axes)
 
 
 # ---------------------------------------------------------
@@ -150,7 +164,7 @@ for ax, hidden_size in zip(axes, hidden_sizes):
     errors_21 = clean(errors[hidden_size][(2, 1)])
 
     # -----------------------------------------------------
-    # Transformer (4, 2)
+    # YOUR MODELS
     # -----------------------------------------------------
 
     ax.plot(
@@ -165,10 +179,6 @@ for ax, hidden_size in zip(axes, hidden_sizes):
         )
     )
 
-    # -----------------------------------------------------
-    # Transformer (2, 1)
-    # -----------------------------------------------------
-
     ax.plot(
         depths,
         errors_21,
@@ -182,7 +192,7 @@ for ax, hidden_size in zip(axes, hidden_sizes):
     )
 
     # -----------------------------------------------------
-    # DASHED CONNECTIONS BETWEEN TRANSFORMER CONFIGS
+    # CONNECTIONS BETWEEN TRANSFORMER CONFIGS
     # -----------------------------------------------------
 
     for x, y_42, y_21 in zip(
@@ -200,10 +210,27 @@ for ax, hidden_size in zip(axes, hidden_sizes):
             )
 
     # -----------------------------------------------------
-    # X-AXIS TICKS
-    #
-    # First line: conv depth
-    # Second line: conv parameter count
+    # BASELINE MODELS
+    # -----------------------------------------------------
+
+    ax.axhline(
+        y=CEBRA_error,
+        linestyle='-.',
+        linewidth=1.5,
+        label=f'CEBRA ({CEBRA_error:.3f})'
+    )
+
+    # CEBRA_noisy baseline
+    if show_CEBRA_noisy:
+        ax.axhline(
+            y=CEBRA_noisy_error,
+            linestyle=':',
+            linewidth=2,
+            label=f'CEBRA_noisy ({CEBRA_noisy_error:.3f})'
+        )
+
+    # -----------------------------------------------------
+    # X-AXIS
     # -----------------------------------------------------
 
     tick_labels = [
@@ -215,33 +242,30 @@ for ax, hidden_size in zip(axes, hidden_sizes):
     ax.set_xticks(depths)
     ax.set_xticklabels(tick_labels)
 
+    ax.set_xlabel(
+        'Conv depth\nConv parameters'
+    )
+
     # -----------------------------------------------------
-    # Y-AXIS TICKS
+    # Y-AXIS
     # -----------------------------------------------------
 
-    # Finer y-axis tick spacing
     ax.yaxis.set_major_locator(
         MultipleLocator(y_tick_step)
     )
 
-    # IMPORTANT:
-    # sharey=True normally hides the y tick labels on
-    # subplots 2 and 3. This turns them back on.
+    # Show y tick values on every subplot
     ax.tick_params(
         axis='y',
         labelleft=True
     )
 
     # -----------------------------------------------------
-    # TITLES / LABELS
+    # TITLE
     # -----------------------------------------------------
 
     ax.set_title(
         f'Conv hidden size = {hidden_size}'
-    )
-
-    ax.set_xlabel(
-        'Conv depth\nConv parameters'
     )
 
     # -----------------------------------------------------
@@ -259,7 +283,7 @@ for ax, hidden_size in zip(axes, hidden_sizes):
     # -----------------------------------------------------
 
     ax.legend(
-        title='Transformer config / params',
+        title='Model / Transformer params',
         frameon=False,
         fontsize=8,
         title_fontsize=8
@@ -267,7 +291,7 @@ for ax, hidden_size in zip(axes, hidden_sizes):
 
 
 # ---------------------------------------------------------
-# Y-AXIS LABEL
+# SHARED Y LABEL
 # ---------------------------------------------------------
 
 axes[0].set_ylabel('Error rate')

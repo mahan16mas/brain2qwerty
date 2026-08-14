@@ -13,7 +13,7 @@ meta_ENCODER = {
     "conv_dropout": 0.5,
     "hidden": 2048,
     "batch_norm": True,
-    "depth": 4, # 8
+    "depth": 8, 
     "dilation_period": 3,
     "kernel_size": 3,
     "relu_leakiness": 0.01,

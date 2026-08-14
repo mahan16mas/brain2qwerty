@@ -35,6 +35,7 @@ parser.add_argument('--time_agg_out', type=str, help="time_aggregation method/la
 parser.add_argument('--cnn_only', action='store_true', help='use Conv output directly for CTC')
 parser.add_argument('--cnn_hidden', type=int, default=2048)
 parser.add_argument('--cnn_depth', type=int, default=8)
+parser.add_argument('--cnn_initial_linear', type=int, default=512)
 
 parser.add_argument('--use_rnn_decoder', action='store_true', help='use ConvRNN model from ablation_model.py')
 parser.add_argument('--rnn_hidden', type=int, default=2048, help="Only used when you have passed --use_rnn_decoder: hidden dim of RNN decoder in ConvRNN model")
