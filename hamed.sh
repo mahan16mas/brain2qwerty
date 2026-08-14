@@ -67,7 +67,7 @@
 # CUDA_VISIBLE_DEVICES=1 python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=2,512)-Tran(2,1)_50_bs8_chunk25.4" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 8 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 512 --transformer_depth 2 --transformer_head 1 --chunk_size 25 --chunk_stride 4 --cnn_depth 2 
 
 
-python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=8,2048)-Tran(2,1)_50_bs8_chunk25.4" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 8 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 2048 --transformer_depth 2 --transformer_head 1 --chunk_size 25 --chunk_stride 4 --cnn_depth 8 
+python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=8,2048)-Tran(2,1)_50_bs8_chunk25.4" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 8 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 2048 --transformer_depth 2 --transformer_head 1 --chunk_size 25 --chunk_stride 4 --cnn_depth 8 
 
-python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=8,1024)-Tran(2,1)_50_bs8_chunk25.4" --dataset_path /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --batch_size 8 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 1024 --transformer_depth 2 --transformer_head 1 --chunk_size 25 --chunk_stride 4 --cnn_depth 8 
+python start_trainer.py --out_dir "nlp21_meta-ShallowCNN(d=8,1024)-Tran(2,1)_50_bs8_chunk25.4" --dataset_path /data/hossein/mm_project/CORP_data_release --batch_size 8 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --cnn_hidden 1024 --transformer_depth 2 --transformer_head 1 --chunk_size 25 --chunk_stride 4 --cnn_depth 8 
 
