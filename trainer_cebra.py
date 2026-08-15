@@ -322,7 +322,7 @@ def train_model(args : dict):
 
     python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-LargeConv-CebUnfold-4_2-optCEB-Trans --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000
 
-    python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-CebraConv-Unfold_CEBRA_32_4-opt_CEB --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --optimStyle CEBRA --convStyle CEBRA --unfolding CEBRA_32_4
+    python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-CebraConv-Unfold_CEBRA_32_4-opt_CEB_diffLength --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --optimStyle CEBRA --convStyle CEBRA --unfolding CEBRA_32_4
     """
 
     if args['unfolding'] == "CEBRA_32_4": 

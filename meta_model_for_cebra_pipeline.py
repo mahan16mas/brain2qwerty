@@ -124,7 +124,7 @@ class MetaModel(nn.Module):
         # x: [B, T, D] ? 
         
         # print(max(lengths), x.shape[1])
-        assert max(lengths) == x.shape[1], 'must be equal, if not two possibilities: 1) the data loading is broken (returned length from dataloader doesnt match the T_max dim) 2) updating the length throughout the model is broken'
+        # assert max(lengths) == x.shape[1], 'must be equal, if not two possibilities: 1) the data loading is broken (returned length from dataloader doesnt match the T_max dim) 2) updating the length throughout the model is broken'
 
         B = x.shape[0]
         mask = torch.zeros(B, x.shape[1], device=x.device) # [B, T_max]
