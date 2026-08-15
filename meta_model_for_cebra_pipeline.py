@@ -79,7 +79,7 @@ class MetaModel(nn.Module):
         x, lengths = self.unfolder(x, lengths) # [B, T//stride, ceb_out*kernel]
         # print('Befre trans', x.shape)
         
-        # assert max(lengths) == x.shape[1], 'must be equal, if not two possibilities: 1) the data loading is broken (returned length from dataloader doesnt match the T_max dim) 2) updating the length throughout the model is broken'
+        assert max(lengths) == x.shape[1], 'must be equal, if not two possibilities: 1) the data loading is broken (returned length from dataloader doesnt match the T_max dim) 2) updating the length throughout the model is broken'
 
         B = cnn_out.shape[0]
         mask = torch.zeros(B, x.shape[1], device=cnn_out.device) # [B, T_max]

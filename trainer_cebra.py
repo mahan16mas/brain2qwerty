@@ -317,8 +317,14 @@ def train_model(args : dict):
     # )
     """
     python start_trainer_cebra.py --datasetPath /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --offset 4 --out_dir METECEBRA_A --gru --bidir --batchSize 16 --random_offset --hidden 1024 --dropout 0.4 --layers 5 --nBatch 20000 --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64
+
+    python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A_FULL_META --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5 --nBatch 20000 --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64
     """
-    model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=2, transformer_head=1, unfolder_kernel= 32, unfolder_stride= 4) 
+    FULL_META = True 
+    if FULL_META: 
+        model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=64, transformer_depth=4, transformer_head=2, unfolder_kernel= 32, unfolder_stride= 4) 
+    else: 
+        model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=2, transformer_head=1, unfolder_kernel= 32, unfolder_stride= 4) 
     print(model)
     # from torchinfo import summary 
     # _temp_B = 64
@@ -352,19 +358,40 @@ def train_model(args : dict):
         is_nejm
     )
     ctc_criterion = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
-    optimizer = torch.optim.Adam(
-        model.parameters(),
-        lr=args["lrStart"],
-        betas=(0.9, 0.999),
-        eps=0.1,
-        weight_decay=args["l2_decay"],
-    )
-    scheduler = torch.optim.lr_scheduler.LinearLR(
-        optimizer,
-        start_factor=1.0,
-        end_factor=args["lrEnd"] / args["lrStart"],
-        total_iters=args["nBatch"],
-    )
+    if FULL_META: 
+        from neuraltrain.optimizers import LightningOptimizer
+        optimizer_config_dict = {
+            "name": "LightningOptimizer",
+            "optimizer": {"name": "AdamW", "lr": 5e-5, "kwargs": {"weight_decay": 1e-4}},
+            "scheduler": {
+                "name": "OneCycleLR",
+                "kwargs": {"max_lr": 5e-5, "pct_start": 0.1},
+            },
+            "interval": "step",
+        }
+    
+        opt_config = LightningOptimizer.model_validate(optimizer_config_dict)
+    
+        optimizer_assets = opt_config.build(
+            model.parameters(),
+            total_steps=args["nBatch"], # epochs * len(train_loader),
+        )
+        optimizer = optimizer_assets["optimizer"]
+        scheduler = optimizer_assets["lr_scheduler"]["scheduler"] 
+    else: 
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr=args["lrStart"],
+            betas=(0.9, 0.999),
+            eps=0.1,
+            weight_decay=args["l2_decay"],
+        )
+        scheduler = torch.optim.lr_scheduler.LinearLR(
+            optimizer,
+            start_factor=1.0,
+            end_factor=args["lrEnd"] / args["lrStart"],
+            total_iters=args["nBatch"],
+        )
     so_far_batch = load_checkpoint(checkpoint_address,model, optimizer, scheduler)
     print(so_far_batch)
     inf_losses = 0
