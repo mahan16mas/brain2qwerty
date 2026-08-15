@@ -96,6 +96,7 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     # since we dont need time aggregation in this pipeline
     cfg["brain_model_config"]["name"] = "SimpleConv"
     #### cfg["brain_model_config"]["backbone_out_channels"] = 128
+    cfg["brain_model_config"]['time_agg_out'] = 'None'
     cfg["brain_model_config"].pop("time_agg_out") 
     if cnn_initial_linear == 0: 
         cfg["brain_model_config"].pop("initial_linear") 
