@@ -211,7 +211,7 @@ if __name__=="__main__":
         # model = MetaModel(D, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=4, transformer_head=2, unfolder_kernel= 32, unfolder_stride= 4) 
         # print(model)
         
-        y, l = model(x, lengths)
+        y, l, _,_ = model(x, lengths)
         print(y.shape, l)
 
         from torchinfo import summary 
