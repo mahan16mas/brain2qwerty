@@ -57,6 +57,39 @@ class AvgPool(nn.Module):
 
         return x, lengths
 
+
+class TemporalPatch(nn.Module):
+    def __init__(self, kernel, stride, in_f, out_f):
+        super().__init__()
+
+        self.temporal_downsample = nn.Conv1d(
+            in_channels=in_f,
+            out_channels=out_f,
+            kernel_size=kernel,
+            stride=stride,
+            padding=0,
+        )
+
+        self.kernel = kernel
+        self.stride = stride
+
+    def forward(self, x, lengths):
+        # x: [B, T_max, D]
+
+        x = x.permute(0, 2, 1)          # [B, 2048, T]
+        x = self.temporal_downsample(x)  # [B, 2048, T_new]
+        x = x.permute(0, 2, 1)          # [B, T_new, 2048]
+
+        lengths = torch.div(
+            lengths - self.kernel,
+            self.stride,
+            rounding_mode="floor",
+        ) + 1
+
+        lengths = lengths.clamp(min=0)
+        
+        return x, lengths
+
 def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output = 2048, transformer_head: int = 4, transformer_depth: int = 2, unfolding: str = 'CEBRA_32_4'):
     cfg = experiment_config(meta_default=not mahan_model_params)
 
@@ -94,7 +127,10 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     elif unfolding == "AVGPOOL_25_4": 
         unfolder = AvgPool(25, 4)
         transformer_dim = cnn_output * 1 
-    
+    elif unfolding == "KERNEL_4_4"
+        unfolder = TemporalPatch(4, 4, cnn_output, cnn_output)
+        transformer_dim = cnn_output * 1
+
     transformer_model = transformer_config.build(dim=transformer_dim)
     output_dim = transformer_dim
     return brain_model,transformer_model, output_dim, unfolder
@@ -153,21 +189,32 @@ class MetaModel(nn.Module):
 if __name__=="__main__":
     import torch.nn as nn 
     import torch 
-    
-    B = 4
-    T_max = 1000
-    D = 192
-    x = torch.randn((B, T_max, D))
-    lengths = torch.randint(0, T_max, (B, )) + 1 
-    # model = MetaModel(N, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, transformer_depth=4, transformer_head=2) # 'gap', 'linear', 'att'
-    model = MetaModel(D, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=4, transformer_head=2, unfolder_kernel= 32, unfolder_stride= 4) 
-    print(model)
-    
-    y, l = model(x, lengths)
-    print(y.shape, l)
 
-    from torchinfo import summary 
-    print(summary(model, input_data=(x,  lengths), verbose=1,))
+    models = [
+          MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=64, transformer_depth=4, transformer_head=2, unfolding="CEBRA_32_4"),
+          MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=2, transformer_head=1, unfolding="CEBRA_32_4") ,
+          MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=512, transformer_depth=4, transformer_head=2, unfolding="CEBRA_4_4"),
+          MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=256, transformer_depth=2, transformer_head=1, unfolding="CEBRA_4_4") ,
+          MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=2048, transformer_depth=4, transformer_head=2, unfolding="AVGPOOL_4_4"),
+          MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=2048, transformer_depth=4, transformer_head=2, unfolding="AVGPOOL_25_4"),
+          MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=2048, transformer_depth=4, transformer_head=2, unfolding="KERNEL_4_4")
+    ]
+
+    for model in models:     
+        B = 4
+        T_max = 1000
+        D = 192
+        x = torch.randn((B, T_max, D))
+        lengths = torch.randint(0, T_max, (B, )) + 1 
+        # model = MetaModel(N, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, transformer_depth=4, transformer_head=2) # 'gap', 'linear', 'att'
+        # model = MetaModel(D, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=4, transformer_head=2, unfolder_kernel= 32, unfolder_stride= 4) 
+        # print(model)
+        
+        y, l = model(x, lengths)
+        print(y.shape, l)
+
+        from torchinfo import summary 
+        summary(model, input_data=(x,  lengths), verbose=1,)
 
     exit()
 

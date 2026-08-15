@@ -333,10 +333,22 @@ def train_model(args : dict):
     elif args['unfolding'] == "CEBRA_4_4": 
         if args['convStyle'] == "LARGE": 
             model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=512, transformer_depth=4, transformer_head=2, unfolding="CEBRA_4_4")
-
+        else: 
+            model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=256, transformer_depth=2, transformer_head=1, unfolding="CEBRA_4_4") 
     elif args['unfolding'] == "AVGPOOL_4_4": 
-        pass 
-        
+        if args['convStyle'] == "LARGE": 
+            model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=2048, transformer_depth=4, transformer_head=2, unfolding="AVGPOOL_4_4")
+        else: 
+            print('Not necessary')
+    elif args['unfolding'] == "AVGPOOL_25_4": 
+        if args['convStyle'] == "LARGE": 
+            model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=2048, transformer_depth=4, transformer_head=2, unfolding="AVGPOOL_25_4")
+        else: 
+            print('Not necessary')
+    elif args['unfolding'] == "KERNEL_4_4":
+        if args['convStyle'] == "LARGE": 
+            model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=2048, transformer_depth=4, transformer_head=2, unfolding="KERNEL_4_4")
+            
     # if META_MODEL: 
     #     # 32 4 -> out = 64
     #     # 4  4 -> out = 512
