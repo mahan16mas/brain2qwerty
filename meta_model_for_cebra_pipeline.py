@@ -98,7 +98,7 @@ class MetaModel(nn.Module):
 
         cnn_out, lengths = self._cnn_forward(neuro, lengths, None, None) # you might wanna pass lengths if you do padding later 
 
-        return self._transformer_forward(cnn_out, lengths), _, _
+        return self._transformer_forward(cnn_out, lengths), None, None 
 
 
 if __name__=="__main__":
