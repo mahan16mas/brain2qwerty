@@ -319,9 +319,12 @@ def train_model(args : dict):
     python start_trainer_cebra.py --datasetPath /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --offset 4 --out_dir METECEBRA_A --gru --bidir --batchSize 16 --random_offset --hidden 1024 --dropout 0.4 --layers 5 --nBatch 20000 --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64
 
     python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-LargeConv-CebUnfold-4_2-optMeta-Trans --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 3950
+
+    python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-LargeConv-CebUnfold-4_2-optCEB-Trans --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000
     """
-    FULL_META = True 
-    if FULL_META: 
+    META_MODEL = True 
+    META_OPT = False
+    if META_MODEL: 
         model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=64, transformer_depth=4, transformer_head=2, unfolder_kernel= 32, unfolder_stride= 4) 
     else: 
         model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=2, transformer_head=1, unfolder_kernel= 32, unfolder_stride= 4) 
@@ -358,7 +361,7 @@ def train_model(args : dict):
         is_nejm
     )
     ctc_criterion = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
-    if FULL_META: 
+    if META_OPT: 
         from neuraltrain.optimizers import LightningOptimizer
         optimizer_config_dict = {
             "name": "LightningOptimizer",
@@ -570,7 +573,7 @@ def train_model(args : dict):
 
         
         scheduler.step()
-        log_freq = 79 # trainloader lengths --> TODO: read from trainloader so its compatible with other datasets 
+        log_freq = 79 if META_OPT else 50 # trainloader lengths --> TODO: read from trainloader so its compatible with other datasets 
         if batch % log_freq == 0:
             with torch.no_grad():
                 model.eval()
