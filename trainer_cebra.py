@@ -379,9 +379,14 @@ def train_model(args : dict):
     criterion = InfoNCE(args['temperature'])
     with open(args["out_dir"] + "/args", "wb") as file:
         pickle.dump(args, file)
+
+    if args["optimStyle"] == "META": 
+        bs = 8
+    else: 
+        bs = 16
     trainLoader, testLoader, loadedData = get_dataset_loaders(
         args["datasetPath"],
-        args["batchSize"],
+        bs, # args["batchSize"]
         args.get("gauss_in", True) or no_gauss,
         is_speech,
         args.get("nlp_10", False),
@@ -604,7 +609,7 @@ def train_model(args : dict):
 
         
         scheduler.step()
-        log_freq = 79 if args['optimStyle'] == "META" else 50 # trainloader lengths --> TODO: read from trainloader so its compatible with other datasets 
+        log_freq = len(trainLoader) if args['optimStyle'] == "META" else 50 # trainloader lengths --> TODO: read from trainloader so its compatible with other datasets 
         if batch % log_freq == 0: 
             with torch.no_grad():
                 model.eval()
