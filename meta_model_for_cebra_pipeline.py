@@ -127,7 +127,7 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
     elif unfolding == "AVGPOOL_25_4": 
         unfolder = AvgPool(25, 4)
         transformer_dim = cnn_output * 1 
-    elif unfolding == "KERNEL_4_4"
+    elif unfolding == "KERNEL_4_4":
         unfolder = TemporalPatch(4, 4, cnn_output, cnn_output)
         transformer_dim = cnn_output * 1
 
