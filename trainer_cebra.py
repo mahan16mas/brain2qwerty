@@ -318,7 +318,7 @@ def train_model(args : dict):
     """
     python start_trainer_cebra.py --datasetPath /mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release --offset 4 --out_dir METECEBRA_A --gru --bidir --batchSize 16 --random_offset --hidden 1024 --dropout 0.4 --layers 5 --nBatch 20000 --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64
 
-    python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A_FULL_META --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5 --nBatch 20000 --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64
+    python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-LargeConv-CebUnfold-4_2-optMeta-Trans --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5 --nBatch 20000 --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64
     """
     FULL_META = True 
     if FULL_META: 
@@ -406,6 +406,7 @@ def train_model(args : dict):
     dummy_epoch = 0 
 
     train_iter = iter(trainLoader)
+    print('len(trainLoader)', len(trainLoader))
     for batch in trange(args["nBatch"]):
         
         model.train()
