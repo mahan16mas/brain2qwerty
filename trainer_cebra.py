@@ -321,13 +321,28 @@ def train_model(args : dict):
     python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-LargeConv-CebUnfold-4_2-optMeta-Trans --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 3950
 
     python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-LargeConv-CebUnfold-4_2-optCEB-Trans --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000
+
+    python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4 --out_dir METECEBRA_A-CebraConv-CebUnfold-32_2-optCEB-Trans --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --optimStyle CEBRA --convStyle CEBRA --unfolding CEBRA_32_4
     """
-    META_MODEL = True 
-    META_OPT = False
-    if META_MODEL: 
-        model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=64, transformer_depth=4, transformer_head=2, unfolder_kernel= 32, unfolder_stride= 4) 
-    else: 
-        model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=2, transformer_head=1, unfolder_kernel= 32, unfolder_stride= 4) 
+
+    if args['unfolding'] == "CEBRA_32_4": 
+        if args['convStyle'] == "LARGE": 
+            model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=64, transformer_depth=4, transformer_head=2, unfolding="CEBRA_32_4")
+        else: 
+            model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=2, transformer_head=1, unfolding="CEBRA_32_4") 
+    elif args['unfolding'] == "CEBRA_4_4": 
+        if args['convStyle'] == "LARGE": 
+            model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=512, transformer_depth=4, transformer_head=2, unfolding="CEBRA_4_4")
+
+    elif args['unfolding'] == "AVGPOOL_4_4": 
+        pass 
+        
+    # if META_MODEL: 
+    #     # 32 4 -> out = 64
+    #     # 4  4 -> out = 512
+    #     model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output=64, transformer_depth=4, transformer_head=2, unfolder_kernel= 32, unfolder_stride= 4) 
+    # else: 
+    #     model = MetaModel(192, 32, mahan_model_params=False, time_agg_out="gap", cnn_hidden=256, cnn_depth=8, cnn_initial_linear=0, cnn_output=64, transformer_depth=2, transformer_head=1, unfolder_kernel= 32, unfolder_stride= 4) 
     print(model)
     # from torchinfo import summary 
     # _temp_B = 64
@@ -361,7 +376,9 @@ def train_model(args : dict):
         is_nejm
     )
     ctc_criterion = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
-    if META_OPT: 
+    if args["optimStyle"] == "META": 
+        # args["nBatch"]
+        nBatch = 3950
         from neuraltrain.optimizers import LightningOptimizer
         optimizer_config_dict = {
             "name": "LightningOptimizer",
@@ -381,7 +398,9 @@ def train_model(args : dict):
         )
         optimizer = optimizer_assets["optimizer"]
         scheduler = optimizer_assets["lr_scheduler"]["scheduler"] 
-    else: 
+    elif args["optimStyle"] == "CEBRA": 
+        # args["nBatch"]
+        nBatch = 20000
         optimizer = torch.optim.Adam(
             model.parameters(),
             lr=args["lrStart"],
@@ -393,7 +412,7 @@ def train_model(args : dict):
             optimizer,
             start_factor=1.0,
             end_factor=args["lrEnd"] / args["lrStart"],
-            total_iters=args["nBatch"],
+            total_iters=nBatch # args["nBatch"],
         )
     so_far_batch = load_checkpoint(f'{checkpoint_address}_dont_load_shit',model, optimizer, scheduler)
     print(so_far_batch)
@@ -410,7 +429,7 @@ def train_model(args : dict):
 
     train_iter = iter(trainLoader)
     print('len(trainLoader)', len(trainLoader))
-    for batch in trange(args["nBatch"]):
+    for batch in trange(nBatch): # args["nBatch"]
         
         model.train()
         try:
@@ -573,8 +592,8 @@ def train_model(args : dict):
 
         
         scheduler.step()
-        log_freq = 79 if META_OPT else 50 # trainloader lengths --> TODO: read from trainloader so its compatible with other datasets 
-        if batch % log_freq == 0:
+        log_freq = 79 if args['optimStyle'] == "META" else 50 # trainloader lengths --> TODO: read from trainloader so its compatible with other datasets 
+        if batch % log_freq == 0: 
             with torch.no_grad():
                 model.eval()
                 allLoss = []

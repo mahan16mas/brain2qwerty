@@ -28,8 +28,36 @@ class Unfolder(nn.Module):
         ) + 1
         return x, lengths
 
+class AvgPool(nn.Module):
+    def __init__(self, kernel, stride):
+        super().__init__()
 
-def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output = 2048, transformer_head: int = 4, transformer_depth: int = 2, unfolder_kernel = 32, unfolder_stride = 4):
+        self.pool = nn.AvgPool1d(
+            kernel_size=kernel,
+            stride=stride,
+            padding=0,
+            ceil_mode=False,
+        )
+
+        self.kernel = kernel
+        self.stride = stride
+
+    def forward(self, x, lengths):
+        # x: [B, T_max, D]
+
+        x = x.permute(0, 2, 1)       # [B, D, T_max]
+        x = self.pool(x)              # [B, D, T_new_max]
+        x = x.permute(0, 2, 1)       # [B, T_new_max, D]
+
+        lengths = torch.div(
+            lengths - self.kernel,
+            self.stride,
+            rounding_mode="floor",
+        ) + 1
+
+        return x, lengths
+
+def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output = 2048, transformer_head: int = 4, transformer_depth: int = 2, unfolding: str = 'CEBRA_32_4'):
     cfg = experiment_config(meta_default=not mahan_model_params)
 
     # since we dont need time aggregation in this pipeline
@@ -54,20 +82,30 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
 
     brain_model = brain_config.build(n_in_channels=n_in_channels, n_outputs=cnn_output)
 
-    unfolder = Unfolder(unfolder_kernel, unfolder_stride)
-    transformer_dim = unfolder_kernel * cnn_output
-
+    if unfolding == "CEBRA_32_4": 
+        unfolder = Unfolder(32, 4)
+        transformer_dim = 32 * cnn_output
+    elif unfolding == "CEBRA_4_4": 
+        unfolder = Unfolder(4, 4)
+        transformer_dim = 4 * cnn_output
+    elif unfolding == "AVGPOOL_4_4": 
+        unfolder = AvgPool(4, 4)
+        transformer_dim = cnn_output * 1 
+    elif unfolding == "AVGPOOL_25_4": 
+        unfolder = AvgPool(25, 4)
+        transformer_dim = cnn_output * 1 
+    
     transformer_model = transformer_config.build(dim=transformer_dim)
     output_dim = transformer_dim
     return brain_model,transformer_model, output_dim, unfolder
 
 class MetaModel(nn.Module):
-    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output = 2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",  transformer_depth: int = 4, transformer_head: int = 2, unfolder_kernel = 32, unfolder_stride = 4,       
+    def __init__(self, num_neurons, num_classes, cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, cnn_output = 2048, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",  transformer_depth: int = 4, transformer_head: int = 2, unfolding: str = "CEBRA_32_4",       
                  # do_smoothing = False, smooth_width=2.0
                  ):
         super().__init__()
 
-        self.model, self.transformer, output_dim, self.unfolder = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden, cnn_depth=cnn_depth, cnn_initial_linear=cnn_initial_linear, cnn_output=cnn_output, transformer_head = transformer_head, transformer_depth = transformer_depth, unfolder_kernel=unfolder_kernel, unfolder_stride=unfolder_stride)
+        self.model, self.transformer, output_dim, self.unfolder = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden, cnn_depth=cnn_depth, cnn_initial_linear=cnn_initial_linear, cnn_output=cnn_output, transformer_head = transformer_head, transformer_depth = transformer_depth, unfolding=unfolding)
         self.linear = nn.Linear(output_dim, num_classes)
 
         #### self.smoother = (GaussianSmoothing(num_neurons, 20, smooth_width, dim=1)) if do_smoothing else (nn.Identity())
@@ -77,18 +115,19 @@ class MetaModel(nn.Module):
         neuro = neuro.permute(0, 2, 1) # [B, D, T_max] 
         return self.model(neuro, None, None), lengths
 
-    def _transformer_forward(self, cnn_out: torch.Tensor, lengths) -> torch.Tensor:
-        # cnn_out: [B, ceb_out, T] ? 
-
-        x = cnn_out.permute(0, 2, 1) # [B, T, ceb_out]
-        x, lengths = self.unfolder(x, lengths) # [B, T//stride, ceb_out*kernel]
-        # print('Befre trans', x.shape)
+    def _unfolding(self, x, lengths): 
+        # [B, T, D]
+        x, lengths = self.unfolder(x, lengths) # [B, T//stride, D*kernel]
+        return x, lengths
+    
+    def _transformer_forward(self, x: torch.Tensor, lengths) -> torch.Tensor:
+        # x: [B, T, D] ? 
         
         # print(max(lengths), x.shape[1])
         assert max(lengths) == x.shape[1], 'must be equal, if not two possibilities: 1) the data loading is broken (returned length from dataloader doesnt match the T_max dim) 2) updating the length throughout the model is broken'
 
-        B = cnn_out.shape[0]
-        mask = torch.zeros(B, x.shape[1], device=cnn_out.device) # [B, T_max]
+        B = x.shape[0]
+        mask = torch.zeros(B, x.shape[1], device=x.device) # [B, T_max]
         for i, l in enumerate(lengths):
             mask[i, : l] = 1
 
@@ -103,8 +142,11 @@ class MetaModel(nn.Module):
         # neuro = self.smoother.forward(neuro) # since we dont add noise, and do the gaussian smoothing when loading, this is not necessary right now, TODO: unless you add noise augmentation 
 
         cnn_out, lengths = self._cnn_forward(neuro, lengths, None, None) # you might wanna pass lengths if you do padding later 
+        cnn_out = cnn_out.permute(0, 2, 1) # [B, T, ceb_out]
 
-        out, lengths = self._transformer_forward(cnn_out, lengths)
+        x, lengths = self._unfolding(cnn_out, lengths)
+
+        out, lengths = self._transformer_forward(x, lengths)
         return out, lengths, None, None 
 
 

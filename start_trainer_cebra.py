@@ -62,6 +62,12 @@ parser.add_argument('--constantOffsetSD', type=float, default=0.2)
 parser.add_argument('--l2_decay', type=float, default=1e-5)
 parser.add_argument('--adv_eps', type=float, default=0.01)
 
+
+# actually used params: 
+parser.add_argument('--optimStyle', type=str, help='', required=True, choices=["META", "CEBRA"]) # done
+parser.add_argument('--convStyle', type=str, help='', required=True, choices=["LARGE", "CEBRA"])
+parser.add_argument('--unfolding', type=str, help='', required=True, choices=["CEBRA_4_4", "CEBRA_32_4", "AVGPOOL_4_4", "KERNEL"])
+
 # Parse arguments
 parsed_args = parser.parse_args()
 
