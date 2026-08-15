@@ -20,7 +20,12 @@ class Unfolder(nn.Module):
                 self.unfolder(torch.unsqueeze(torch.permute(x, (0, 2, 1)), 3)),
                 (0, 2, 1),
             )
-        lengths = ((lengths - self.kernel) / self.stride).to(torch.int32)
+        # lengths = ((lengths - self.kernel) / self.stride).to(torch.int32)
+        lengths = torch.div(
+            lengths - self.kernel,
+            self.stride,
+            rounding_mode="floor"
+        ) + 1
         return x, lengths
 
 
@@ -79,7 +84,7 @@ class MetaModel(nn.Module):
         x, lengths = self.unfolder(x, lengths) # [B, T//stride, ceb_out*kernel]
         # print('Befre trans', x.shape)
         
-        print(max(lengths), x.shape[1])
+        # print(max(lengths), x.shape[1])
         assert max(lengths) == x.shape[1], 'must be equal, if not two possibilities: 1) the data loading is broken (returned length from dataloader doesnt match the T_max dim) 2) updating the length throughout the model is broken'
 
         B = cnn_out.shape[0]
