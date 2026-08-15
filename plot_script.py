@@ -18,10 +18,10 @@ errors = {
         # (1,1) d1024 = 0.75475
     },
 
-    # Now this one has FOUR values, corresponding to [1, 2, 4, 8]
+    # Now this one has FOUR values, corresponding to [0, 1, 2, 4, 8]
     2048: {
-        (4, 2): [0.39903, 0.37053, 0.34175, 0.32261],
-        (2, 1): [0.7973, 0.45397, 0.75808, 0.39753],
+        (4, 2): [0.39, 0.39903, 0.37053, 0.34175, 0.32261],
+        (2, 1): [0.61, 0.7973, 0.45397, 0.75808, 0.39753],
     },
 
 }
@@ -48,6 +48,7 @@ conv_params = {
     },
 
     2048: {
+        0: 100_000,
         1: 3_200_000,
         2: 16_000_000,
         4: 41_000_000,
@@ -75,7 +76,7 @@ transformer_params = {
 
 
 # Replace these with your actual values
-CEBRA_error = 0.44308
+CEBRA_error = 0.404 # 0.44308
 CEBRA_noisy_error = 0.23203
 show_CEBRA_noisy = False
 
@@ -93,16 +94,16 @@ from matplotlib.ticker import MultipleLocator
 # False -> 512, 1024, and 2048
 ignore_512 = True
 
-if ignore_512:
-    hidden_sizes = [1024, 2048]
-else:
-    hidden_sizes = [512, 1024, 2048]
-
+# if ignore_512:
+#     hidden_sizes = [1024, 2048]
+# else:
+#     hidden_sizes = [512, 1024, 2048]
+hidden_sizes = [1024]
 
 conv_depths = {
     512:  [2, 4, 8],
     1024: [2, 4, 8],
-    2048: [1, 2, 4, 8],
+    2048: [0, 1, 2, 4, 8],
 }
 
 # Fine y-axis tick spacing

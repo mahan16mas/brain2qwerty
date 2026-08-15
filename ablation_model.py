@@ -400,22 +400,34 @@ if __name__=="__main__":
     # print(out.shape)
     # exit()
 
-    # import torch.nn as nn 
-    # import torch 
+    import torch.nn as nn 
+    import torch 
     
-    # K = 64 # num chunks
-    # N = 192
-    # C = 4 # chunk size
-    # x = torch.randn([K, N, C])
-    # sid = torch.zeros([K])
-    # cpos = torch.randn([K, N, C])
-    # uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
-    # # lengths = torch.randint(0, T_max, (B, )) + 1 
-    # model = CEBRACNN(192, )
-    # # print(model)
+    K = 4 # num chunks
+    N = 192
+    C = 4 # chunk size
+    x = torch.randn([K, N, C])
+    sid = torch.zeros([K])
+    cpos = torch.randn([K, N, C])
+    uids = torch.concat((torch.zeros([K//2]), torch.ones([K//2])))
+    # lengths = torch.randint(0, T_max, (B, )) + 1 
+    model = ConvRNN(192, 32, rnn_layers=1)
+    # print(model)
     # out = model(x)
     # print(out.shape)
-    # exit()
+    print(summary(model, input_data=(x, sid, cpos, uids), 
+        # col_names=(
+        #     "input_size",
+        #     "output_size",
+        #     "num_params",
+        #     "trainable",
+        # ),
+        # depth=10,
+        # verbose=1,)
+        )
+    )
+
+    exit()
 
     # import torch.nn as nn 
     # import torch 
