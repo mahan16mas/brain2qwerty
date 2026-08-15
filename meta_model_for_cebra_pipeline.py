@@ -215,7 +215,7 @@ if __name__=="__main__":
         print(y.shape, l)
 
         from torchinfo import summary 
-        summary(model, input_data=(x,  lengths), verbose=1,)
+        summary(model, input_data=(x,  lengths), verbose=1, depth=4)
 
     exit()
 
