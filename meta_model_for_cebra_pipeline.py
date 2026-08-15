@@ -20,12 +20,12 @@ class Unfolder(nn.Module):
                 self.unfolder(torch.unsqueeze(torch.permute(x, (0, 2, 1)), 3)),
                 (0, 2, 1),
             )
-        # lengths = ((lengths - self.kernel) / self.stride).to(torch.int32)
-        lengths = torch.div(
-            lengths - self.kernel,
-            self.stride,
-            rounding_mode="floor"
-        ) + 1
+        lengths = ((lengths - self.kernel) / self.stride).to(torch.int32)
+        # lengths = torch.div(
+        #     lengths - self.kernel,
+        #     self.stride,
+        #     rounding_mode="floor"
+        # ) + 1
         return x, lengths
 
 class AvgPool(nn.Module):
