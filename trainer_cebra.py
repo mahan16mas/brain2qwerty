@@ -392,7 +392,7 @@ def train_model(args : dict):
             end_factor=args["lrEnd"] / args["lrStart"],
             total_iters=args["nBatch"],
         )
-    so_far_batch = load_checkpoint(checkpoint_address,model, optimizer, scheduler)
+    so_far_batch = load_checkpoint(f'{checkpoint_address}_dont_load_shit',model, optimizer, scheduler)
     print(so_far_batch)
     inf_losses = 0
     
