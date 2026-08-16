@@ -42,7 +42,11 @@ class BrainToTextDataset(Dataset):
 class SpeechDataset(Dataset):
     def __init__(self, data, transform=None, gauss=False,):
         if gauss:
+            print('Adding Gaussian Smoothing when loading data')
             smoother = GaussianSmoothing(256, 20, 2.0, dim=1)
+        else: 
+            print('No Gaussian Smoothing when loading data')
+
         self.data = data
         self.transform = transform
         self.n_days = len(data)
