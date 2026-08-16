@@ -88,49 +88,37 @@
 
 # A 
 # 2
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_32_4-opt_META --convStyle LARGE --unfolding CEBRA_32_4 --optimStyle META
-# 4 
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_32_4-opt_META --convStyle CEBRA --unfolding CEBRA_32_4 --optimStyle META 
-# 6
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_4_4-opt_META --convStyle LARGE --unfolding CEBRA_4_4 --optimStyle META 
-# 8
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_4_4-opt_META --convStyle CEBRA --unfolding CEBRA_4_4 --optimStyle META 
-# 10
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_4_4-opt_META --convStyle LARGE --unfolding AVGPOOL_4_4 --optimStyle META 
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_32_4-opt_META --convStyle LARGE --unfolding CEBRA_32_4 --optimStyle META
+# # 4 
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_32_4-opt_META --convStyle CEBRA --unfolding CEBRA_32_4 --optimStyle META 
+# # 6
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_4_4-opt_META --convStyle LARGE --unfolding CEBRA_4_4 --optimStyle META 
+# # 8
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_4_4-opt_META --convStyle CEBRA --unfolding CEBRA_4_4 --optimStyle META 
+# # 10
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_4_4-opt_META --convStyle LARGE --unfolding AVGPOOL_4_4 --optimStyle META 
+# # 1
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_32_4-opt_CEBRA --convStyle LARGE --unfolding CEBRA_32_4 --optimStyle CEBRA 
+# # 3
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_32_4-opt_CEBRA --convStyle CEBRA --unfolding CEBRA_32_4 --optimStyle CEBRA 
+# # 5
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_4_4-opt_CEBRA --convStyle LARGE --unfolding CEBRA_4_4 --optimStyle CEBRA 
+# # 7
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_4_4-opt_CEBRA --convStyle CEBRA --unfolding CEBRA_4_4 --optimStyle CEBRA 
 
-# 1
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_32_4-opt_CEBRA --convStyle LARGE --unfolding CEBRA_32_4 --optimStyle CEBRA 
-
- 
-
-# 3
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_32_4-opt_CEBRA --convStyle CEBRA --unfolding CEBRA_32_4 --optimStyle CEBRA 
-
-
-
-# 5
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_4_4-opt_CEBRA --convStyle LARGE --unfolding CEBRA_4_4 --optimStyle CEBRA 
-
-
-
-# 7
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-CEBRAConv-Unfold_CEBRA_4_4-opt_CEBRA --convStyle CEBRA --unfolding CEBRA_4_4 --optimStyle CEBRA 
-
-
-
-# 9
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_4_4-opt_CEBRA --convStyle LARGE --unfolding AVGPOOL_4_4 --optimStyle CEBRA 
+# # 9
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_4_4-opt_CEBRA --convStyle LARGE --unfolding AVGPOOL_4_4 --optimStyle CEBRA 
+# # 11
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_25_4-opt_CEBRA --convStyle LARGE --unfolding AVGPOOL_25_4 --optimStyle CEBRA 
+# # 12
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_25_4-opt_META --convStyle LARGE --unfolding AVGPOOL_25_4 --optimStyle META 
+# # 13
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_KERNEL_4_4-opt_CEBRA --convStyle LARGE --unfolding KERNEL_4_4 --optimStyle CEBRA 
+# # 14
+# python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_KERNEL_4_4-opt_META --convStyle LARGE --unfolding KERNEL_4_4 --optimStyle META 
 
 
-
-# 11
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_25_4-opt_CEBRA --convStyle LARGE --unfolding AVGPOOL_25_4 --optimStyle CEBRA 
-
-# 12
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_25_4-opt_META --convStyle LARGE --unfolding AVGPOOL_25_4 --optimStyle META 
-
-# 13
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_KERNEL_4_4-opt_CEBRA --convStyle LARGE --unfolding KERNEL_4_4 --optimStyle CEBRA 
-
-# 14
-python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_KERNEL_4_4-opt_META --convStyle LARGE --unfolding KERNEL_4_4 --optimStyle META 
+python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_CEBRA_4_4-opt_META-LONGER --convStyle LARGE --unfolding CEBRA_4_4 --optimStyle META 
+python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_4_4-opt_META-LONGER --convStyle LARGE --unfolding AVGPOOL_4_4 --optimStyle META 
+python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_KERNEL_4_4-opt_META-LONG --convStyle LARGE --unfolding KERNEL_4_4 --optimStyle META 
+python start_trainer_cebra.py --datasetPath /data/hossein/mm_project/CORP_data_release --offset 4  --gru --bidir --batchSize 8 --random_offset --hidden 1024 --dropout 0.4 --layers 5  --kernel 32 --stride 4 --seed 5 --do_wandb --no_contrastive --no_noise --cebra_unfolder --ceb_hidden 256 --ceb_out 64 --nBatch 20000 --out_dir METECEBRA_A-LargeConv-Unfold_AVGPOOL_25_4-opt_META-LONG --convStyle LARGE --unfolding AVGPOOL_25_4 --optimStyle META 

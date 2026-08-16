@@ -395,7 +395,7 @@ def train_model(args : dict):
     ctc_criterion = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
     if args["optimStyle"] == "META": 
         # args["nBatch"]
-        nBatch = 3950
+        nBatch = 10000 # 3950
         from neuraltrain.optimizers import LightningOptimizer
         optimizer_config_dict = {
             "name": "LightningOptimizer",
