@@ -126,4 +126,5 @@
 
 # Running Speech with kernel 25 and stride 4 
 # /data/hossein/data/speech/speech_data_raw_all_in_test.pkl
-python start_trainer.py --out_dir "speech_meta_default_50_chunk25(kernel25stride4-overlap)_bs16" --dataset_path /data/hossein/data/speech/speech_data_raw_all_in_test.pkl --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --chunk_size 25 --chunk_stride 4 --is_speech
+# python start_trainer.py --out_dir "speech_meta_default_50_chunk25(kernel25stride4-overlap)_bs16" --dataset_path /data/hossein/data/speech/speech_data_raw_all_in_test.pkl --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --chunk_size 25 --chunk_stride 4 --is_speech
+python start_trainer.py --out_dir "speech_meta_default_50_chunk4(kernel4stride4)_bs16" --dataset_path /data/hossein/data/speech/speech_data_raw_all_in_test.pkl --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --chunk_size 4 --chunk_stride 4 --is_speech
