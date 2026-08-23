@@ -26,7 +26,7 @@ CHUNK_SIZE = 4 # 4
 STRIDE = 4 
 
 def ctc_collate(
-        batch: list[tuple[torch.Tensor, str, int]], 
+        batch, # : list[tuple[torch.Tensor, str, int]], 
         chunk_size=4,
         stride=4,
     ):
