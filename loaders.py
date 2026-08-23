@@ -1,3 +1,13 @@
+import os 
+import inspect 
+import sys 
+
+# relative import hacks (sorry)
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)  # for bash user
+os.chdir(parentdir)  # for pycharm user
+
 import torch
 from utils.dataset import charset
 from utils.dataset import HandwritingDataset, BrainToTextDataset, SpeechDataset, HandwritingDataset_noisy
