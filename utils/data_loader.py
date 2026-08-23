@@ -142,8 +142,7 @@ def get_input(path, norm=False, gauss=False, train=False, eps=0,
 
                 
                 y = _safe_sentence(sentences[i])
-                print(y)
-                exit()
+                
                 # samples.append((x_t, y, all_trials if train else (train_trials - 1)))
                 samples.append((x_t, y, fi if train or valid else (NUM_TRAIN_DAYS - 1)))
                 # samples.append((x_t, y, block_ids_un[block_ids[i]]))
