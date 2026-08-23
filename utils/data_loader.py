@@ -3,6 +3,16 @@ import numpy as np
 from pathlib import Path
 import scipy.io as sio
 NUM_TRAIN_DAYS = 11
+import os 
+import inspect 
+import sys 
+
+# relative import hacks (sorry)
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)  # for bash user
+os.chdir(parentdir)  # for pycharm user
+
 from utils.augmentation import GaussianSmoothing
 
 def _to_scalar(x):
@@ -85,7 +95,10 @@ def get_input(path, norm=False, gauss=False, train=False, eps=0,
         neural = mat["tx_feats"][0]
         sentences = mat["sentences"][0]
         blocks = mat["blocks"][0]
-
+        print(type(sentences))
+        print(type(sentences[0]))
+        print((sentences[0]))
+        exit()
         block_ids = np.array([_to_scalar(b) for b in blocks])
         majority_block = block_ids.max()
 
@@ -149,3 +162,14 @@ def _safe_sentence(s):
         except Exception:
             pass
     return s
+
+if __name__=="__main__": 
+    import os 
+    dataset_name = "/mnt/data/hossein/Hossein_workspace/nips_cetra/mahan/CORP/CORP_data_release"
+    train_input = get_input(
+        os.path.join(dataset_name, "seed_model_training_data/mat/"),
+        norm=True,
+        gauss=False,
+        train=True,
+        gauss_sigma=2.0
+    )
