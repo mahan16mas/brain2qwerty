@@ -165,7 +165,7 @@ def _safe_sentence(s):
 
 if __name__=="__main__": 
     import os 
-    dataset_name = "/mnt/data/hossein/Hossein_workspace/nips_cetra/h_mz/CORP/CORP_data_release"
+    dataset_name = "/mnt/data/hossein/Hossein_workspace/nips_cetra/mm_project/CORP/CORP_data_release"
     train_input = get_input(
         os.path.join(dataset_name, "seed_model_training_data/mat/"),
         norm=True,
