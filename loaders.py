@@ -448,7 +448,8 @@ if __name__=="__main__":
     dataset_name = "/mnt/data/hossein/Hossein_workspace/nips_cetra/mm_project/CORP/CORP_data_release"
     tr, te = get_dataset_loaders_nlp_21(dataset_name, 2, True, chunk_size=4,
                 stride=4,)
-    for batch in tr:
+    from tqdm import tqdm 
+    for batch in tqdm(tr):
         neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
         print(targets_padded)
         exit()
