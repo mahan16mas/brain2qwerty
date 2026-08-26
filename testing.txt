@@ -6,3 +6,5 @@ cd /data/hossein/transformer_bci/brain2qwerty;
 
 
 python -m brain2qwerty_v1.main cache
+
+python -m brain2qwerty_v1.main train --wandb
