@@ -29,8 +29,8 @@ def experiment_config() -> dict:
             "study": {
                 "name": "Pinet2024Meg",
                 "path": STUDY_PATH,
-                "infra": {"folder": CACHE, "mode": 'recompute'},
-                "infra_timelines": {"folder": CACHE, "cluster": None, "mode": 'recompute'},
+                "infra": {"folder": CACHE,},
+                "infra_timelines": {"folder": CACHE, "cluster": None},
             },
             "transforms": [
                 {"name": "SpanishBCBLPreprocessing"},
