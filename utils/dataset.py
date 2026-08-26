@@ -154,7 +154,7 @@ class HandwritingDataset(Dataset):
         assert isinstance(x, torch.Tensor) and x.dtype == torch.float32 and x.dim() == 2
         assert isinstance(y, str)
         assert isinstance(d, int)
-
+        
         return x, y, d
 
 class HandwritingDataset_noisy(Dataset):

@@ -1,0 +1,8 @@
+export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL"                  # downloaded recordings
+export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty"           # preprocessed features
+export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" # checkpoints / outputs
+
+cd /data/hossein/transformer_bci/brain2qwerty; 
+
+
+python -m brain2qwerty_v1.main cache

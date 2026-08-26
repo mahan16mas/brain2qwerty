@@ -95,9 +95,9 @@ def get_input(path, norm=False, gauss=False, train=False, eps=0,
         neural = mat["tx_feats"][0]
         sentences = mat["sentences"][0]
         blocks = mat["blocks"][0]
-        print(type(sentences))
-        print(type(sentences[0]))
-        print((sentences[0]))
+        # print(type(sentences))
+        # print(type(sentences[0]))
+        # print((sentences[0]))
 
         block_ids = np.array([_to_scalar(b) for b in blocks])
         majority_block = block_ids.max()
