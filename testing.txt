@@ -3,7 +3,7 @@ export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty";
 export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" 
 
 echo $BRAIN2QWERTY_STUDIES;
-echo $BRAIN2QWERTY_CACHE;
+echo $BRAIN2QWERTY_CACHE;   
 echo $BRAIN2QWERTY_RESULTS
 
 cd /data/hossein/transformer_bci/brain2qwerty; 
