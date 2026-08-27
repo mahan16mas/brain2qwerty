@@ -116,3 +116,21 @@ class BrainModule(pl.LightningModule):
         return self.optimizer.build(
             self.parameters(), total_steps=self.trainer.estimated_stepping_batches
         )
+
+if __name__=="__main__": 
+    from config.model_config import ENCODER, TRANSFORMER
+    brain_model_config = ENCODER
+    transformer_config = TRANSFORMER
+    n_in = 306 # next(iter(loader)).data["neuro"].shape[1]
+    hidden = brain_model_config.hidden
+    brain = brain_model_config.build(n_in_channels=n_in, n_outputs=hidden)
+    transformer = transformer_config.build(dim=hidden)
+    exit()
+    BaseLoss
+    model = BrainModule(
+        model=brain,
+        transformer=transformer,
+        loss=self.loss.build(),
+        metrics=metrics,
+        optimizer=self.optimizer,
+    )

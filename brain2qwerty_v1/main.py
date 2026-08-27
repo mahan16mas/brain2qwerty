@@ -224,6 +224,9 @@ class Experiment(pydantic.BaseModel):
             metrics=metrics,
             optimizer=self.optimizer,
         )
+        print(self._module)
+        exit()
+        
         materialize_lazy_params(self._module, loaders["train"])
         self._trainer = self._trainer_setup()
         self._trainer.fit(self._module, loaders["train"], loaders["val"])

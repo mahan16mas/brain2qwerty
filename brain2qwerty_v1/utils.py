@@ -65,12 +65,12 @@ CHAR_INDEX = {
     5: "c",
     6: "i",
     7: "a",
-    8: " ",
+    8: " ", # for space 
     9: "d",
     10: "l",
     11: "r",
     12: "b",
-    13: "@",
+    13: "@", # for all special characters
     14: "z",
     15: "v",
     16: "f",
@@ -85,7 +85,7 @@ CHAR_INDEX = {
     25: "y",
     26: "j",
     27: "k",
-    28: "9",
+    28: "9", # for all numbers 
 }
 
 NGRAM_CHAR_INDEX = {**CHAR_INDEX, 8: "&"}

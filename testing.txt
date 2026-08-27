@@ -1,10 +1,29 @@
-export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL"                  # downloaded recordings
-export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty"           # preprocessed features
-export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" # checkpoints / outputs
+export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL";            
+export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty";          
+export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" 
+
+echo $BRAIN2QWERTY_STUDIES;
+echo $BRAIN2QWERTY_CACHE;
+echo $BRAIN2QWERTY_RESULTS
 
 cd /data/hossein/transformer_bci/brain2qwerty; 
 
+you needed to run 
+import studies
+from neuralset.events import Study
+
+study = Study(
+    name="Pinet2024Meg",
+    path="/data/hossein/transformer_bci/SpanishBCBL"
+)
+
+events = study.build()
+after downloading 
 
 python -m brain2qwerty_v1.main cache
 
 python -m brain2qwerty_v1.main train --wandb
+
+
+
+watch -n 5 'du -sh /mnt/upmwmathis/scratch/hossein/transformer_bci/.cache/brain2qwerty'
