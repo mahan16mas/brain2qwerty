@@ -24,6 +24,6 @@ python -m brain2qwerty_v1.main cache
 
 python -m brain2qwerty_v1.main train --wandb
 
-
+python -m brain2qwerty_v1.main debug
 
 watch -n 5 'du -sh /mnt/upmwmathis/scratch/hossein/transformer_bci/.cache/brain2qwerty'

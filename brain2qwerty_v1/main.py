@@ -148,7 +148,6 @@ class Experiment(pydantic.BaseModel):
         hidden = self.brain_model_config.hidden
         brain = self.brain_model_config.build(n_in_channels=n_in, n_outputs=hidden)
         print(brain)
-        exit()
         transformer = self.transformer_config.build(dim=hidden)
         return brain, transformer
 
