@@ -21,7 +21,7 @@ ENCODER = {
     "gelu": True,
     "skip": True,
     "scale": 0.1,
-    # "subject_layers_config": {},
+    "subject_layers_config": {},
     # "merger_config": {
     #     "n_virtual_channels": 270,
     #     "fourier_emb_config": {"n_freqs": None, "total_dim": 2048, "n_dims": 2},
@@ -32,6 +32,11 @@ ENCODER = {
     # },
     "merger_config": None,
 }
+"""
+Merger : B, C, T --> B, O, T (O is 270)
+So each output virtual channel's time series is a learned weighted average of the physical channels' time series, where the weights depend only on where the physical channels are located in space (not on the signal itself) — collapsing a variable, geometry-dependent set of C real electrodes down to a fixed, geometry-agnostic set of O virtual channels.
+Only spatial features. The time dimension (T) never touches the weight computation at all.
+"""
 
 # Sentence-level transformer over the per-keystroke embeddings.
 TRANSFORMER = {
