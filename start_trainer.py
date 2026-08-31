@@ -12,6 +12,7 @@ parser.add_argument('--dataset_path', type=str, default='/mnt/data/hossein/Hosse
 parser.add_argument('--is_speech', action='store_true', help='training on speech dataset')
 parser.add_argument('--nlp_10', action='store_true', help='nlp 10 instead of 21')
 parser.add_argument('--is_nejm', action='store_true', help='nejm speech')
+parser.add_argument('--use_jude', action='store_true', help='use jude speech')
 
 """
 parser.add_argument('--speech_data_dir', type=str, default='/mnt/data/hossein/Hossein_workspace/nips_cetra/hamed/neuronlp/data/speech_old/save_data_speech_mahan.pkl')

@@ -214,6 +214,7 @@ def get_dataset_loaders_speech(
         batchSize,
         gauss_in=False
 ):
+    print('loading from', datasetName)
     with open(datasetName, "rb") as handle:
         loadedData = pickle.load(handle)
 
@@ -414,7 +415,10 @@ def get_dataset_loaders(
         is_nejm=False,
         chunk_size=4,
         stride=4,
+        its_jude=False,
     ):
+    if its_jude: 
+        return get_dataset_loaders_speech(dataset_name, batch_size, gauss_in)
     if speech:
         if is_nejm: return get_dataset_loaders_speech_nejm(dataset_name, batch_size, gauss_in)
         return get_dataset_loaders_speech(dataset_name, batch_size, gauss_in)

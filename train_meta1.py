@@ -101,6 +101,9 @@ def model_logits(model, test_loader, device='cuda', nlp=False):
 
     return rnn_outputs
 
+"""
+python start_trainer.py --out_dir judeSpeech_meta_default_50_chunk14(kernel14stride4-overlap)_bs16 --dataset_path /data/hossein/transformer_bci/neuro_data/speech_jude/Data/jude_speech_unseen_days_no_smoothing.pkl --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --chunk_size 14 --chunk_stride 4 --use_jude 
+"""
 
 
 def train_model(args: dict):
@@ -137,7 +140,8 @@ def train_model(args: dict):
             no_smoothing, # False, 
             is_speech, nlp_10, is_nejm,
             chunk_size=chunk_size,
-            stride=chunk_stride 
+            stride=chunk_stride,
+            its_jude=args.get('use_jude', False)
         )
     epochs = args.get("epochs", 300)
     cnn_hidden = args.get("cnn_hidden", 2048)
@@ -161,14 +165,20 @@ def train_model(args: dict):
     assert not (cebra_patch_encoder and use_rnn_decoder), 'exvlusive args'
     assert not (cebra_patch_encoder and cnn_only), 'exvlusive args'
 
+    if args.get('use_jude', False):
+        model_input = 256
+        num_classes = 41 
+    else: 
+        model_input = 192 if not is_speech else (512 if is_nejm else 256)
+        num_classes = 41 if is_speech else 32
     if not use_rnn_decoder: 
         if not cnn_only:
             if not cebra_patch_encoder:
                 if not cebra_rnn: 
                     # default meta architecture 
                     model = MetaModel(
-                        num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-                        num_classes=(41 if is_speech else 32),
+                        num_neurons=model_input,
+                        num_classes=num_classes,
                         conv_dropout=conv_dropout,
                         dropout_input=dropout_input,
                         mahan_model_params = use_mahan_model_params,
@@ -182,8 +192,8 @@ def train_model(args: dict):
                 else: 
                     from ablation_model import CEBRARNN
                     model = CEBRARNN(
-                        num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-                        num_classes=(41 if is_speech else 32),
+                        num_neurons=model_input,
+                        num_classes=num_classes,
                         initial_layer_size=512, # hardcoded for now 
                         cebra_num_units=args.get("cebra_hidden_dim", 256), 
                         cebra_num_outputs=args.get("cebra_out_dim", 64), 
@@ -198,8 +208,8 @@ def train_model(args: dict):
                 from ablation_model import CEBRATransformer
 
                 model = CEBRATransformer(
-                    num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-                    num_classes=(41 if is_speech else 32), 
+                    num_neurons=model_input,
+                    num_classes=num_classes, 
                     initial_layer_size=512, # hardcoded for now 
                     cebra_num_units=args.get("cebra_hidden_dim", 256), 
                     cebra_num_outputs=args.get("cebra_out_dim", 64), 
@@ -211,8 +221,8 @@ def train_model(args: dict):
         else: 
             from ablation_model import ConvOnly
             model = ConvOnly(
-                num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-                num_classes=(41 if is_speech else 32),
+                num_neurons=model_input,
+                num_classes=num_classes,
                 conv_dropout=conv_dropout,
                 dropout_input=dropout_input,
                 mahan_model_params = use_mahan_model_params,
@@ -220,8 +230,8 @@ def train_model(args: dict):
             ).to(device)
     else: 
         model = ConvRNN(
-            num_neurons=192 if not is_speech else (512 if is_nejm else 256),
-            num_classes=(41 if is_speech else 32),
+            num_neurons=model_input,
+            num_classes=num_classes,
             cnn_hidden=cnn_hidden,
             cnn_depth=cnn_depth,
             conv_dropout=conv_dropout,
@@ -403,11 +413,10 @@ def train_model(args: dict):
 
         if True:
 
-            torch.save(model.state_dict(), args["out_dir"] + "/modelWeights")
-
+            # torch.save(model.state_dict(), args["out_dir"] + "/modelWeights")
             save_checkpoint(checkpoint_address, model, optimizer, scheduler, epoch)
-        if epoch % 10 == 0:
-            torch.save(model.state_dict(), args["out_dir"] + f"/modelWeights_{epoch}")
+        # if epoch % 10 == 0:
+        #     torch.save(model.state_dict(), args["out_dir"] + f"/modelWeights_{epoch}")
 
         testLoss.append(avgDayLoss)
         testCER.append(cer)
@@ -418,6 +427,5 @@ def train_model(args: dict):
 
         with open(args["out_dir"] + "/trainingStats", "wb") as file:
             pickle.dump(tStats, file)
-
 
 
