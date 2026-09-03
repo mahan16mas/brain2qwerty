@@ -29,19 +29,36 @@ from .utils import BUTTON_MAPPING, CHAR_INDEX
 # these leftover raw characters (all -> class 13, same as "<special>"), so we
 # use BUTTON_MAPPING's single-character entries directly as the encoder, plus
 # the three post-replacement token forms.
-SENTENCE_TYPED_CHAR_TO_INDEX = {k: v for k, v in BUTTON_MAPPING.items() if len(k) == 1}
-SENTENCE_TYPED_CHAR_TO_INDEX[" "] = BUTTON_MAPPING["<space>"]    # post-replacement space
-SENTENCE_TYPED_CHAR_TO_INDEX["@"] = BUTTON_MAPPING["<special>"]  # post-replacement special token
-SENTENCE_TYPED_CHAR_TO_INDEX["9"] = BUTTON_MAPPING["<number>"]   # post-replacement number token
+#
+# +1 SHIFT FOR CTC: the original BUTTON_MAPPING/CHAR_INDEX classes are 0-28
+# (NUM_CLASSES=29, used by the original cross-entropy pipeline, no blank
+# symbol). For CTC, index 0 is reserved for the blank token, so every real
+# character class here is shifted up by 1 -> real classes are 1-29, and 0 is
+# unambiguous as padding (no real character can ever encode to 0). Total
+# class count for a CTC output layer is therefore NUM_CLASSES + 1 = 30.
+_BASE_CHAR_TO_INDEX = {k: v for k, v in BUTTON_MAPPING.items() if len(k) == 1}
+_BASE_CHAR_TO_INDEX[" "] = BUTTON_MAPPING["<space>"]    # post-replacement space
+_BASE_CHAR_TO_INDEX["@"] = BUTTON_MAPPING["<special>"]  # post-replacement special token
+_BASE_CHAR_TO_INDEX["9"] = BUTTON_MAPPING["<number>"]   # post-replacement number token
 
-# CHAR_INDEX (index -> display char) is used only for DECODING model output /
-# targets back to text -- one entry per index, so no ambiguity there.
+SENTENCE_TYPED_CHAR_TO_INDEX = {c: idx + 1 for c, idx in _BASE_CHAR_TO_INDEX.items()}  # 1..29
+CTC_BLANK = 0
+NUM_CLASSES_WITH_BLANK = len(set(BUTTON_MAPPING.values())) + 1  # 29 real classes + blank = 30
+
+# CHAR_INDEX (index -> display char) is the original 0-28 decode table from
+# utils.py; shift it the same way for decoding CTC-indexed targets/predictions.
+CTC_CHAR_INDEX = {idx + 1: c for idx, c in CHAR_INDEX.items()}  # 1..29 -> display char
 
 
 def encode_sentence(sentence_typed: str) -> torch.Tensor:
     return torch.tensor(
         [SENTENCE_TYPED_CHAR_TO_INDEX[c] for c in sentence_typed], dtype=torch.long
     )
+
+
+def decode_target(indices) -> str:
+    """Reverse of encode_sentence -- ignores 0 (padding / CTC blank)."""
+    return "".join(CTC_CHAR_INDEX[int(i)] for i in indices if int(i) != 0)
 
 
 def decode_target(indices) -> str:
@@ -87,7 +104,7 @@ def _collate_whole_trial(batch):
     Returns exactly 5 outputs:
       neuro       : (B, n_channels, T_max)  zero-padded
       neuro_len   : (B,)                    true (pre-padding) T per item
-      target      : (B, L_max)              padded with -1 (not a valid class id)
+      target      : (B, L_max)              padded with 0 (0 = CTC blank / padding, never a real class)
       target_len  : (B,)                    true (pre-padding) L per item
       meta        : (B, 3)                  [subject_id, session, trial_id]
 
@@ -103,7 +120,7 @@ def _collate_whole_trial(batch):
     ).transpose(1, 2)  # (B, C, T_max)
     neuro_len_batched = torch.stack(neuro_lens, dim=0)  # (B,)
 
-    target_padded = pad_sequence(targets, batch_first=True, padding_value=-1)  # (B, L_max)
+    target_padded = pad_sequence(targets, batch_first=True, padding_value=0)  # (B, L_max); 0 = pad
     target_len_batched = torch.stack(target_lens, dim=0)  # (B,)
 
     meta_batched = torch.stack(metas, dim=0)  # (B, 3)
@@ -153,6 +170,7 @@ def build_wholetrial_dataloaders(cfg: dict) -> tuple[DataLoader, DataLoader]:
     data = WholeTrialData(**cfg)
     loaders = data.build_loaders()
     return loaders["train"], loaders["test"]
+
 
 # your_new_main.py
 
