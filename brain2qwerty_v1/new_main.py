@@ -461,6 +461,7 @@ def train_model(args):
     batch_index = -1
     train_iter = iter(trainLoader)
     for batch in trange(args["nBatch"]):
+        print('-'*15, ' [DEBUGGING] ', batch_index , '  -', '-'*14)
         batch_index += 1 
         model.train()
         try:
@@ -480,6 +481,8 @@ def train_model(args):
         )
         # X: (B, n_channels, T_max) 
         X = X.permute(0, 2, 1) # (B, T_max, n_channels)
+        
+        print('-'*15, ' [DEBUGGING] ', '-'*15)
         if batch_index == 0: 
             print(X.shape, X_len.shape, y.shape, y_len.shape, y_len[0])
         if batch < so_far_batch:
@@ -501,7 +504,9 @@ def train_model(args):
             #     embeddings, emb_lengths = model.module.get_cebra_embs()
             # else:
             #     embeddings, emb_lengths = model.get_cebra_embs()
+            print('X, X_len, y, y_len', X.shape, X_len, y.shape, y_len)
             pred, lengths, embeddings, emb_lengths = model(X, X_len)
+            print('pred, lengths', pred.shape, lengths)
             if batch_index == 0:
                 print(pred.shape, lengths.shape, lengths[0])
             # print('-'*40)
