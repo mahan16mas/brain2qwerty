@@ -21,8 +21,8 @@ ENCODER = {
     "gelu": True,
     "skip": True,
     "scale": 0.1,
-    "subject_layers_config": {}, # this will append shit later
-    # "subject_layers_config": None, # setting it to None make it so there would be no subject specific layer in final model
+    # "subject_layers_config": {}, # this will append shit later
+    "subject_layers_config": None, # setting it to None make it so there would be no subject specific layer in final model
     
     # "merger_config": {
     #     "n_virtual_channels": 270,
