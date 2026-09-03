@@ -404,16 +404,15 @@ def train_model(args):
     )
         
     print(model)
-    from torchinfo import summary 
-    _temp_B = 64
-    _temp_T_max = 1000
-    _temp_D = model_input_dim  # if not is_speech else (256 if not is_nejm else 512), 
-    _temp_x = torch.randn((_temp_B, _temp_T_max, _temp_D))
-    _temp_lengths = torch.randint(0, _temp_T_max, (_temp_B, )) + 1 
-    _temp_y, _, embeddings, embedding_l = model(_temp_x, _temp_lengths)
 
-    from torchinfo import summary 
-    print(summary(model, input_data=(_temp_x,  _temp_lengths), verbose=1,))
+    # from torchinfo import summary 
+    # _temp_B = 64
+    # _temp_T_max = 1000
+    # _temp_D = model_input_dim  # if not is_speech else (256 if not is_nejm else 512), 
+    # _temp_x = torch.randn((_temp_B, _temp_T_max, _temp_D))
+    # _temp_lengths = torch.randint(0, _temp_T_max, (_temp_B, )) + 1 
+    # _temp_y, _, embeddings, embedding_l = model(_temp_x, _temp_lengths)
+    # print(summary(model, input_data=(_temp_x,  _temp_lengths), verbose=1,))
     # exit()
 
     model = model.to(device)
@@ -465,24 +464,24 @@ def train_model(args):
         batch_index += 1 
         model.train()
         try:
-            X, y, X_len, y_len, dayIdx = next(train_iter)
+            X, X_len, y, y_len, meta = next(train_iter)
         except StopIteration:
             train_iter = iter(trainLoader)
-            X, y, X_len, y_len, dayIdx = next(train_iter)
+            X, X_len, y, y_len, meta = next(train_iter)
         # has_nan = torch.isnan(X).any()
         # has_zero = (X_len == 0).any()
         # print('has_nan', has_nan, 'has_zero', has_zero)
-        X, y, X_len, y_len, dayIdx = (
+        X, X_len, y, y_len, meta = (
             X.to(device),
-            y.to(device),
             X_len.to(device),
+            y.to(device),
             y_len.to(device),
-            dayIdx.to(device),
+            meta.to(device),
         )
         # X: (B, n_channels, T_max) 
         X = X.permute(0, 2, 1) # (B, T_max, n_channels)
         if batch_index == 0: 
-            print(X.shape, y.shape, X_len.shape, y_len.shape)
+            print(X.shape, X_len.shape, y.shape, y_len.shape)
         if batch < so_far_batch:
             continue
         if not no_noise:
