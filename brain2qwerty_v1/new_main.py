@@ -303,6 +303,12 @@ def save_checkpoint(
     
     torch.save(checkpoint, path)
 
+"""
+python start_cebra.py --out_dir small_cebra_default --no_noise --bidir --cebra_unfolder --gru --offset 4 --batchSize 64  --random_offset --hidden 1024 --dropout 0.4 --layers 5 --nBatch 20000 --kernel 25 --stride 4 --seed 5 --do_wandb --gradClipValue 10.0
+
+--whiteNoiseSD 1.2 --constantOffsetSD 0.6 
+
+"""
 def train_model(args):
     print(NUM_CLASSES_WITH_BLANK)
     # debug_config() -> single timeline, fast iteration/smoke tests
