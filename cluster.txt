@@ -36,21 +36,59 @@ source /mnt/upmwmathis/scratch/hossein/mm_project/brain2qwerty/.venv/bin/activat
 
 # Usefull commands 
 runai list | grep Running
-runai bash meta-bci-1 -p upmwmathis-mirzaei
+runai bash meta-2 -p upmwmathis-mirzaei
 runai describe job meta-bci-1 -p upmwmathis-mirzaei
-runai delete job meta-1 -p upmwmathis-mirzaei
+runai delete job meta-2 -p upmwmathis-mirzaei
 runai list jobs -p upmwmathis-mirzaei
 
 ############# Single Runs 
+runai submit \
+  --name meta-2 \
+  --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
+  --gpu 1 \
+  --cpu 20 \
+  --memory 64Gi \
+  --node-pools h100 \
+  --large-shm \
+  --pvc home:/home/mirzaei \
+  --pvc upmwmathis-scratch:/data \
+  -e HOME=/home/mirzaei \
+  -e PYTHONUNBUFFERED=1 \
+  -p upmwmathis-mirzaei \
+  --run-as-user \
+  --preemptible \
+  --interactive \
+  --attach \
+  --command -- bash
+
+runai submit \
+  --name meta-2 \
+  --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
+  --gpu 1 \
+  --cpu 20 \
+  --memory 64Gi \
+  --node-pools h100 \
+  --large-shm \
+  --pvc home:/home/mirzaei \
+  --pvc upmwmathis-scratch:/data \
+  -e HOME=/home/mirzaei \
+  -e PYTHONUNBUFFERED=1 \
+  -p upmwmathis-mirzaei \
+  --run-as-user \
+  --preemptible \
+  --command -- bash -lc '
+    cd /data/hossein/transformer_bci/brain2qwerty &&
+    source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate &&
+    source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh &&
+    export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL" &&
+    export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty" &&
+    export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results &&
+    python -m brain2qwerty_v1.main train --wandb --wandb-name "Meta-NoMerger-NoSubSpecificLayer-MEG" 
+  '
+
+
+
 
 # bash command 
 
-cd /data/hossein/transformer_bci/brain2qwerty; 
-source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate;
-source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh;
 
-export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL";            
-export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty";          
-export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" 
-
-python -m brain2qwerty_v1.main train --wandb --wandb-name Meta-NoMerger-NoSubSpecificLayer-MEG 
