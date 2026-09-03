@@ -152,7 +152,7 @@ from brain2qwerty_v1.config.xp_config import debug_config, experiment_config
 def main():
     # debug_config() -> single timeline, fast iteration/smoke tests
     # experiment_config() -> full dataset
-    cfg = debug_config()
+    cfg = experiment_config() # debug_config()
 
     train_loader, test_loader = build_wholetrial_dataloaders(cfg["data"])
 
