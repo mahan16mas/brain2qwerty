@@ -61,9 +61,9 @@ def decode_target(indices) -> str:
     return "".join(CTC_CHAR_INDEX[int(i)] for i in indices if int(i) != 0)
 
 
-def decode_target(indices) -> str:
-    """Reverse of encode_sentence -- ignores -1 padding sentinel."""
-    return "".join(CHAR_INDEX[int(i)] for i in indices if int(i) >= 0)
+# def decode_target(indices) -> str:
+#     """Reverse of encode_sentence -- ignores -1 padding sentinel."""
+#     return "".join(CHAR_INDEX[int(i)] for i in indices if int(i) >= 0)
 
 
 class _WholeTrialTensorDataset(Dataset):
