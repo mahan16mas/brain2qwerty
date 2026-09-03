@@ -82,8 +82,33 @@ runai submit \
     source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh &&
     export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL" &&
     export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty" &&
-    export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results &&
+    export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" &&
     python -m brain2qwerty_v1.main train --wandb --wandb-name "Meta-NoMerger-NoSubSpecificLayer-MEG" 
+  '
+
+runai submit \
+  --name meta-1 \
+  --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
+  --gpu 1 \
+  --cpu 8 \
+  --memory 64Gi \
+  --node-pools h100 \
+  --large-shm \
+  --pvc home:/home/mirzaei \
+  --pvc upmwmathis-scratch:/data \
+  -e HOME=/home/mirzaei \
+  -e PYTHONUNBUFFERED=1 \
+  -p upmwmathis-mirzaei \
+  --run-as-user \
+  --preemptible \
+  --command -- bash -lc '
+    cd /data/hossein/transformer_bci/brain2qwerty &&
+    source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate &&
+    source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh &&
+    export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL" &&
+    export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty" &&
+    export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" &&
+    bash cebra_spanish.sh
   '
 
 
