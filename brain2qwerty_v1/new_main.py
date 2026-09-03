@@ -176,46 +176,556 @@ import studies  # noqa: F401  -- registers Pinet2024Meg / Pinet2024Eeg
 from brain2qwerty_v1.config.xp_config import debug_config, experiment_config
 # from brain2qwerty_v1.data_wholetrial import build_wholetrial_dataloaders, decode_target
 
+import pickle
+import torch
+import torch.nn as nn
 
-def main():
+import torch
+import os
+import numpy as np
+from tqdm import trange
+
+import torch
+from torch import nn
+from typing import *
+import time
+from edit_distance import SequenceMatcher
+from typing import Tuple, List
+
+
+@torch.jit.script
+def dot_similarity(ref: torch.Tensor, pos: torch.Tensor,
+                   neg: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Cosine similarity the ref, pos and negative pairs
+
+    Args:
+        ref: The reference samples of shape `(n, d)`.
+        pos: The positive samples of shape `(n, d)`.
+        neg: The negative samples of shape `(n, d)`.
+
+    Returns:
+        The similarity between reference samples and positive samples of shape `(n,)`, and
+        the similarities between reference samples and negative samples of shape `(n, n)`.
+    """
+    pos_dist = torch.einsum("ni,ni->n", ref, pos)
+    neg_dist = torch.einsum("ni,mi->nm", ref, neg)
+    return pos_dist, neg_dist
+
+
+@torch.jit.script
+def infonce(
+        pos_dist: torch.Tensor, neg_dist: torch.Tensor
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """InfoNCE implementation
+
+    See :py:class:`BaseInfoNCE` for reference.
+
+    Note:
+        - The behavior of this function changed beginning in CEBRA 0.3.0.
+        The InfoNCE implementation is numerically stabilized.
+    """
+    with torch.no_grad():
+        c, _ = neg_dist.max(dim=1, keepdim=True)
+    c = c.detach()
+
+    pos_dist = pos_dist - c.squeeze(1)
+    neg_dist = neg_dist - c
+    align = (-pos_dist).mean()
+    uniform = torch.logsumexp(neg_dist, dim=1).mean()
+
+    c_mean = c.mean()
+    align_corrected = align - c_mean
+    uniform_corrected = uniform + c_mean
+
+    return align + uniform, align_corrected, uniform_corrected
+
+
+
+class InfoNCE(nn.Module):
+    r"""Cosine similarity function with fixed temperature.
+
+    The similarity metric is given as
+
+    .. math ::
+
+        \phi(x, y) =  x^\top y  / \tau
+
+    with fixed temperature :math:`\tau > 0`.
+
+    Note that this loss function should typically only be used with normalized.
+    This class itself does *not* perform any checks. Ensure that :math:`x` and
+    :math:`y` are normalized.
+    """
+
+    def __init__(self, temp) -> None:
+        super().__init__()
+        self.temperature = temp
+
+    @torch.jit.export
+    def _distance(self, ref: torch.Tensor, pos: torch.Tensor,
+                  neg: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        pos_dist, neg_dist = dot_similarity(ref, pos, neg)
+        return pos_dist / self.temperature, neg_dist / self.temperature
+
+    def forward(self, ref, pos,
+                neg) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Compute the InfoNCE loss.
+
+        Args:
+            ref: The reference samples of shape `(n, d)`.
+            pos: The positive samples of shape `(n, d)`.
+            neg: The negative samples of shape `(n, d)`.
+
+        See Also:
+            :py:class:`BaseInfoNCE`.
+        """
+        pos_dist, neg_dist = self._distance(ref, pos, neg)
+        return infonce(pos_dist, neg_dist)
+
+
+
+
+def save_checkpoint(
+    path,
+    model,
+    optimizer,
+    scheduler,
+    step,
+    
+):
+    checkpoint = {
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "step": step,
+    }
+    checkpoint["scheduler_state_dict"] = scheduler.state_dict()
+
+    
+    torch.save(checkpoint, path)
+
+def train_model(args):
     print(NUM_CLASSES_WITH_BLANK)
     # debug_config() -> single timeline, fast iteration/smoke tests
     # experiment_config() -> full dataset
     cfg = experiment_config() # debug_config()
 
-    train_loader, test_loader = build_wholetrial_dataloaders(cfg["data"])
+    trainLoader, testLoader = build_wholetrial_dataloaders(cfg["data"])
 
-    batch_index = 0
-    data_count = 0
-    neural_data_len_mean = 0
-    target_data_len_mean = 0
-    for neuro, neuro_len, target, target_len, meta in test_loader:
-        print("neuro:", neuro.shape)        # (B, n_channels, T_max)
-        print("neuro_len:", neuro_len)       # (B,)
-        print("target:", target.shape)       # (B, L_max)
-        print("target_len:", target_len)     # (B,)
-        # print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
-        print("first sentence:", decode_target(target[0, : target_len[0]]))
-        # print("second sentence:", decode_target(target[1, : target_len[1]]))
-        # print("thids sentence:", decode_target(target[2, : target_len[2]]))
-        # print(target[0])
-        # print(target_len[0])
+    # batch_index = 0
+    # data_count = 0
+    # neural_data_len_mean = 0
+    # target_data_len_mean = 0
+    # for neuro, neuro_len, target, target_len, meta in test_loader:
+    #     print("neuro:", neuro.shape)        # (B, n_channels, T_max)
+    #     print("neuro_len:", neuro_len)       # (B,)
+    #     print("target:", target.shape)       # (B, L_max)
+    #     print("target_len:", target_len)     # (B,)
+    #     # print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
+    #     print("first sentence:", decode_target(target[0, : target_len[0]]))
+    #     # print("second sentence:", decode_target(target[1, : target_len[1]]))
+    #     # print("thids sentence:", decode_target(target[2, : target_len[2]]))
+    #     # print(target[0])
+    #     # print(target_len[0])
 
-        # print(target[1])
-        # print(target_len[1])
+    #     # print(target[1])
+    #     # print(target_len[1])
                 
-        # break
-        print()
-        batch_index += 1
-        data_count += neuro_len.shape[0]
-        neural_data_len_mean += neuro_len.sum().item()
-        target_data_len_mean += target_len.sum().item()
+    #     # break
+    #     print()
+    #     batch_index += 1
+    #     data_count += neuro_len.shape[0]
+    #     neural_data_len_mean += neuro_len.sum().item()
+    #     target_data_len_mean += target_len.sum().item()
 
-    neural_data_len_mean /= data_count
-    target_data_len_mean /= data_count
-    print(f'In {data_count} number of samples, mean of neural data length: {neural_data_len_mean} and mean of target length: {target_data_len_mean}')
-    # TRAIN, In 4104 number of samples, mean of neural data length: 286.72002923976606 and mean of target length: 38.47490253411306
+    # neural_data_len_mean /= data_count
+    # target_data_len_mean /= data_count
+    # print(f'In {data_count} number of samples, mean of neural data length: {neural_data_len_mean} and mean of target length: {target_data_len_mean}')
+    # # TRAIN, In 4104 number of samples, mean of neural data length: 286.72002923976606 and mean of target length: 38.47490253411306
+    # # TEST, In 521 number of samples, mean of neural data length: 286.01151631477927 and mean of target length: 39.31861804222649
+
+    do_wandb = args.get("do_wandb", False)
+    if do_wandb:
+        import wandb
+        exp_name = args["out_dir"]
+        wandb.init(project="NeuroNLP", name=f'{exp_name}')
+
+    no_gauss = args.get("no_gauss", False)
+    device = "cuda"
+    checkpoint_address = args["out_dir"] + "/checkpoint.pt"
+    is_speech = args.get("is_speech", True)
+    adv_norm = args.get('adv_norm', 'linf')
+    sample_single = args.get("sample_single", False)
+    all_ref = args.get("all_ref", False)
+    random_dir = args.get("random_dir", False)
+    random_offset = args.get("random_offset", False)
+    no_noise = args.get('no_noise', False)
+    adv = args.get('adv', False)
+    adv_eps = args.get('adv_eps', 0.01)
+    no_rnn = args.get("no_rnn", False)
+    is_nejm = args.get("is_nejm", False)
+    alpha = float(args.get("alpha", 1.0))
+    do_contrastive = False # not args.get("no_contrastive", False)
+    hamed_cebra_model = args.get('use_hamed_cebra_model', False)
+    ode_mode = args.get('ode_mode', 'None')
+    inner = args.get('inner', 'None')
+    dataset_type = args.get('dataset')
+
+    from .cebra_model import Encoder_Decoder
+    
+    model_input_dim = 306 
+    num_classes = NUM_CLASSES_WITH_BLANK
+
+    model = Encoder_Decoder(
+        model_input_dim, 
+        args['ceb_out'],
+        args['kernel'],
+        args['stride'],
+        num_classes,
+        args['hidden'],
+        args['layers'],
+        args['dropout'],
+        args['bidir'],
+        args['cebra_unfolder'],
+        args['gru'],
+        2.0,
+        gauss_in=False, # args.get("gauss_in", True) and not no_gauss,
+        no_rnn=no_rnn,
+        cebra_bn=args.get("ceb_bn", False),
+        cebra_window_10=args.get("cebra_window_10", False),
+        contrastive_on_decoder=args.get("contrastive_on_decoder", False), 
+        ceb_hidden=args.get('ceb_hidden', 256),
+        initial_layer_size = args.get('initial_layer_size', 0)
+    )
+        
+    print(model)
+    from torchinfo import summary 
+    _temp_B = 64
+    _temp_T_max = 1000
+    _temp_D = model_input_dim  # if not is_speech else (256 if not is_nejm else 512), 
+    _temp_x = torch.randn((_temp_B, _temp_T_max, _temp_D))
+    _temp_lengths = torch.randint(0, _temp_T_max, (_temp_B, )) + 1 
+    _temp_y, _, embeddings, embedding_l = model(_temp_x, _temp_lengths)
+
+    from torchinfo import summary 
+    print(summary(model, input_data=(_temp_x,  _temp_lengths), verbose=1,))
+    exit()
+
+    model = model.to(device)
+    # Parallel GPUs gives error for accessing the self.embeddings on model
+    # if torch.cuda.device_count() > 1:
+    #     print(f"Using {torch.cuda.device_count()} GPUs")
+    #     model = torch.nn.DataParallel(model)
+    os.makedirs(args["out_dir"], exist_ok=True)
+    torch.manual_seed(args["seed"])
+    np.random.seed(args["seed"])
+    
+    criterion = InfoNCE(args['temperature'])
+    with open(args["out_dir"] + "/args", "wb") as file:
+        pickle.dump(args, file)
 
 
-if __name__ == "__main__":
-    main()
+    ctc_criterion = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=args["lrStart"],
+        betas=(0.9, 0.999),
+        eps=0.1,
+        weight_decay=args["l2_decay"],
+    )
+    scheduler = torch.optim.lr_scheduler.LinearLR(
+        optimizer,
+        start_factor=1.0,
+        end_factor=args["lrEnd"] / args["lrStart"],
+        total_iters=args["nBatch"],
+    )
+    # uncomment later 
+    ##### so_far_batch = load_checkpoint(checkpoint_address,model, optimizer, scheduler)
+    so_far_batch = -1
+    print(so_far_batch)
+    inf_losses = 0
+    
+    testLoss = []
+    testCER = []
+
+    curr_train_loss = 0.0 
+    curr_train_ctc_loss = 0.0 
+    curr_train_contrastive_loss = 0.0 
+    curr_train_count = 0 
+    dummy_epoch = 0 
+
+    train_iter = iter(trainLoader)
+    for batch in trange(args["nBatch"]):
+        
+        model.train()
+        try:
+            X, y, X_len, y_len, dayIdx = next(train_iter)
+        except StopIteration:
+            train_iter = iter(trainLoader)
+            X, y, X_len, y_len, dayIdx = next(train_iter)
+        # has_nan = torch.isnan(X).any()
+        # has_zero = (X_len == 0).any()
+        # print('has_nan', has_nan, 'has_zero', has_zero)
+        X, y, X_len, y_len, dayIdx = (
+            X.to(device),
+            y.to(device),
+            X_len.to(device),
+            y_len.to(device),
+            dayIdx.to(device),
+        )
+        if batch < so_far_batch:
+            continue
+        if not no_noise:
+            if args["whiteNoiseSD"] > 0:
+                X += torch.randn(X.shape, device=device) * args["whiteNoiseSD"]
+
+            if args["constantOffsetSD"] > 0:
+                X += (
+                        torch.randn([X.shape[0], 1, X.shape[2]], device=device)
+                        * args["constantOffsetSD"]
+                    )
+    
+        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
+            # Clean Forward
+            # pred, lengths = model(X, X_len)
+            # if isinstance(model, torch.nn.DataParallel):
+            #     embeddings, emb_lengths = model.module.get_cebra_embs()
+            # else:
+            #     embeddings, emb_lengths = model.get_cebra_embs()
+            pred, lengths, embeddings, emb_lengths = model(X, X_len)
+
+            #########
+            # # print(pred)
+            # # print(pred.log_softmax(2))
+            # x= torch.permute(pred, [1, 0, 2]) # B, T, C
+            # # print(x.shape)
+            # # 1. B indices where there is ANY NaN anywhere in (T, C)
+            # b_any_nan = torch.where(torch.isnan(x).any(dim=(1, 2)))[0]
+            # print('b_any_nan', b_any_nan)
+
+            # # 2. B indices where ANY T timestep has its COMPLETE C dimension as NaN
+            # #    i.e. for some t: x[b, t, :] is entirely NaN
+            # b_any_t_all_c_nan = torch.where(
+            #     torch.isnan(x).all(dim=2).any(dim=1)
+            # )[0]
+            # print('b_any_t_all_c_nan', b_any_t_all_c_nan)
+
+            # # 3. B indices where EVERYTHING in (T, C) is NaN
+            # b_all_nan = torch.where(
+            #     torch.isnan(x).all(dim=(1, 2))
+            # )[0]
+            # print('b_all_nan', b_all_nan)
+            ##  exit()
+            ############## 
+            ctc_loss = ctc_criterion(
+                torch.permute(pred.log_softmax(2), [1, 0, 2]),
+                y,
+                lengths,
+                y_len,
+            )
+            ctc_loss = torch.sum(ctc_loss)
+
+            if do_contrastive: 
+                reference, positive, negative, ref_batch_idx, ref_time_idx, pos_time_idx, neg_batch_idx, neg_time_idx, = get_batch(embeddings, emb_lengths, args['cont_batch'], args['offset'], sample_single, random_offset, True, all_ref)
+
+                loss_contrastive = criterion(reference, positive, negative)[0]
+                loss = alpha * loss_contrastive + ctc_loss
+            else: 
+                loss = ctc_loss
+                loss_contrastive = torch.tensor(0.0)
+
+            # Backpropagation
+            optimizer.zero_grad()
+        if not torch.isfinite(loss):
+            # print('inf loss')
+            inf_losses += 1
+            if inf_losses > 10:
+                break
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=args.get('gradClipValue', 5.0)) # max_norm=5.0
+        optimizer.step()
+
+        curr_train_loss += loss.item()
+        curr_train_ctc_loss += ctc_loss.item()
+        curr_train_contrastive_loss += loss_contrastive.item()
+        curr_train_count += 1 
+
+        if adv:
+            epsilon = adv_eps
+            steps = 10
+            alpha = epsilon / 5.0
+            
+            X_adv = X.detach().clone().to(device)
+
+            if adv_norm == 'linf':
+                X_adv = X_adv + torch.empty_like(X_adv).uniform_(-epsilon, epsilon)
+            elif adv_norm == 'l2':
+                noise = torch.randn_like(X_adv)
+                noise_norm = noise.norm(p=2, dim=-1, keepdim=True).clamp(min=1e-12)
+                noise_normalized = noise / noise_norm
+                noise_normalized *= (torch.rand((noise.shape[0], noise.shape[1], 1), device=noise.device) * epsilon)
+                X_adv = X_adv + noise_normalized
+
+
+
+            for i in range(steps):
+                X_adv = X_adv.detach()
+                X_adv.requires_grad_(True)
+                with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
+                    # pred_adv, lengths = model(X_adv, X_len)
+                    # if isinstance(model, torch.nn.DataParallel):
+                    #     embeddings_adv, emb_lengths = model.module.get_cebra_embs()
+                    # else:
+                    #     embeddings_adv, emb_lengths = model.get_cebra_embs()
+                    pred_adv, lengths, embeddings_adv, emb_lengths = model(X_adv, X_len)
+                    ctc_loss_adv = ctc_criterion(
+                        torch.permute(pred_adv.log_softmax(2), [1, 0, 2]),
+                        y,
+                        lengths,
+                        y_len,
+                    )
+                    ctc_loss_adv = torch.sum(ctc_loss_adv)
+                    reference, positive, negative = embeddings_adv[ref_batch_idx, ref_time_idx], embeddings_adv[ref_batch_idx, pos_time_idx], embeddings_adv[neg_batch_idx, neg_time_idx]
+                    negative = negative.detach()
+                    positive = positive.detach()
+                    loss_contrastive_adv = criterion(reference, positive, negative)[0]
+                    loss_adv = loss_contrastive_adv + ctc_loss_adv
+                
+                grad = torch.autograd.grad(loss_adv, X_adv, only_inputs=True)[0]
+                
+                with torch.no_grad():
+                    if adv_norm == 'linf':
+                        X_adv = X_adv + alpha * grad.sign()
+                        delta = torch.clamp(X_adv - X, min=-epsilon, max=epsilon)
+                        X_adv = X + delta
+                    elif adv_norm == 'l2':
+                        grad_norm = grad.norm(p=2, dim=-1, keepdim=True).clamp(min=1e-12)
+                        grad_normalized = grad / grad_norm
+                        X_adv = (X_adv + alpha * grad_normalized).detach()
+                        delta = X_adv - X
+                        delta_norm = delta.norm(p=2, dim=-1, keepdim=True).clamp(min=1e-12)
+                        scale = torch.clamp(epsilon / delta_norm, max=1.0)
+                        delta = delta * scale
+                        X_adv = (X + delta).detach()
+
+            optimizer.zero_grad()
+            X_adv = X_adv.detach()
+            X_adv.requires_grad_(False)
+            with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
+                
+                # pred_adv, lengths = model(X_adv, X_len)
+                # if isinstance(model, torch.nn.DataParallel):
+                #     embeddings_adv, emb_lengths = model.module.get_cebra_embs()
+                # else:
+                #     embeddings_adv, emb_lengths = model.get_cebra_embs()
+                pred_adv, lengths, embeddings_adv, emb_lengths = model(X_adv, X_len)
+                
+                ctc_loss_adv = ctc_criterion(
+                        torch.permute(pred_adv.log_softmax(2), [1, 0, 2]),
+                        y,
+                        lengths,
+                        y_len,
+                    )
+                ctc_loss_adv = torch.sum(ctc_loss_adv)
+                reference, positive, negative = embeddings_adv[ref_batch_idx, ref_time_idx], embeddings_adv[ref_batch_idx, pos_time_idx], embeddings_adv[neg_batch_idx, neg_time_idx]
+                loss_contrastive_adv = criterion(reference, positive, negative)[0]
+                loss_adv = loss_contrastive_adv + ctc_loss_adv
+            
+            if not torch.isfinite(loss_adv):
+                inf_losses += 1
+                if inf_losses > 10:
+                    break
+            loss_adv.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
+            optimizer.step()
+
+
+        
+        scheduler.step()
+        if batch % 50 == 0:
+            with torch.no_grad():
+                model.eval()
+                allLoss = []
+                total_edit_distance = 0
+                total_seq_length = 0
+                for X, y, X_len, y_len, testDayIdx in testLoader:
+
+                    with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
+                        X, y, X_len, y_len, testDayIdx = (
+                            X.to(device),
+                            y.to(device),
+                            X_len.to(device),
+                            y_len.to(device),
+                            testDayIdx.to(device),
+                        )
+                        pred, lengths, _, _ = model(X, X_len)
+                        loss = ctc_criterion(
+                            torch.permute(pred.log_softmax(2), [1, 0, 2]),
+                            y,
+                            lengths,
+                            y_len,
+                        )
+                        loss = torch.sum(loss)
+                        allLoss.append(loss.cpu().detach().numpy())
+
+                        
+                        for iterIdx in range(pred.shape[0]):
+                            decodedSeq = torch.argmax(
+                                torch.tensor(pred[iterIdx, 0: lengths[iterIdx], :]),
+                                dim=-1,
+                            )  # [num_seq,]
+                            decodedSeq = torch.unique_consecutive(decodedSeq, dim=-1)
+                            decodedSeq = decodedSeq.cpu().detach().numpy()
+                            decodedSeq = np.array([i for i in decodedSeq if i != 0])
+
+                            trueSeq = np.array(
+                                y[iterIdx][0: y_len[iterIdx]].cpu().detach()
+                            )
+                            matcher = SequenceMatcher(
+                                a=trueSeq.tolist(), b=decodedSeq.tolist()
+                            )
+                            total_edit_distance += matcher.distance()
+                            total_seq_length += len(trueSeq)
+
+                avgDayLoss = np.sum(allLoss) / len(testLoader)
+                cer = total_edit_distance / total_seq_length
+
+                endTime = time.time()
+                print(
+                    f"batch {batch}, ctc loss: {avgDayLoss:>7f}, cer: {cer:>7f}, tr_ctc: {loss:>7f}, tr_cont: {loss_contrastive:>7f}"
+                )
+                startTime = time.time()
+
+            if True:
+                if isinstance(model, torch.nn.DataParallel):
+                    torch.save(model.module.state_dict(), args["out_dir"] + "/modelWeights")
+                else:
+                    torch.save(model.state_dict(), args["out_dir"] + "/modelWeights")
+                
+                save_checkpoint(checkpoint_address, model, optimizer, scheduler, batch)
+
+            testLoss.append(avgDayLoss)
+            testCER.append(cer)
+
+            tStats = {}
+            tStats["testLoss"] = np.array(testLoss)
+            tStats["testCER"] = np.array(testCER)
+
+            with open(args["out_dir"] + "/trainingStats", "wb") as file:
+                pickle.dump(tStats, file)        
+
+            if do_wandb: 
+                wandb.log({
+                    'epoch': dummy_epoch,
+                    'train_loss': curr_train_loss/curr_train_count,
+                    'train_ctc_loss': curr_train_ctc_loss/curr_train_count,
+                    'train_contrastive_loss': curr_train_contrastive_loss/curr_train_count,
+                    'test_loss': avgDayLoss,
+                    'test_cer': cer,
+                    'lr': optimizer.param_groups[0]["lr"]
+                })
+            curr_train_loss = 0.0
+            curr_train_ctc_loss = 0.0  
+            curr_train_contrastive_loss = 0.0 
+            curr_train_count = 0 
+            dummy_epoch += 1 
+
