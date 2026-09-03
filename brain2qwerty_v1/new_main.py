@@ -50,7 +50,8 @@ SILENT_TOKEN = SENTENCE_TYPED_CHAR_TO_INDEX[" "]  # space, appended to the end o
 # utils.py; shift it the same way for decoding CTC-indexed targets/predictions.
 CTC_CHAR_INDEX = {idx + 1: c for idx, c in CHAR_INDEX.items()}  # 1..29 -> display char
 
-
+MIN_NEURO_LEN = 40
+    
 def encode_sentence(sentence_typed: str) -> torch.Tensor:
     """sentence_typed -> class indices (1..29), with a trailing silent
     (space) token appended -- the CTC convention of marking end-of-utterance
@@ -148,7 +149,31 @@ class WholeTrialData(Data):
             segments = ns.segments.list_segments(events, mask, start=0.0, duration=None)
             if not segments:
                 continue
-            dataset = _WholeTrialTensorDataset(neuro=self.neuro, segments=segments)
+
+            # Extract each trial once, so we can check its true time length.
+            valid_segments = []
+
+            for seg in segments:
+                neuro_arr = self.neuro(
+                    seg.ns_events,
+                    start=seg.start,
+                    duration=seg.duration,
+                    trigger=seg.trigger,
+                )
+
+                neuro_t = torch.as_tensor(neuro_arr, dtype=torch.float32)
+
+                if neuro_t.shape[1] >= MIN_NEURO_LEN:
+                    valid_segments.append(seg)
+
+            print(
+                f"{split}: keeping {len(valid_segments)}/{len(segments)} "
+                f"trials with T >= {MIN_NEURO_LEN}"
+            )
+            if not valid_segments:
+                continue
+
+            dataset = _WholeTrialTensorDataset(neuro=self.neuro, segments=valid_segments)
             loaders[split] = DataLoader(
                 dataset,
                 batch_size=batch_size,
@@ -317,13 +342,13 @@ def train_model(args):
 
     trainLoader, testLoader = build_wholetrial_dataloaders(cfg["data"])
 
-    # batch_index = 0
-    # data_count = 0
-    # neural_data_len_mean = 0
-    # target_data_len_mean = 0
-    # for neuro, neuro_len, target, target_len, meta in test_loader:
-    #     print("neuro:", neuro.shape)        # (B, n_channels, T_max)
-    #     print("neuro_len:", neuro_len)       # (B,)
+    batch_index = 0
+    data_count = 0
+    neural_data_len_mean = 0
+    target_data_len_mean = 0
+    for neuro, neuro_len, target, target_len, meta in trainLoader:
+        print("neuro:", neuro.shape)        # (B, n_channels, T_max)
+        print("neuro_len:", neuro_len)       # (B,)
     #     print("target:", target.shape)       # (B, L_max)
     #     print("target_len:", target_len)     # (B,)
     #     # print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
