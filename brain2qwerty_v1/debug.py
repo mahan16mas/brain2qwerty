@@ -73,6 +73,7 @@ import studies  # noqa: F401  (registers Pinet2024Meg / Pinet2024Eeg)
 
 from brain2qwerty_v1.config.xp_config import debug_config
 from brain2qwerty_v1.main import Data
+from brain2qwerty_v1.utils import CHAR_INDEX
 
 SPLIT = "train"
 MAX_TRIALS_TO_PRINT = 10  # set None to print all
@@ -94,10 +95,13 @@ def main():
         for i, seg in enumerate(batch.segments):
             uid = seg.trigger.extra.get("sentence_UID")
             per_trial[uid].append((seg.start, seg.duration, neuro[i]))
+
         feature = batch.data["feature"]
+        decoded = [CHAR_INDEX[i] for i in feature[0]]
         print(feature)
-        print(type(feature))
-    exit()
+        print(decoded)
+
+        exit()
     print(f"Iterated {n_batches} batches, {len(per_trial)} unique sentence_UIDs found.\n")
 
     uids = sorted(per_trial.keys())
