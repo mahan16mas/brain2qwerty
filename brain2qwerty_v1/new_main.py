@@ -15,20 +15,33 @@ from torch.utils.data import DataLoader, Dataset
 import neuralset as ns
 
 from .main import Data  # the real pydantic Data model: study/transforms/neuro
-from .utils import CHAR_INDEX
+from .utils import BUTTON_MAPPING, CHAR_INDEX
 
-# CHAR_INDEX (index -> display char) is imported directly from utils.py, not
-# redefined -- this is the exact vocab the original model/checkpoints use.
-# sentence_typed (built by SpanishBCBLPreprocessing) already uses this same
-# display-char alphabet ('@' for <special>, '9' for <number>, ' ' for
-# <space>), so a straight reverse of CHAR_INDEX is the correct encoder here
-# -- no ambiguity, unlike BUTTON_MAPPING which has multiple raw chars
-# collapsing onto class 13.
-INV_CHAR_INDEX = {c: i for i, c in CHAR_INDEX.items()}
+# Encoder for sentence_typed strings (NOT a reverse of CHAR_INDEX -- see note).
+#
+# sentence_typed is built by joining the raw `button` field (already run
+# through spanishbcbl.py's _clean_buttons), then only the three TOKEN
+# STRINGS "<special>"/"<space>"/"<number>" get replaced with "@"/" "/"9".
+# _clean_buttons' own "is this special" detection is narrower than what
+# BUTTON_MAPPING covers, so some raw characters (£, ý, ü, û, ¤, ¿, `, -, \x14)
+# fall through unchanged and end up LITERALLY in sentence_typed rather than
+# as the "<special>" token. BUTTON_MAPPING already has direct entries for
+# these leftover raw characters (all -> class 13, same as "<special>"), so we
+# use BUTTON_MAPPING's single-character entries directly as the encoder, plus
+# the three post-replacement token forms.
+SENTENCE_TYPED_CHAR_TO_INDEX = {k: v for k, v in BUTTON_MAPPING.items() if len(k) == 1}
+SENTENCE_TYPED_CHAR_TO_INDEX[" "] = BUTTON_MAPPING["<space>"]    # post-replacement space
+SENTENCE_TYPED_CHAR_TO_INDEX["@"] = BUTTON_MAPPING["<special>"]  # post-replacement special token
+SENTENCE_TYPED_CHAR_TO_INDEX["9"] = BUTTON_MAPPING["<number>"]   # post-replacement number token
+
+# CHAR_INDEX (index -> display char) is used only for DECODING model output /
+# targets back to text -- one entry per index, so no ambiguity there.
 
 
 def encode_sentence(sentence_typed: str) -> torch.Tensor:
-    return torch.tensor([INV_CHAR_INDEX[c] for c in sentence_typed], dtype=torch.long)
+    return torch.tensor(
+        [SENTENCE_TYPED_CHAR_TO_INDEX[c] for c in sentence_typed], dtype=torch.long
+    )
 
 
 def decode_target(indices) -> str:
