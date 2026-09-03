@@ -459,9 +459,10 @@ def train_model(args):
     curr_train_count = 0 
     dummy_epoch = 0 
 
+    batch_index = -1
     train_iter = iter(trainLoader)
     for batch in trange(args["nBatch"]):
-        
+        batch_index += 1 
         model.train()
         try:
             X, y, X_len, y_len, dayIdx = next(train_iter)
@@ -478,6 +479,10 @@ def train_model(args):
             y_len.to(device),
             dayIdx.to(device),
         )
+        # X: (B, n_channels, T_max) 
+        X = X.permute(0, 2, 1) # (B, T_max, n_channels)
+        if batch_index == 0: 
+            print(X.shape, y.shape, X_len.shape, y_len.shape)
         if batch < so_far_batch:
             continue
         if not no_noise:
