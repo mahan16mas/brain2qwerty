@@ -189,7 +189,7 @@ def main():
     data_count = 0
     neural_data_len_mean = 0
     target_data_len_mean = 0
-    for neuro, neuro_len, target, target_len, meta in train_loader:
+    for neuro, neuro_len, target, target_len, meta in test_loader:
         print("neuro:", neuro.shape)        # (B, n_channels, T_max)
         print("neuro_len:", neuro_len)       # (B,)
         print("target:", target.shape)       # (B, L_max)
@@ -214,6 +214,7 @@ def main():
     neural_data_len_mean /= data_count
     target_data_len_mean /= data_count
     print(f'In {data_count} number of samples, mean of neural data length: {neural_data_len_mean} and mean of target length: {target_data_len_mean}')
+    # TRAIN, In 4104 number of samples, mean of neural data length: 286.72002923976606 and mean of target length: 38.47490253411306
 
 
 if __name__ == "__main__":
