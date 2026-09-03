@@ -195,6 +195,8 @@ def main():
         print("target_len:", target_len)     # (B,)
         # print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
         print("first sentence:", decode_target(target[0, : target_len[0]]))
+        print("second sentence:", decode_target(target[1, : target_len[1]]))
+        print("thids sentence:", decode_target(target[2, : target_len[2]]))
         print(target[0])
         print(target_len[0])
 
