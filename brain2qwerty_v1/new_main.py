@@ -414,7 +414,7 @@ def train_model(args):
 
     from torchinfo import summary 
     print(summary(model, input_data=(_temp_x,  _temp_lengths), verbose=1,))
-    exit()
+    # exit()
 
     model = model.to(device)
     # Parallel GPUs gives error for accessing the self.embeddings on model
