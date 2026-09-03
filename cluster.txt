@@ -43,6 +43,7 @@ runai list jobs -p upmwmathis-mirzaei
 
 ############# Single Runs 
 
+# bash command 
 
 cd /data/hossein/transformer_bci/brain2qwerty; 
 source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate;
