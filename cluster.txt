@@ -38,5 +38,5 @@ source /mnt/upmwmathis/scratch/hossein/mm_project/brain2qwerty/.venv/bin/activat
 runai list | grep Running
 runai bash meta-bci-1 -p upmwmathis-mirzaei
 runai describe job meta-bci-1 -p upmwmathis-mirzaei
-runai delete job meta-bci-1 -p upmwmathis-mirzaei
+runai delete job meta-1 -p upmwmathis-mirzaei
 runai list jobs -p upmwmathis-mirzaei
