@@ -174,8 +174,14 @@ def main():
         print("neuro_len:", neuro_len)       # (B,)
         print("target:", target.shape)       # (B, L_max)
         print("target_len:", target_len)     # (B,)
-        print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
+        # print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
         print("first sentence:", decode_target(target[0, : target_len[0]]))
+        print(target[0])
+        print(target_len[0])
+
+        print(target[1])
+        print(target_len[1])
+                
         break
 
 
