@@ -97,7 +97,7 @@ def main():
             per_trial[uid].append((seg.start, seg.duration, neuro[i]))
 
         feature = batch.data["feature"]
-        decoded = [CHAR_INDEX[i.item()] for i in feature[0]]
+        decoded = [CHAR_INDEX[i[0].item()] for i in feature]
         print(feature)
         print(decoded)
 
