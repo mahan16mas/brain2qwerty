@@ -394,7 +394,7 @@ def train_model(args):
         args['cebra_unfolder'],
         args['gru'],
         2.0,
-        gauss_in=False, # args.get("gauss_in", True) and not no_gauss,
+        gauss_in=args.get("gauss_in", True), #  and not no_gauss,
         no_rnn=no_rnn,
         cebra_bn=args.get("ceb_bn", False),
         cebra_window_10=args.get("cebra_window_10", False),
@@ -671,6 +671,8 @@ def train_model(args):
                             y_len.to(device),
                             meta.to(device),
                         )
+                        # X: (B, n_channels, T_max) 
+                        X = X.permute(0, 2, 1) # (B, T_max, n_channels)
                         if test_batch_index == 0: 
                             print(X.shape, X_len.shape, y.shape, y_len.shape, y_len[0])
 
