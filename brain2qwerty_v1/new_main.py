@@ -419,7 +419,7 @@ def train_model(args):
         args['cebra_unfolder'],
         args['gru'],
         2.0,
-        gauss_in=args.get("gauss_in", True), #  and not no_gauss,
+        gauss_in=args.get("gauss_in", True) and not no_gauss,
         no_rnn=no_rnn,
         cebra_bn=args.get("ceb_bn", False),
         cebra_window_10=args.get("cebra_window_10", False),
