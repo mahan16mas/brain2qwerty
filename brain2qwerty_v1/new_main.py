@@ -504,7 +504,7 @@ def train_model(args):
             pred, lengths, embeddings, emb_lengths = model(X, X_len)
             if batch_index == 0:
                 print(pred.shape, lengths.shape, lengths[0])
-            print('-'*40)
+            # print('-'*40)
             #########
             # # print(pred)
             # # print(pred.log_softmax(2))
@@ -659,15 +659,15 @@ def train_model(args):
                 allLoss = []
                 total_edit_distance = 0
                 total_seq_length = 0
-                for X, y, X_len, y_len, testDayIdx in testLoader:
+                for X, X_len, y, y_len, meta in testLoader:
 
                     with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
-                        X, y, X_len, y_len, testDayIdx = (
+                        X, X_len, y, y_len, meta = (
                             X.to(device),
-                            y.to(device),
                             X_len.to(device),
+                            y.to(device),
                             y_len.to(device),
-                            testDayIdx.to(device),
+                            meta.to(device),
                         )
                         pred, lengths, _, _ = model(X, X_len)
                         loss = ctc_criterion(
