@@ -342,13 +342,13 @@ def train_model(args):
 
     trainLoader, testLoader = build_wholetrial_dataloaders(cfg["data"])
 
-    batch_index = 0
-    data_count = 0
-    neural_data_len_mean = 0
-    target_data_len_mean = 0
-    for neuro, neuro_len, target, target_len, meta in trainLoader:
-        print("neuro:", neuro.shape)        # (B, n_channels, T_max)
-        print("neuro_len:", neuro_len)       # (B,)
+    # batch_index = 0
+    # data_count = 0
+    # neural_data_len_mean = 0
+    # target_data_len_mean = 0
+    # for neuro, neuro_len, target, target_len, meta in trainLoader:
+    #     print("neuro:", neuro.shape)        # (B, n_channels, T_max)
+    #     print("neuro_len:", neuro_len)       # (B,)
     #     print("target:", target.shape)       # (B, L_max)
     #     print("target_len:", target_len)     # (B,)
     #     # print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
