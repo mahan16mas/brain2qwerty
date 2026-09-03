@@ -185,6 +185,10 @@ def main():
 
     train_loader, test_loader = build_wholetrial_dataloaders(cfg["data"])
 
+    batch_index = 0
+    data_count = 0
+    neural_data_len_mean = 0
+    target_data_len_mean = 0
     for neuro, neuro_len, target, target_len, meta in train_loader:
         print("neuro:", neuro.shape)        # (B, n_channels, T_max)
         print("neuro_len:", neuro_len)       # (B,)
@@ -202,6 +206,15 @@ def main():
                 
         # break
         print()
+        batch_index += 1
+        data_count += neuro_len.shape[0]
+        neural_data_len_mean += neuro_len.sum()
+        target_data_len_mean += target_len.sum()
+
+    neural_data_len_mean /= data_count
+    target_data_len_mean /= data_count
+    print(f'In {data_count} number of samples, mean of neural data length: {neural_data_len_mean} and mean of target length: {target_data_len_mean}')
+    
 
 if __name__ == "__main__":
     main()
