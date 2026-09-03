@@ -53,4 +53,4 @@ export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL";
 export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty";          
 export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" 
 
-python -m brain2qwerty_v1.main train --wandb
+python -m brain2qwerty_v1.main train --wandb --wandb-name Meta-NoMerger-NoSubSpecificLayer-MEG 

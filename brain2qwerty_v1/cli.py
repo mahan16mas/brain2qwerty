@@ -17,6 +17,7 @@ def add_wandb_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--wandb-project", default=PROJECT)
     parser.add_argument("--wandb-group", default=None)
     parser.add_argument("--wandb-entity", default=None)
+    parser.add_argument("--wandb-name", default=None)
 
 
 def wandb_config(args, command: str, seed) -> dict | None:
@@ -26,6 +27,6 @@ def wandb_config(args, command: str, seed) -> dict | None:
         "project": args.wandb_project,
         "group": args.wandb_group or command,
         "entity": args.wandb_entity,
-        "name": f"{command}-seed{seed}",
+        "name": args.wandb_name, # f"{command}-seed{seed}",
         "host": os.environ.get("WANDB_HOST"),
     }
