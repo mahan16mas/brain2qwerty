@@ -504,7 +504,7 @@ def train_model(args):
             pred, lengths, embeddings, emb_lengths = model(X, X_len)
             if batch_index == 0:
                 print(pred.shape, lengths.shape, lengths[0])
-                
+            print('-'*40)
             #########
             # # print(pred)
             # # print(pred.log_softmax(2))

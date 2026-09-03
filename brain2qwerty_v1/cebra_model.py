@@ -195,9 +195,17 @@ class Encoder_Decoder(nn.Module):
     
     def _apply_cebra(self, x, lengths):
         """Helper to permute, pad, forward CEBRA, and permute back."""
+        print(x.shape)
+
         x = x.permute(0, 2, 1)  # (B, C, T)
+        print(x.shape)
+
         x = F.pad(x, (self.left_of, self.left_of - 1), mode='replicate')
+        print(x.shape)
+
         x = self.cebra(x).permute(0, 2, 1)  # (B, T, C)
+        print(x.shape)
+
         # self.embeddings = x
         # self.emb_lengths = lengths
         # print(self.embeddings.shape)
@@ -207,8 +215,11 @@ class Encoder_Decoder(nn.Module):
         return self.embeddings, self.emb_lengths
     
     def forward(self, x, lengths):
+        print(x.shape)
         x = self.smoother(x)
         # print('before init layer', x.shape)
+        print(x.shape)
+        
         if self.add_initial_layer: 
             x = self.initial_layer(x.permute(0, 2, 1)).permute(0, 2, 1)
         # print('after inital layer', x.shape)
@@ -219,9 +230,11 @@ class Encoder_Decoder(nn.Module):
             embeddings = x
             emb_lengths = lengths
         # print('after cebra', x.shape)
+        print(x.shape)
 
         x, lengths = self.unfolder(x, lengths)
         # print('after unfolder', x.shape)
+        print(x.shape)
 
         if not self.cebra_unfolder:
             x = self._apply_cebra(x, lengths)

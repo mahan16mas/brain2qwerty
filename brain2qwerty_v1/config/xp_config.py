@@ -61,7 +61,7 @@ def experiment_config() -> dict:
             "batch_size": 64,
             "val_batch_size": 2048,
             "test_batch_size": 2048,
-            "num_workers": 16,
+            "num_workers": 4,
             "pin_memory": True,
             "persistent_workers": True,
         },
