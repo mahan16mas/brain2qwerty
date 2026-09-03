@@ -208,13 +208,13 @@ def main():
         print()
         batch_index += 1
         data_count += neuro_len.shape[0]
-        neural_data_len_mean += neuro_len.sum()
-        target_data_len_mean += target_len.sum()
+        neural_data_len_mean += neuro_len.sum().item()
+        target_data_len_mean += target_len.sum().item()
 
     neural_data_len_mean /= data_count
     target_data_len_mean /= data_count
     print(f'In {data_count} number of samples, mean of neural data length: {neural_data_len_mean} and mean of target length: {target_data_len_mean}')
-    
+
 
 if __name__ == "__main__":
     main()
