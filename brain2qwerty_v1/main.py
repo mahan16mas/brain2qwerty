@@ -147,7 +147,7 @@ class Experiment(pydantic.BaseModel):
         n_in = next(iter(loader)).data["neuro"].shape[1]
         hidden = self.brain_model_config.hidden
         brain = self.brain_model_config.build(n_in_channels=n_in, n_outputs=hidden)
-        print(brain)
+        # print(brain)
         transformer = self.transformer_config.build(dim=hidden)
         return brain, transformer
 
@@ -225,6 +225,7 @@ class Experiment(pydantic.BaseModel):
             metrics=metrics,
             optimizer=self.optimizer,
         )
+        print('Final Model...')
         print(self._module)
         
         materialize_lazy_params(self._module, loaders["train"])

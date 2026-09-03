@@ -7,7 +7,7 @@ git pull
 
 # interactive 
 runai submit \
-  --name meta-1 \
+  --name meta-2 \
   --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
   --gpu 1 \
   --cpu 20 \
@@ -40,3 +40,16 @@ runai bash meta-bci-1 -p upmwmathis-mirzaei
 runai describe job meta-bci-1 -p upmwmathis-mirzaei
 runai delete job meta-1 -p upmwmathis-mirzaei
 runai list jobs -p upmwmathis-mirzaei
+
+############# Single Runs 
+
+
+cd /data/hossein/transformer_bci/brain2qwerty; 
+source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate;
+source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh;
+
+export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL";            
+export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty";          
+export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" 
+
+python -m brain2qwerty_v1.main train --wandb
