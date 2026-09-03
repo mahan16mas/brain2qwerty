@@ -481,7 +481,7 @@ def train_model(args):
         # X: (B, n_channels, T_max) 
         X = X.permute(0, 2, 1) # (B, T_max, n_channels)
         if batch_index == 0: 
-            print(X.shape, X_len.shape, y.shape, y_len.shape)
+            print(X.shape, X_len.shape, y.shape, y_len.shape, y_len[0])
         if batch < so_far_batch:
             continue
         if not no_noise:
@@ -651,7 +651,7 @@ def train_model(args):
             optimizer.step()
 
 
-        
+
         scheduler.step()
         if batch % 50 == 0:
             with torch.no_grad():
@@ -659,7 +659,9 @@ def train_model(args):
                 allLoss = []
                 total_edit_distance = 0
                 total_seq_length = 0
+                test_batch_index = -1
                 for X, X_len, y, y_len, meta in testLoader:
+                    test_batch_index += 1 
 
                     with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
                         X, X_len, y, y_len, meta = (
@@ -669,7 +671,14 @@ def train_model(args):
                             y_len.to(device),
                             meta.to(device),
                         )
+                        if test_batch_index == 0: 
+                            print(X.shape, X_len.shape, y.shape, y_len.shape, y_len[0])
+
                         pred, lengths, _, _ = model(X, X_len)
+
+                        if test_batch_index == 0: 
+                            print(pred.shape, lengths.shape, lengths[0])
+
                         loss = ctc_criterion(
                             torch.permute(pred.log_softmax(2), [1, 0, 2]),
                             y,
