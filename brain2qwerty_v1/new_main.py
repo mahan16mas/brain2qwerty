@@ -502,7 +502,9 @@ def train_model(args):
             # else:
             #     embeddings, emb_lengths = model.get_cebra_embs()
             pred, lengths, embeddings, emb_lengths = model(X, X_len)
-
+            if batch_index == 0:
+                print(pred.shape, lengths.shape, lengths[0])
+                
             #########
             # # print(pred)
             # # print(pred.log_softmax(2))
