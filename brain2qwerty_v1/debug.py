@@ -94,7 +94,10 @@ def main():
         for i, seg in enumerate(batch.segments):
             uid = seg.trigger.extra.get("sentence_UID")
             per_trial[uid].append((seg.start, seg.duration, neuro[i]))
-
+        feature = batch.data["feature"]
+        print(feature)
+        print(type(feature))
+    exit()
     print(f"Iterated {n_batches} batches, {len(per_trial)} unique sentence_UIDs found.\n")
 
     uids = sorted(per_trial.keys())
