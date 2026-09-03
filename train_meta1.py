@@ -102,7 +102,7 @@ def model_logits(model, test_loader, device='cuda', nlp=False):
     return rnn_outputs
 
 """
-python start_trainer.py --out_dir judeSpeech_meta_default_50_chunk14(kernel14stride4-overlap)_bs16 --dataset_path /data/hossein/transformer_bci/neuro_data/speech_jude/Data/jude_speech_unseen_days_no_smoothing.pkl --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --chunk_size 14 --chunk_stride 4 --use_jude 
+python start_trainer.py --out_dir judeSpeech_meta_default_50_chunk14_stride4_bs16_small --dataset_path /data/hossein/transformer_bci/neuro_data/speech_jude/Data/jude_speech_unseen_days_no_smoothing.pkl --batch_size 16 --epochs 50 --conv_dropout 0.5 --dropout_input 0.2 --do_wandb --chunk_size 14 --chunk_stride 4 --use_jude --cnn_depth 4 --cnn_hidden 1024 --transformer_depth 2 --transformer_head 1
 """
 
 

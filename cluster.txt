@@ -7,7 +7,7 @@ git pull
 
 # interactive 
 runai submit \
-  --name meta-bci-1 \
+  --name meta-1 \
   --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
   --gpu 1 \
   --cpu 4 \

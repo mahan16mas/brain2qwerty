@@ -27,3 +27,136 @@ python -m brain2qwerty_v1.main train --wandb
 python -m brain2qwerty_v1.main debug
 
 watch -n 5 'du -sh /mnt/upmwmathis/scratch/hossein/transformer_bci/.cache/brain2qwerty'
+
+README: 
+---
+pretty_name: "DECOMEG: Brain Activity During Typing (MEG & EEG)"
+license: cc-by-nc-4.0   
+language:
+  - es
+tags:
+  - neuroscience
+  - meg
+  - eeg
+  - brain-computer-interface
+  - bci
+  - brain-to-text
+  - typing
+  - motor
+  - electrophysiology
+task_categories:
+  - other
+size_categories:
+  - 100GB<n<1TB
+modalities:
+  - timeseries
+---
+
+# DECOMEG — Brain Activity During Typing (MEG & EEG)
+
+Non-invasive brain recordings (magnetoencephalography, MEG; and electroencephalography, EEG)
+of healthy adults typing briefly-memorized sentences on a QWERTY keyboard. This is the dataset
+underlying **Brain2Qwerty** (Lévy et al., 2025) and its companion neuroscience study
+(Zhang et al., 2025).
+
+## Summary
+
+- **Participants:** 35 healthy adult volunteers recruited at the Basque Center on Cognition,
+  Brain and Language (BCBL), San Sebastián, Spain. All native Spanish speakers, right-handed,
+  and skilled typists (selected for typing accuracy ≥ 80%). Cohort: 23% men / 77% women,
+  mean age 31.6 ± 5.2 years. Five participants took part in **both** EEG and MEG sessions.
+- **Task:** Each trial had three phases — **read → wait → type**. A Spanish sentence was shown
+  word-by-word (rapid serial visual presentation, RSVP); after the last word a fixation cross
+  appeared for 1.5 s; its disappearance cued the participant to type the sentence from memory
+  **without any on-screen feedback**. Each session used 128 unique declarative Spanish sentences
+  of 5–8 words.
+- **Languages / stimuli:** Spanish sentences. MEG: ~5.1K sentences / ~193K characters.
+  EEG: ~4K sentences / ~146K characters.
+- **Keyboard:** A custom MR-compatible QWERTY keyboard (HybridMojo LLC) with non-ferromagnetic
+  silver-spring key mechanisms, to avoid magnetic artifacts in the MEG.
+
+## Recording devices
+
+| Modality | System | Channels | Sampling rate | Online filters |
+|---|---|---|---|---|
+| MEG | Megin (Elekta Neuromag) | 306 (102 magnetometers + 204 planar gradiometers) | 1 kHz | 0.1 Hz high-pass, 330 Hz low-pass |
+| EEG | BrainVision actiCAP slim | 64 | 1 kHz | — |
+
+Per-participant recording time: EEG 0.88 ± 0.02 h, MEG 0.93 ± 0.01 h (≈17.7 h EEG and
+≈21.5 h MEG of typing in total).
+
+## Directory structure
+
+```
+pinet2024_public/
+├── MEG/
+│   ├── FIF/      # raw continuous MEG (Elekta/Megin .fif), one directory per recording;
+│   │             #   each holds the typing blocks (block1.fif, block2.fif) + a tapping localizer
+│   └── logs/     # behavioral logs (MATLAB .mat): stimuli, keystrokes, and timing
+└── EEG/
+    ├── EEG/      # raw EEG in BrainVision format (.eeg / .vhdr / .vmrk)
+    └── logs/     # behavioral logs (MATLAB .mat): stimuli, keystrokes, and timing
+
+```
+
+### File counts (this release)
+
+| | Files |
+|---|---|
+| MEG raw `.fif` | 231 (across 29 recording directories) |
+| MEG behavioral logs `.mat` | 84 |
+| EEG recordings (`.eeg`/`.vhdr`/`.vmrk` triplets) | 117 each |
+| EEG behavioral logs `.mat` | 62 |
+| Total size | ≈ 262 GB |
+
+### Repeated participants (MEG)
+
+Some people took part in more than one MEG session and appear under **different subject IDs**.
+The following IDs belong to the **same person**:
+
+| Person | Subject IDs |
+|---|---|
+| 1 | `S1`, `S18` |
+| 4 | `S4`, `S14` |
+| 5 | `S5`, `S10`, `S21` |
+
+Merging these (and excluding `S23`, who had a metallic implant) yields **19 unique MEG
+participants**. The Brain2Qwerty V1 pipeline applies exactly this mapping in its
+`SpanishBCBLPreprocessing` event transform.
+
+## File formats
+
+- **`.fif`** — Elekta/Megin/MNE raw MEG.
+- **`.vhdr` / `.eeg` / `.vmrk`** — BrainVision EEG (header / data / markers).
+- **`.mat`** — MATLAB behavioral logs (stimuli, keystrokes, timing). Load with
+  `scipy.io.loadmat` or MATLAB.
+
+## Loading the events (keystroke / word / sentence timings)
+
+The [Brain2Qwerty code release](https://github.com/facebookresearch/brain2qwerty) ships a
+`studies` package that reads these recordings and behavioural logs, aligns them, and emits a
+standardized **event** dataframe. Install the public libraries and let it download and build
+the events for you:
+
+```bash
+pip install neuralset neuralfetch
+```
+
+Clone the [Brain2Qwerty repo](https://github.com/facebookresearch/brain2qwerty) and run the
+snippet from its `brain2qwerty/` directory (or `pip install -e .` there first) so that
+`import studies` resolves — `studies` is the package that defines and registers `Pinet2024Meg` /
+`Pinet2024Eeg`; it is not part of `neuralfetch`.
+
+```python
+import studies  # noqa: F401  - registers Pinet2024Meg / Pinet2024Eeg
+from neuralset.events import Study
+
+study = Study(name="Pinet2024Meg", path="SpanishBCBL")  # use "Pinet2024Eeg" for EEG
+study.download()        # fetch this study's recordings + logs from this HF repo into `path`
+events = study.build()  # standardized event dataframe across all subjects/sessions
+```
+
+`events` has one row per event, with `type` (`Keystroke` / `Word` / `Sentence`, plus the raw
+`Meg`/`Eeg` recording rows) and the timings in `start` (onset, seconds) and `duration`
+(seconds). If you have already downloaded the dataset, point `path` at the local folder and
+call `study.build()` directly (skip `download()`).
