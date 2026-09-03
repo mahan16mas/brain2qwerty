@@ -181,6 +181,7 @@ from brain2qwerty_v1.config.xp_config import debug_config, experiment_config
 
 
 def main():
+    print(NUM_CLASSES_WITH_BLANK)
     # debug_config() -> single timeline, fast iteration/smoke tests
     # experiment_config() -> full dataset
     cfg = experiment_config() # debug_config()
