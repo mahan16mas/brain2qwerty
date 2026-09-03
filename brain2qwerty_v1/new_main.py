@@ -44,6 +44,7 @@ _BASE_CHAR_TO_INDEX["9"] = BUTTON_MAPPING["<number>"]   # post-replacement numbe
 SENTENCE_TYPED_CHAR_TO_INDEX = {c: idx + 1 for c, idx in _BASE_CHAR_TO_INDEX.items()}  # 1..29
 CTC_BLANK = 0
 NUM_CLASSES_WITH_BLANK = len(set(BUTTON_MAPPING.values())) + 1  # 29 real classes + blank = 30
+SILENT_TOKEN = SENTENCE_TYPED_CHAR_TO_INDEX[" "]  # space, appended to the end of every target
 
 # CHAR_INDEX (index -> display char) is the original 0-28 decode table from
 # utils.py; shift it the same way for decoding CTC-indexed targets/predictions.
@@ -51,19 +52,16 @@ CTC_CHAR_INDEX = {idx + 1: c for idx, c in CHAR_INDEX.items()}  # 1..29 -> displ
 
 
 def encode_sentence(sentence_typed: str) -> torch.Tensor:
-    return torch.tensor(
-        [SENTENCE_TYPED_CHAR_TO_INDEX[c] for c in sentence_typed], dtype=torch.long
-    )
+    """sentence_typed -> class indices (1..29), with a trailing silent
+    (space) token appended -- the CTC convention of marking end-of-utterance
+    with a silence/blank-adjacent symbol."""
+    indices = [SENTENCE_TYPED_CHAR_TO_INDEX[c] for c in sentence_typed] + [SILENT_TOKEN]
+    return torch.tensor(indices, dtype=torch.long)
 
 
 def decode_target(indices) -> str:
     """Reverse of encode_sentence -- ignores 0 (padding / CTC blank)."""
     return "".join(CTC_CHAR_INDEX[int(i)] for i in indices if int(i) != 0)
-
-
-# def decode_target(indices) -> str:
-#     """Reverse of encode_sentence -- ignores -1 padding sentinel."""
-#     return "".join(CHAR_INDEX[int(i)] for i in indices if int(i) >= 0)
 
 
 class _WholeTrialTensorDataset(Dataset):
@@ -171,7 +169,6 @@ def build_wholetrial_dataloaders(cfg: dict) -> tuple[DataLoader, DataLoader]:
     loaders = data.build_loaders()
     return loaders["train"], loaders["test"]
 
-
 # your_new_main.py
 
 import studies  # noqa: F401  -- registers Pinet2024Meg / Pinet2024Eeg
@@ -195,16 +192,16 @@ def main():
         print("target_len:", target_len)     # (B,)
         # print("meta:", meta)                 # (B, 3) -> subject_id, session, trial_id
         print("first sentence:", decode_target(target[0, : target_len[0]]))
-        print("second sentence:", decode_target(target[1, : target_len[1]]))
-        print("thids sentence:", decode_target(target[2, : target_len[2]]))
-        print(target[0])
-        print(target_len[0])
+        # print("second sentence:", decode_target(target[1, : target_len[1]]))
+        # print("thids sentence:", decode_target(target[2, : target_len[2]]))
+        # print(target[0])
+        # print(target_len[0])
 
-        print(target[1])
-        print(target_len[1])
+        # print(target[1])
+        # print(target_len[1])
                 
-        break
-
+        # break
+        print()
 
 if __name__ == "__main__":
     main()
