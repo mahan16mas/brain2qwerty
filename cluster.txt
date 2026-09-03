@@ -10,7 +10,7 @@ runai submit \
   --name meta-1 \
   --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
   --gpu 1 \
-  --cpu 4 \
+  --cpu 20 \
   --memory 64Gi \
   --node-pools h100 \
   --large-shm \
