@@ -49,6 +49,11 @@ class BrainModule(pl.LightningModule):
         self.save_hyperparameters(ignore=["model", "transformer", "loss"])
 
     def forward(self, batch: Batch) -> torch.Tensor:
+        print(batch.data[self.x_name].shape)
+        print(batch.data["subject_id"].shape)
+        print(batch.data["channel_positions"].shape)
+        exit()
+        
         return self.model(
             batch.data[self.x_name],
             batch.data["subject_id"],
