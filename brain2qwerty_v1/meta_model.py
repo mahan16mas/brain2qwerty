@@ -38,37 +38,29 @@ class MetaModel(nn.Module):
         #### self.smoother = (GaussianSmoothing(num_neurons, 20, smooth_width, dim=1)) if do_smoothing else (nn.Identity())
 
     def _cnn_forward(self, neuro, subject_id, channel_positions) -> torch.Tensor:
-        return self.model(neuro, None, None)
+        return self.model(neuro, subject_id, channel_positions)
 
-    def _transformer_forward(self, uids, y_pred: torch.Tensor) -> torch.Tensor:
-        # y_pred: [K, D] where K is number of chunks 
+    def _transformer_forward(self, y_pred: torch.Tensor, neuro_len) -> torch.Tensor:
+        B = neuro_len.shape[0]
+        grouped = torch.split(y_pred, neuro_len.tolist(), dim=0)  # tuple of (n_chunks_i, hidden)
+        for i, g in enumerate(grouped):
+            print(i, len(g), grouped[g].shape)
 
-        uids = uids.detach().cpu().numpy() 
-        unique_uids, first_idx = np.unique(uids, return_index=True)
-        # print(unique_uids, first_idx)
-        unique_uids = unique_uids[np.argsort(first_idx)]
-        # print('-----')
-        # print('unique_uids', unique_uids)
-        grouped = [
-            torch.stack([y_pred[i] for i, s in enumerate(uids) if s == uid])
-            for uid in unique_uids
-        ]
-        # print(len(grouped))
-        # print(grouped[0].shape, grouped[1].shape)
-                
-        max_len = max(len(g) for g in grouped)
-        x = torch.zeros(len(grouped), max_len, y_pred.shape[1], device=y_pred.device) # [B, T_max, D] where B is number of unique trials in the current batch of chunks
-        mask = torch.zeros(len(grouped), max_len, device=y_pred.device) # [B, T_max]
-        out_lengths = torch.zeros(len(grouped), device=y_pred.device) # [B]
+        max_len = int(neuro_len.max().item())
+        
+        hidden = y_pred.shape[1]
+        x = torch.zeros(B, max_len, hidden, device=y_pred.device, dtype=y_pred.dtype)
+        mask = torch.zeros(B, max_len, device=y_pred.device)
         for i, g in enumerate(grouped):
             x[i, : len(g)] = g
             mask[i, : len(g)] = 1
-            out_lengths[i] = len(g)
+        print('x', x.shape)
+        out = self.transformer(x, mask=mask.bool())  # (B, max_len, hidden)
+        print('out', out.shape)
+        logits = self.linear(out)                    # (B, max_len, n_classes)
+        return logits
 
-        out = self.transformer(x, mask=mask.bool())
-        return self.linear(out), out_lengths.long()
-
-    def forward(self, neuro, subject_id, channel_positions, uids):
+    def forward(self, neuro, neuro_len, subject_id, channel_positions):
         """
         neuro: (total_chunks_in_batch, n_channels, CHUNK_LENGTH)  flat, no padding
         neuro_len         : (B,)   chunk count per trial -- use to split `neuro` back into
@@ -85,10 +77,10 @@ class MetaModel(nn.Module):
         channel_positions : (total_chunks_in_batch, n_channels, 2)  same expansion as subject_id
                                     -- same sensor layout repeated per chunk, not per trial
         """
-        # neuro = self.smoother.forward(neuro)
+        print('cnn forward', neuro.shape, subject_id.shape, channel_positions.shape)
         y_pred = self._cnn_forward(neuro, subject_id, channel_positions)
-        # print('cnn output', y_pred.shape)
-        return self._transformer_forward(uids, y_pred)
+
+        return self._transformer_forward(y_pred, neuro_len)
 
 
 

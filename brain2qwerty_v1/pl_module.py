@@ -49,9 +49,9 @@ class BrainModule(pl.LightningModule):
         self.save_hyperparameters(ignore=["model", "transformer", "loss"])
 
     def forward(self, batch: Batch) -> torch.Tensor:
-        print('x data', batch.data[self.x_name].shape)
-        print('s id', batch.data["subject_id"].shape)
-        print('c pos', batch.data["channel_positions"].shape)
+        # print('x data', batch.data[self.x_name].shape) # [2048, 306, 25]
+        # print('s id', batch.data["subject_id"].shape) # [2048, 1]
+        # print('c pos', batch.data["channel_positions"].shape) # [2048, 306, 2]
         
         return self.model(
             batch.data[self.x_name],
@@ -62,8 +62,8 @@ class BrainModule(pl.LightningModule):
     def _transformer_forward(self, batch: Batch, y_pred: torch.Tensor) -> torch.Tensor:
         uids = np.array([seg.trigger.extra["sentence_UID"] for seg in batch.segments])
 
-        print('uids', uids.shape)
-        print('y_pred', y_pred.shape)
+        # print('uids', uids.shape) # (2048, )
+        # print('y_pred', y_pred.shape) # [2048, 2048]
 
         unique_uids, first_idx = np.unique(uids, return_index=True)
         unique_uids = unique_uids[np.argsort(first_idx)]
@@ -78,11 +78,11 @@ class BrainModule(pl.LightningModule):
         for i, g in enumerate(grouped):
             x[i, : len(g)] = g
             mask[i, : len(g)] = 1
-        print('x', x.shape)
+        # print('x', x.shape) # [56, 49, 2048]
         out = self.transformer(x, mask=mask.bool())
-        print('out', out.shape)
+        # print('out', out.shape) # [56, 49, 2048]
         flat = [out[i][: len(g)] for i, g in enumerate(grouped)]
-        exit()
+        # exit()
         return self.linear(torch.cat(flat))
 
     def _run_step(self, batch: Batch, step_name: str):

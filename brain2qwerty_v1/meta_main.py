@@ -296,7 +296,31 @@ import studies  # noqa: F401  -- registers Pinet2024Meg / Pinet2024Eeg
 
 from brain2qwerty_v1.config.xp_config import debug_config, experiment_config
 # from brain2qwerty_v1.data_wholetrial import build_wholetrial_dataloaders, decode_target
+from tqdm import tqdm
+import torch
+import os
+import numpy as np
+import pickle
+from edit_distance import SequenceMatcher
+from neuraltrain.optimizers import LightningOptimizer
 
+def save_checkpoint(
+    path,
+    model,
+    optimizer,
+    scheduler,
+    step,
+    
+):
+    checkpoint = {
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "step": step,
+    }
+    checkpoint["scheduler_state_dict"] = scheduler.state_dict()
+
+    
+    torch.save(checkpoint, path)
 
 def train_model(args):
     do_wandb = args.get("do_wandb", False)
@@ -337,34 +361,7 @@ def train_model(args):
     #         break
     
     checkpoint_address = f"{args['out_dir']}/checkpoint.pt"
-    is_speech = args.get('is_speech', False)
-    nlp_10 = args.get("nlp_10", False)
-    is_nejm = args.get("is_nejm", False)
-    no_smoothing = args.get("no_smoothing", False)
-    do_add_noise = args.get("add_noise", False)
-
-    chunk_size=args.get("chunk_size", 4)
-    chunk_stride=args.get("chunk_stride", 4)
-    assert not (no_smoothing and do_add_noise), 'exvlusive args'
-    if do_add_noise: 
-        from loaders import get_dataset_loaders_with_noise
-        train_loader, test_loader, _ = get_dataset_loaders_with_noise(
-            args['dataset_path'], args['batch_size'], 
-            is_speech, nlp_10, is_nejm,
-            chunk_size=chunk_size,
-            stride=chunk_stride,
-            whiteNoiseSD=args["whiteNoiseSD"],
-            constantOffsetSD=args["constantOffsetSD"]
-        )
-    else: 
-        train_loader, test_loader, _ = get_dataset_loaders(
-            args['dataset_path'], args['batch_size'], 
-            no_smoothing, # False, 
-            is_speech, nlp_10, is_nejm,
-            chunk_size=chunk_size,
-            stride=chunk_stride,
-            its_jude=args.get('use_jude', False)
-        )
+    
     epochs = args.get("epochs", 300)
     cnn_hidden = args.get("cnn_hidden", 2048)
     cnn_depth = args.get("cnn_depth", 8)
@@ -378,93 +375,25 @@ def train_model(args):
     inf_losses = 0
     device = torch.device("cuda")
 
-    use_rnn_decoder = args.get("use_rnn_decoder", False)
-    cnn_only = args.get("cnn_only", False)
-    cebra_patch_encoder = args.get("cebra_patch_encoder", False)
-    cebra_rnn = args.get("cebra_rnn", False)
-    
-    assert not (cnn_only and use_rnn_decoder), 'exvlusive args'
-    assert not (cebra_patch_encoder and use_rnn_decoder), 'exvlusive args'
-    assert not (cebra_patch_encoder and cnn_only), 'exvlusive args'
+    model_input = 306
+    num_classes = 30
+    from .meta_model import MetaModel
+    import torch.nn as nn 
 
-    if args.get('use_jude', False):
-        model_input = 256
-        num_classes = 41 
-    else: 
-        model_input = 192 if not is_speech else (512 if is_nejm else 256)
-        num_classes = 41 if is_speech else 32
-    if not use_rnn_decoder: 
-        if not cnn_only:
-            if not cebra_patch_encoder:
-                if not cebra_rnn: 
-                    # default meta architecture 
-                    model = MetaModel(
-                        num_neurons=model_input,
-                        num_classes=num_classes,
-                        conv_dropout=conv_dropout,
-                        dropout_input=dropout_input,
-                        mahan_model_params = use_mahan_model_params,
-                        time_agg_out = time_agg_out, 
-                        cnn_hidden=cnn_hidden,
-                        cnn_depth=cnn_depth,
-                        cnn_initial_linear=cnn_initial_linear,
-                        transformer_depth=args.get("transformer_depth", 4),
-                        transformer_head=args.get("transformer_head", 2),
-                    ).to(device)
-                else: 
-                    from ablation_model import CEBRARNN
-                    model = CEBRARNN(
-                        num_neurons=model_input,
-                        num_classes=num_classes,
-                        initial_layer_size=512, # hardcoded for now 
-                        cebra_num_units=args.get("cebra_hidden_dim", 256), 
-                        cebra_num_outputs=args.get("cebra_out_dim", 64), 
-                        cebra_model_name=args.get("cebra_model_name", "Offset5Model"), 
-                        cebra_pad_mode=args.get("cebra_pad_mode", "replicate"),
-                        rnn_hidden = args.get("rnn_hidden"),
-                        rnn_layers = args.get("rnn_layers"),
-                        bidir = args.get("bidir", False),
-                        rnn_dr = args.get("rnn_dr")
-                    ).to(device)
-            else: 
-                from ablation_model import CEBRATransformer
-
-                model = CEBRATransformer(
-                    num_neurons=model_input,
-                    num_classes=num_classes, 
-                    initial_layer_size=512, # hardcoded for now 
-                    cebra_num_units=args.get("cebra_hidden_dim", 256), 
-                    cebra_num_outputs=args.get("cebra_out_dim", 64), 
-                    cebra_model_name=args.get("cebra_model_name", "Offset5Model"), 
-                    cebra_pad_mode=args.get("cebra_pad_mode", "replicate"),
-                    transformer_depth=args.get("transformer_depth", 4),
-                    transformer_head=args.get("transformer_head", 2),
-                ).to(device)
-        else: 
-            from ablation_model import ConvOnly
-            model = ConvOnly(
-                num_neurons=model_input,
-                num_classes=num_classes,
-                conv_dropout=conv_dropout,
-                dropout_input=dropout_input,
-                mahan_model_params = use_mahan_model_params,
-                cnn_depth=cnn_depth,
-            ).to(device)
-    else: 
-        model = ConvRNN(
-            num_neurons=model_input,
-            num_classes=num_classes,
-            cnn_hidden=cnn_hidden,
-            cnn_depth=cnn_depth,
-            conv_dropout=conv_dropout,
-            dropout_input=dropout_input,
-            mahan_model_params = use_mahan_model_params,
-            rnn_hidden = args.get("rnn_hidden"),
-            rnn_layers = args.get("rnn_layers"),
-            bidir = args.get("bidir", False),
-            rnn_dr = args.get("rnn_dr")
-        ).to(device)
-
+    model = MetaModel(
+        num_neurons=model_input,
+        num_classes=num_classes,
+        conv_dropout=conv_dropout,
+        dropout_input=dropout_input,
+        mahan_model_params = use_mahan_model_params,
+        time_agg_out = time_agg_out, 
+        cnn_hidden=cnn_hidden,
+        cnn_depth=cnn_depth,
+        cnn_initial_linear=cnn_initial_linear,
+        transformer_depth=args.get("transformer_depth", 4),
+        transformer_head=args.get("transformer_head", 2),
+    ).to(device)
+                
     print(model)
     if False: 
         from torchinfo import summary
@@ -531,30 +460,35 @@ def train_model(args):
             
             optimizer.zero_grad()
             model.train()
-            neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
-            neuro_chunks = neuro_chunks.to(device)
+            neuro, neuro_len, target, target_len, meta, subject_id, channel_positions = batch
+            neuro = neuro.to(device)
             
-            if do_add_noise: 
-                if args["whiteNoiseSD"] > 0:
-                    neuro_chunks += torch.randn(neuro_chunks.shape, device=device) * args["whiteNoiseSD"]
+            # if do_add_noise: 
+            #     if args["whiteNoiseSD"] > 0:
+            #         neuro_chunks += torch.randn(neuro_chunks.shape, device=device) * args["whiteNoiseSD"]
 
-                if args["constantOffsetSD"] > 0:
-                    neuro_chunks += (
-                        torch.randn([neuro_chunks.shape[0], neuro_chunks.shape[1], 1], device=device)
-                        * args["constantOffsetSD"]
-                    )
+            #     if args["constantOffsetSD"] > 0:
+            #         neuro_chunks += (
+            #             torch.randn([neuro_chunks.shape[0], neuro_chunks.shape[1], 1], device=device)
+            #             * args["constantOffsetSD"]
+            #         )
             if _t_e_m_p:
                 _t_e_m_p = False 
                 if epoch == 0: 
-                    print('chunk shape', neuro_chunks.shape)
-            targets_padded = targets_padded.to(device)
-            target_lengths = target_lengths.to(device)
+                    print('chunk shape', neuro.shape)
+            target = target.to(device)
+            target_len = target_len.to(device)
             channel_positions = channel_positions.to(device)
             channel_positions = torch.randn_like(channel_positions)
-            uids_tensor = uids_tensor.to(device)
-            subject_id = torch.zeros(len(neuro_chunks)).long().to(device)
+            subject_id = subject_id.to(device)
+            channel_positions = channel_positions.to(device)
+            
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
-                pred, lengths = model(neuro_chunks, subject_id, channel_positions, uids_tensor)
+                pred, lengths = model(neuro, neuro_len, subject_id, channel_positions)
+                print(pred.shape)
+                print(lengths.shape, lengths)
+                exit()
+                
                 ctc_loss = criterion(
                     torch.permute(pred.log_softmax(2), [1, 0, 2]),
                     targets_padded,
