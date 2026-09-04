@@ -31,5 +31,5 @@ args_dict = vars(parsed_args)
 train_model(args_dict)
 
 '''
-python -m brain2qwerty_v1.start_meta --out_dir debugging --do_wandb 
+python -m brain2qwerty_v1.start_meta --out_dir "Meta-NoMerger-NoSubSpecificLayer-MEG-OwnCode_w_CTC-bs16" --do_wandb 
 '''

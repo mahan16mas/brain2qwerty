@@ -486,14 +486,14 @@ def train_model(args):
             
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
                 pred, lengths = model(neuro, neuro_len, subject_id, channel_positions)
-                print(pred.shape) # torch.Size([64, 130, 30]) 
+                # print(pred.shape) # torch.Size([64, 130, 30]) 
                 # print(lengths.shape, lengths) # torch.Size([64]) 
                 #  tensor([ 98,  39,  50,  85,  75, 130,  55,  67,  36,  64,  48,  45,  23,  31,
                 #  55,  87,  83,  66,  63,  84,  60, 104,  32,  72,  49,  91,  37,  62,
                 #  64,  62,  65,  53,  95,  51,  89,  67, 113,  73,  47,  68,  81,  77,
                 #  58, 110,  72,  90,  51,  52,  44,  43,  76,  61,  60,  54,  73,  52,
                 #  69,  86,  43,  36,  57,  53, 112,  50])
-                print(target.shape, target_len)
+                # print(target.shape, target_len)
                 # (B, L_max)
                 # tensor([39, 34, 43, 50, 45, 47, 34, 58, 29, 46, 45, 34, 23, 28, 40, 57, 51, 48,
                 # 47, 35, 30, 47, 23, 32, 42, 47, 35, 40, 43, 43, 43, 35, 43, 41, 45, 36,
