@@ -1,4 +1,4 @@
-from .new_main import train_model
+from .cebra_main import train_model
 import argparse
 
 parser = argparse.ArgumentParser(description="Train Neural Decoder")

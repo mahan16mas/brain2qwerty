@@ -7,7 +7,7 @@ git pull
 
 # interactive 
 runai submit \
-  --name meta-2 \
+  --name meta-1 \
   --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
   --gpu 1 \
   --cpu 20 \
@@ -37,9 +37,9 @@ source /mnt/upmwmathis/scratch/hossein/mm_project/brain2qwerty/.venv/bin/activat
 # Usefull commands 
 runai list | grep Running
 runai bash meta-2 -p upmwmathis-mirzaei
-runai describe job meta-bci-1 -p upmwmathis-mirzaei
-runai delete job meta-2 -p upmwmathis-mirzaei
-runai list jobs -p upmwmathis-mirzaei
+runai describe job meta-1 -p upmwmathis-mirzaei
+runai delete job meta-1 -p upmwmathis-mirzaei
+runai list jobs -p upmwmathis-mirzaei | grep Running
 
 ############# Single Runs 
 runai submit \
