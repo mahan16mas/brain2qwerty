@@ -487,8 +487,9 @@ def train_model(args):
                 pred, lengths = model(neuro, neuro_len, subject_id, channel_positions)
                 print(pred.shape)
                 print(lengths.shape, lengths)
+                print(target, target_len)
                 exit()
-                
+
                 ctc_loss = criterion(
                     torch.permute(pred.log_softmax(2), [1, 0, 2]),
                     targets_padded,

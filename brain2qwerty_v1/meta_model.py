@@ -43,8 +43,8 @@ class MetaModel(nn.Module):
     def _transformer_forward(self, y_pred: torch.Tensor, neuro_len) -> torch.Tensor:
         B = neuro_len.shape[0]
         grouped = torch.split(y_pred, neuro_len.tolist(), dim=0)  # tuple of (n_chunks_i, hidden)
-        for i, g in enumerate(grouped):
-            print(i, len(g), g.shape)
+        # for i, g in enumerate(grouped):
+        #     print(i, len(g), g.shape)
 
         max_len = int(neuro_len.max().item())
 
@@ -54,11 +54,11 @@ class MetaModel(nn.Module):
         for i, g in enumerate(grouped):
             x[i, : len(g)] = g
             mask[i, : len(g)] = 1
-        print('x', x.shape)
+        # print('x', x.shape)
         out = self.transformer(x, mask=mask.bool())  # (B, max_len, hidden)
-        print('out', out.shape)
+        # print('out', out.shape)
         logits = self.linear(out)                    # (B, max_len, n_classes)
-        return logits
+        return logits, neuro_len
 
     def forward(self, neuro, neuro_len, subject_id, channel_positions):
         """
