@@ -44,10 +44,10 @@ class MetaModel(nn.Module):
         B = neuro_len.shape[0]
         grouped = torch.split(y_pred, neuro_len.tolist(), dim=0)  # tuple of (n_chunks_i, hidden)
         for i, g in enumerate(grouped):
-            print(i, len(g), grouped[g].shape)
+            print(i, len(g), g.shape)
 
         max_len = int(neuro_len.max().item())
-        
+
         hidden = y_pred.shape[1]
         x = torch.zeros(B, max_len, hidden, device=y_pred.device, dtype=y_pred.dtype)
         mask = torch.zeros(B, max_len, device=y_pred.device)
