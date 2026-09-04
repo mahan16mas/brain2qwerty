@@ -193,4 +193,4 @@ runai submit \
 python -m brain2qwerty_v1.start_meta --out_dir "Meta-NoMerger-NoSubSpecificLayer-MEG-OwnCode_w_CTC-bs16" --do_wandb 
 # for chaning batch size, stride, kernel, its hardcoded
 # for chaning model (adding merger or sub specific shit...)
-python -m brain2qwerty_v1.start_meta --out_dir "Meta-NoMerger-withSubSpecificLayer-MEG-OwnCode_w_CTC-bs16" --do_wandb -- add_subject_specific_layers
+python -m brain2qwerty_v1.start_meta --out_dir "Meta-NoMerger-withSubSpecificLayer-MEG-OwnCode_w_CTC-bs16" --do_wandb --add_subject_specific_layers

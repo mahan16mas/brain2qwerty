@@ -19,7 +19,7 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
         cfg["transformer_config"]["heads"] = transformer_head
 
     if add_subject_specific_layers: 
-        cfg["transformer_config"]["subject_layers_config"] = {}
+        cfg["brain_model_config"]["subject_layers_config"] = {}
 
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
