@@ -77,7 +77,7 @@ class MetaModel(nn.Module):
         channel_positions : (total_chunks_in_batch, n_channels, 2)  same expansion as subject_id
                                     -- same sensor layout repeated per chunk, not per trial
         """
-        print('cnn forward', neuro.shape, subject_id.shape, channel_positions.shape)
+        # print('cnn forward', neuro.shape, subject_id.shape, channel_positions.shape)
         y_pred = self._cnn_forward(neuro, subject_id, channel_positions)
 
         return self._transformer_forward(y_pred, neuro_len)
