@@ -23,7 +23,7 @@ from .utils import BUTTON_MAPPING, CHAR_INDEX, ChannelPositions2D
 # 0.5s @ the neuro extractor's 50Hz) but now applied as a SLIDING window over
 # the whole trial instead of one window anchored per keystroke.
 CHUNK_LENGTH = 25
-CHUNK_STRIDE = 4
+CHUNK_STRIDE = 2
 
 # Encoder for sentence_typed strings (NOT a reverse of CHAR_INDEX -- see note).
 #
@@ -271,7 +271,7 @@ class WholeTrialData(Data):
             )
             loaders[split] = DataLoader(
                 dataset,
-                batch_size=batch_size,
+                batch_size=16, # batch_size,
                 shuffle=(split == "train"),
                 collate_fn=_collate_whole_trial,
                 num_workers=self.num_workers,
@@ -493,7 +493,7 @@ def train_model(args):
                 #  64,  62,  65,  53,  95,  51,  89,  67, 113,  73,  47,  68,  81,  77,
                 #  58, 110,  72,  90,  51,  52,  44,  43,  76,  61,  60,  54,  73,  52,
                 #  69,  86,  43,  36,  57,  53, 112,  50])
-                print(target, target_len)
+                print(target.shape, target_len)
                 # (B, L_max)
                 # tensor([39, 34, 43, 50, 45, 47, 34, 58, 29, 46, 45, 34, 23, 28, 40, 57, 51, 48,
                 # 47, 35, 30, 47, 23, 32, 42, 47, 35, 40, 43, 43, 43, 35, 43, 41, 45, 36,
@@ -504,7 +504,7 @@ def train_model(args):
                 
                 ctc_loss = torch.sum(ctc_loss)
             epoch_loss += ctc_loss.item()
-            n_items += len(targets_padded)
+            n_items += len(target)
             if not torch.isfinite(ctc_loss):
                 inf_losses += 1
                 if inf_losses > 10:
@@ -522,21 +522,25 @@ def train_model(args):
             for batch in test_loader:
 
                 with torch.autocast("cuda", dtype=torch.bfloat16, enabled=True):
-                    neuro_chunks, targets_padded, target_lengths, channel_positions, uids_tensor = batch
-                    neuro_chunks = neuro_chunks.to(device)
-                    targets_padded = targets_padded.to(device)
-                    target_lengths = target_lengths.to(device)
+                    neuro, neuro_len, target, target_len, meta, subject_id, channel_positions = batch
+                    neuro = neuro.to(device)
+                    target = target.to(device)
+                    target_len = target_len.to(device)
                     channel_positions = channel_positions.to(device)
-                    uids_tensor = uids_tensor.to(device)
-                    subject_id = torch.zeros( len(neuro_chunks)).long().to(device)
-                    pred, lengths = model.forward(neuro_chunks, subject_id, channel_positions, uids_tensor)
-
-                    loss = criterion(
-                        torch.permute(pred.log_softmax(2), [1, 0, 2]),
-                        targets_padded,
-                        lengths,
-                        target_lengths,
-                    )
+                    channel_positions = torch.randn_like(channel_positions)
+                    subject_id = subject_id.to(device)
+                    channel_positions = channel_positions.to(device)
+                    
+                    pred, lengths = model.forward(neuro, neuro_len, subject_id, channel_positions)
+                    log_probs = torch.log_softmax(pred, dim=-1).transpose(0, 1)  # (T, B, C)
+                    loss = criterion(log_probs, target, neuro_len, target_len)
+                    
+                    # loss = criterion(
+                    #     torch.permute(pred.log_softmax(2), [1, 0, 2]),
+                    #     targets_padded,
+                    #     lengths,
+                    #     target_lengths,
+                    # )
                     loss = torch.sum(loss)
                     allLoss.append(loss.cpu().detach().numpy())
 
@@ -550,7 +554,7 @@ def train_model(args):
                         decodedSeq = np.array([i for i in decodedSeq if i != 0])
 
                         trueSeq = np.array(
-                            targets_padded[iterIdx][0: target_lengths[iterIdx]].cpu().detach()
+                            target[iterIdx][0: target_len[iterIdx]].cpu().detach()
                         )
                         matcher = SequenceMatcher(
                             a=trueSeq.tolist(), b=decodedSeq.tolist()
