@@ -328,7 +328,7 @@ def train_model(args):
     if do_wandb:
         import wandb
         exp_name = args["out_dir"]
-        wandb.init(project="NeuroNLP", name=f'{exp_name}', config=args)
+        wandb.init(project="brain2qwerty_v1", name=f'{exp_name}', config=args)
 
     print(NUM_CLASSES_WITH_BLANK)
     # debug_config() -> single timeline, fast iteration/smoke tests
@@ -392,6 +392,8 @@ def train_model(args):
         cnn_initial_linear=cnn_initial_linear,
         transformer_depth=args.get("transformer_depth", 4),
         transformer_head=args.get("transformer_head", 2),
+        add_subject_specific_layers=args.get("add_subject_specific_layers", False),
+        # add_merger=args.get("add_merger", False),
     ).to(device)
                 
     print(model)

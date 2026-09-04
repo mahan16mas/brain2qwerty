@@ -160,3 +160,37 @@ events = study.build()  # standardized event dataframe across all subjects/sessi
 `Meg`/`Eeg` recording rows) and the timings in `start` (onset, seconds) and `duration`
 (seconds). If you have already downloaded the dataset, point `path` at the local folder and
 call `study.build()` directly (skip `download()`).
+
+
+## running original meta 
+runai submit \
+  --name meta-2 \
+  --image registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2 \
+  --gpu 1 \
+  --cpu 20 \
+  --memory 64Gi \
+  --node-pools h100 \
+  --large-shm \
+  --pvc home:/home/mirzaei \
+  --pvc upmwmathis-scratch:/data \
+  -e HOME=/home/mirzaei \
+  -e PYTHONUNBUFFERED=1 \
+  -p upmwmathis-mirzaei \
+  --run-as-user \
+  --preemptible \
+  --command -- bash -lc '
+    cd /data/hossein/transformer_bci/brain2qwerty &&
+    source /data/hossein/mm_project/brain2qwerty/.venv/bin/activate &&
+    source /data/hossein/transformer_bci/wandb_auth/wandb_env.sh &&
+    export BRAIN2QWERTY_STUDIES="/data/hossein/transformer_bci/SpanishBCBL" &&
+    export BRAIN2QWERTY_CACHE="/data/hossein/transformer_bci/.cache/brain2qwerty" &&
+    export BRAIN2QWERTY_RESULTS="/data/hossein/transformer_bci/.cache/brain2qwerty/results" &&
+    python -m brain2qwerty_v1.main train --wandb --wandb-name "Meta-NoMerger-NoSubSpecificLayer-MEG" 
+  '
+# for creating the merger or other shit, change xp_config 
+
+## running meta on spanish, but using CTC 
+python -m brain2qwerty_v1.start_meta --out_dir "Meta-NoMerger-NoSubSpecificLayer-MEG-OwnCode_w_CTC-bs16" --do_wandb 
+# for chaning batch size, stride, kernel, its hardcoded
+# for chaning model (adding merger or sub specific shit...)
+python -m brain2qwerty_v1.start_meta --out_dir "Meta-NoMerger-withSubSpecificLayer-MEG-OwnCode_w_CTC-bs16" --do_wandb -- add_subject_specific_layers

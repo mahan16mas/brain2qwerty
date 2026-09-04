@@ -5,7 +5,8 @@ from torch import nn
 import torch
 import numpy as np
 
-def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, transformer_head: int = 4, transformer_depth: int = 2):
+def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_params=False, time_agg_out = "att", cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, transformer_head: int = 4, transformer_depth: int = 2, add_subject_specific_layers=False, # add_merger=False
+               ):
     cfg = experiment_config(meta_default=not mahan_model_params)
     cfg["brain_model_config"]["conv_dropout"] = conv_dropout
     cfg["brain_model_config"]["dropout_input"] = dropout_input
@@ -16,6 +17,9 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
         cfg["brain_model_config"]["initial_linear"] = cnn_initial_linear
         cfg["transformer_config"]["depth"] = transformer_depth
         cfg["transformer_config"]["heads"] = transformer_head
+
+    if add_subject_specific_layers: 
+        cfg["transformer_config"]["subject_layers_config"] = {}
 
     brain_config = ModelConfig(**cfg["brain_model_config"])
     transformer_config = ModelConfig(**cfg["transformer_config"])
@@ -29,10 +33,14 @@ def get_models(n_in_channels, conv_dropout=0.5, dropout_input=0.2,mahan_model_pa
 class MetaModel(nn.Module):
     def __init__(self, num_neurons, num_classes, cnn_hidden=2048, cnn_depth=8, cnn_initial_linear=512, conv_dropout=0.5, dropout_input=0.2, mahan_model_params = False, time_agg_out: str = "att",  transformer_depth: int = 4, transformer_head: int = 2,        
                  # do_smoothing = False, smooth_width=2.0
+                add_subject_specific_layers = False,
+                # add_merger = False
                  ):
         super().__init__()
 
-        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden, cnn_depth=cnn_depth, cnn_initial_linear=cnn_initial_linear, transformer_head = transformer_head, transformer_depth = transformer_depth)
+        self.model, self.transformer, hidden = get_models(num_neurons, conv_dropout=conv_dropout, dropout_input=dropout_input, mahan_model_params=mahan_model_params, time_agg_out = time_agg_out, cnn_hidden=cnn_hidden, cnn_depth=cnn_depth, cnn_initial_linear=cnn_initial_linear, transformer_head = transformer_head, transformer_depth = transformer_depth, add_subject_specific_layers=add_subject_specific_layers, 
+                                                          # add_merger=add_merger
+                                                          )
         self.linear = nn.Linear(hidden, num_classes)
 
         #### self.smoother = (GaussianSmoothing(num_neurons, 20, smooth_width, dim=1)) if do_smoothing else (nn.Identity())

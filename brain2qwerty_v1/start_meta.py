@@ -24,6 +24,10 @@ parser.add_argument('--cnn_initial_linear', type=int, default=512)
 parser.add_argument('--transformer_depth', type=int, default=4, help="Only used when you have passed --cebra_patch_encoder")
 parser.add_argument('--transformer_head', type=int, default=2, help="Only used when you have passed --cebra_patch_encoder")
 
+parser.add_argument('--add_subject_specific_layers', action='store_true', help='')
+# parser.add_argument('--add_merger', action='store_true', help='')
+
+
 parsed_args = parser.parse_args()
 
 # Convert namespace to dictionary

@@ -378,7 +378,7 @@ def train_model(args):
     if do_wandb:
         import wandb
         exp_name = args["out_dir"]
-        wandb.init(project="NeuroNLP", name=f'{exp_name}')
+        wandb.init(project="brain2qwerty_v1", name=f'{exp_name}')
 
     no_gauss = args.get("no_gauss", False)
     device = "cuda"
