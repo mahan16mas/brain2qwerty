@@ -63,7 +63,8 @@ class BrainModule(pl.LightningModule):
         uids = np.array([seg.trigger.extra["sentence_UID"] for seg in batch.segments])
 
         print(uids.shape)
-        exit()
+        print(y_pred.shape)
+
         unique_uids, first_idx = np.unique(uids, return_index=True)
         unique_uids = unique_uids[np.argsort(first_idx)]
 
@@ -77,9 +78,11 @@ class BrainModule(pl.LightningModule):
         for i, g in enumerate(grouped):
             x[i, : len(g)] = g
             mask[i, : len(g)] = 1
-
+        print(x.shape)
         out = self.transformer(x, mask=mask.bool())
+        print(out.shape)
         flat = [out[i][: len(g)] for i, g in enumerate(grouped)]
+        exit()
         return self.linear(torch.cat(flat))
 
     def _run_step(self, batch: Batch, step_name: str):
