@@ -50,7 +50,7 @@ class BrainModule(pl.LightningModule):
 
     def forward(self, batch: Batch) -> torch.Tensor:
         print(batch.data[self.x_name].shape)
-        print(batch.data["subject_id"].shape, batch.data["subject_id"])
+        print(batch.data["subject_id"].shape)
         print(batch.data["channel_positions"].shape)
         
         return self.model(
@@ -63,7 +63,7 @@ class BrainModule(pl.LightningModule):
         uids = np.array([seg.trigger.extra["sentence_UID"] for seg in batch.segments])
 
         print(uids.shape)
-        print(uids)
+        exit()
         unique_uids, first_idx = np.unique(uids, return_index=True)
         unique_uids = unique_uids[np.argsort(first_idx)]
 
