@@ -7,3 +7,4 @@ eval_model.py --out_dir nlp10-meta --dataset_path "/data/hossein/mm_project/old_
 start_trainer.py  --is_speech --dataset_path /data/hossein/mm_project/speech_gru_cebra/data/nejm_dataset.pkl --is_nejm --out_dir nejm-meta --epochs 40 --dropout_input 0.2 --conv_dropout 0.0 
 eval_model.py --out_dir nejm-meta --dataset_path /data/hossein/mm_project/speech_gru_cebra/data/nejm_dataset.pkl  --is_speech --is_nejm --conv_zero
 `
+To eval this models it is the same as the main repo for both pre-LM and post-LM results. The script saves the output on that repo as well
