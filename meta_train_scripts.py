@@ -75,3 +75,5 @@ for dataset_num, (conv_dropout, input_dropout), epoch, seed in all_hypers:
         f"eval_model.py --out_dir {name} --dataset_path {dataset_dir} {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
         f"{'--is_nejm' if nejm else ''} --conv_zero"
     )
+    print(args)
+    print(eval_args)
