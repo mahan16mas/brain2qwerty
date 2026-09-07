@@ -1,0 +1,77 @@
+import subprocess
+import sys
+import time
+
+IMAGE = 'registry.rcp.epfl.ch/upmwmathis-mirzaei/robust-cebra:v1.2'
+GPU = 1
+CPU = 2
+MEMORY = '64Gi'
+NODE_POOLS = 'h200'
+LARGE_SHM = '--large-shm'
+PVC_HOME = 'home:/home/mirzaei'
+PVC_SCRATCH = 'upmwmathis-scratch:/data'
+PROJECT = 'upmwmathis-mirzaei'
+CMD_PREFIX = (
+    "cd /data/hossein/mm_project/brain2qwerty"
+)
+PYTHON_PATH = "/data/hossein/mm_project/brain2qwerty/.venv/bin/python"
+
+def run_command(cmd, quiet=False):
+    """Run a shell command and print output."""
+    if not quiet:
+        print(f"Running: {cmd}")
+    result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+    if not quiet:
+        if result.returncode != 0:
+            print(f"Error (code {result.returncode}): {result.stderr}", file=sys.stderr)
+        else:
+            print(result.stdout)
+    return result.returncode
+
+exports = (
+            "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/mirzaei/lm-cebra/.venv/lib/python3.10/site-packages/nvidia/cu13/lib && "
+            "export TORCHINDUCTOR_CACHE_DIR=/data/hossein/mm_project/tmp/torch_cache"
+        )
+from itertools import product
+from collections import defaultdict
+datasets = [0, 1, 2, 3]
+dropouts = [(0.0, 0.2)]
+seeds = [1, 2, 3, 4]
+seeds = range(1)
+epochs = [40, ]
+all_hypers = product(datasets, dropouts, epochs, seeds)
+out_dirs = defaultdict(list)
+all_runs = {}
+for dataset_num, (conv_dropout, input_dropout), epoch, seed in all_hypers:
+    dataset_name = 'speech'
+    dataset_dir = '/data/hossein/data/speech/speech_data_raw_all_in_test.pkl'
+    batch_size = 16
+    speech = True
+    nlp10 = False
+    nejm = False
+    if dataset_num == 1:
+        speech = False
+        dataset_name = 'nlp21'
+        dataset_dir = '/data/hossein/mm_project/CORP_data_release'
+    if dataset_num == 2:
+        speech = False
+        nlp10 = True
+        dataset_name = 'nlp10'
+        dataset_dir = '"/data/hossein/mm_project/old_nlp_data/data.npz"'
+    if dataset_num == 3:
+        dataset_dir = "/data/hossein/mm_project/speech_gru_cebra/data/nejm_dataset.pkl"
+        speech = True
+        nejm = True
+        dataset_name = 'nejm'
+    name = f"{dataset_name}-meta"
+    out_dirs[dataset_num].append(name)
+    # continue
+    args = (
+        f"start_trainer.py {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
+        f"--dataset_path {dataset_dir} {'--is_nejm' if nejm else ''} --out_dir {name} "
+        f"--epochs {epoch} --dropout_input {input_dropout} --conv_dropout {conv_dropout} "
+    )
+    eval_args = (
+        f"eval_model.py --out_dir {name} --dataset_path {dataset_dir} {'--nlp_10' if nlp10 else ''} {'--is_speech' if speech else ''} "
+        f"{'--is_nejm' if nejm else ''} --conv_zero"
+    )
